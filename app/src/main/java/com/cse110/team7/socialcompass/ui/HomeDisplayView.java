@@ -1,0 +1,30 @@
+package com.cse110.team7.socialcompass.ui;
+
+import android.widget.ImageView;
+import android.widget.TextView;
+
+public class HomeDisplayView {
+    private final ImageView dotView;
+    private final TextView labelView;
+
+    public HomeDisplayView(ImageView dotView, TextView labelView) {
+        this.dotView = dotView;
+        this.labelView = labelView;
+    }
+
+    public ImageView getDotView() {
+        return dotView;
+    }
+
+    public TextView getLabelView() {
+        return labelView;
+    }
+
+    public void setDotViewRotation(double rotationAngle) {
+
+    }
+
+    public void setLabelRotation(double rotationAngle) {
+
+    }
+}
