@@ -30,11 +30,12 @@
             android:id="@+id/labelNorth"
             android:layout_width="32dp"
             android:layout_height="32dp"
+            android:visibility="invisible"
             app:layout_constraintCircle="@+id/compassImage"
-            app:layout_constraintCircleAngle="0"
             app:layout_constraintCircleRadius="140dp"
             app:srcCompat="@drawable/labeldot"
             tools:layout_editor_absoluteX="174dp"
             tools:layout_editor_absoluteY="174dp" />
+
     </androidx.constraintlayout.widget.ConstraintLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>
