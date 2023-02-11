@@ -15,8 +15,13 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.cse110.team7.socialcompass.R;
+import com.cse110.team7.socialcompass.models.Compass;
+import com.cse110.team7.socialcompass.models.House;
+import com.cse110.team7.socialcompass.models.Label;
 
 import org.xmlpull.v1.XmlPullParser;
+
+import java.util.ArrayList;
 
 public class CompassActivity extends AppCompatActivity {
 
@@ -26,18 +31,31 @@ public class CompassActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_compass);
 
+        //North Label:
+        ImageView northImageView = (ImageView) findViewById(R.id.labelNorth);
+        Label northLabel = new Label(null, northImageView);
 
-        //Getting North (Can do in Compass):
-        ImageView northLabel = (ImageView) findViewById(R.id.labelNorth);
+        //Empty House Array:
+        ArrayList<House> allHouses = null;
 
-        //Setting Initial Label to targetOrientation
+        //Initialize Compass Object:
+        Compass thisCompass = new Compass(northLabel, allHouses);
 
-        //If we make an individual ImageView for each of the labels, we can just use this code.
-        int targetOrientationNorth = 45; //Points straight to the top for now.
 
-        ConstraintLayout.LayoutParams basicLayout = (ConstraintLayout.LayoutParams) northLabel.getLayoutParams();
-        basicLayout.circleAngle = targetOrientationNorth;
-        northLabel.setLayoutParams(basicLayout);
+        //Updating northImageView to point to top: (test)
+        thisCompass.updateRotation(northLabel, 0);
+
+
+//        //Setting Initial Label to targetOrientation -- Refactored into the above lines.
+//
+//        //If we make an individual ImageView for each of the labels, we can just use this code.
+//        int targetOrientationNorth = 45; //Points straight to the top for now.
+//
+//        ConstraintLayout.LayoutParams basicLayout = (ConstraintLayout.LayoutParams) northLabel.getLayoutParams();
+//        basicLayout.circleAngle = targetOrientationNorth;
+//        northLabel.setLayoutParams(basicLayout);
+
+
 
 
 

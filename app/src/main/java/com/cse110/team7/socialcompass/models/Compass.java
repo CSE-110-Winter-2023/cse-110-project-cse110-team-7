@@ -30,10 +30,12 @@ public class Compass {
         ImageView labelImage = toUpdate.getLabelImageView();
 
 
-        //Update Text Value:
-        ConstraintLayout.LayoutParams textBasicLayout = (ConstraintLayout.LayoutParams) labelText.getLayoutParams();
-        textBasicLayout.circleAngle = updateValue;
-        labelText.setLayoutParams(textBasicLayout);
+        if(labelText != null) {
+            //Update Text Value:
+            ConstraintLayout.LayoutParams textBasicLayout = (ConstraintLayout.LayoutParams) labelText.getLayoutParams();
+            textBasicLayout.circleAngle = updateValue;
+            labelText.setLayoutParams(textBasicLayout);
+        }
 
         //Update Image Value:
         ConstraintLayout.LayoutParams imageBasicLayout = (ConstraintLayout.LayoutParams) labelImage.getLayoutParams();
