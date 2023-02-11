@@ -1,19 +1,20 @@
 package com.cse110.team7.socialcompass.models;
 
 import android.widget.ImageView;
+import android.widget.TextView;
 
 public class Label {
-    String labelName;
+    TextView labelName;
     ImageView labelImage;
 
     float labelOrientation;
 
-    public Label(String labelName, ImageView labelImage) {
+    public Label(TextView labelName, ImageView labelImage) {
         this.labelName = labelName;
         this.labelImage = labelImage;
     }
 
-    public String getLabelName() {
+    public TextView getLabelName() {
         return labelName;
     }
 

@@ -27,7 +27,7 @@ public class CompassActivity extends AppCompatActivity {
         setContentView(R.layout.activity_compass);
 
 
-        //Getting North (needs to be refactored):
+        //Getting North (Can do in Compass):
         ImageView northLabel = (ImageView) findViewById(R.id.labelNorth);
 
         //Setting Initial Label to targetOrientation
