@@ -2,6 +2,7 @@
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/compassActivityParentConstraints"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".ui.CompassActivity">
@@ -28,14 +29,11 @@
 
         <ImageView
             android:id="@+id/labelNorth"
-            android:layout_width="32dp"
-            android:layout_height="32dp"
-            android:visibility="invisible"
+            android:layout_width="60dp"
+            android:layout_height="60dp"
             app:layout_constraintCircle="@+id/compassImage"
-            app:layout_constraintCircleRadius="140dp"
-            app:srcCompat="@drawable/labeldot"
-            tools:layout_editor_absoluteX="174dp"
-            tools:layout_editor_absoluteY="174dp" />
+            app:layout_constraintCircleRadius="160dp"
+            app:srcCompat="@drawable/n" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>
