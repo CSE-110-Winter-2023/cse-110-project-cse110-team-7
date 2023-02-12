@@ -1,4 +1,4 @@
-package com.cse110.team7.socialcompass.ui;
+package com.cse110.team7.socialcompass;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.constraintlayout.widget.ConstraintLayout;
@@ -19,6 +19,7 @@ import com.cse110.team7.socialcompass.models.House;
 import com.cse110.team7.socialcompass.models.LatLong;
 import com.cse110.team7.socialcompass.services.LocationService;
 import com.cse110.team7.socialcompass.services.OrientationService;
+import com.cse110.team7.socialcompass.ui.ElementDisplay;
 import com.cse110.team7.socialcompass.utils.AngleCalculator;
 
 import java.util.ArrayList;

@@ -6,8 +6,6 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 
-import com.cse110.team7.socialcompass.ui.CompassActivity;
-
 public class MainActivity extends AppCompatActivity {
 
     @Override

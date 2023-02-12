@@ -15,7 +15,7 @@
         android:theme="@style/Theme.SocialCompass"
         tools:targetApi="31">
         <activity
-            android:name="com.cse110.team7.socialcompass.ui.CompassActivity"
+            android:name="com.cse110.team7.socialcompass.CompassActivity"
             android:exported="false" />
         <activity
             android:name=".MainActivity"
