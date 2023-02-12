@@ -101,7 +101,8 @@ public class CompassActivity extends AppCompatActivity {
         labelView.setText(house.getLabelName());
         labelView.setTextSize(20); //Change size of text here.
         labelView.setTypeface(null, Typeface.BOLD);
-        labelView.setTextColor(Color.BLACK);
+        labelView.setTextColor(Color.WHITE);
+        labelView.setShadowLayer(6, 1, 1, Color.BLACK);
 
         // Pulls Primary Constraint from activity_compass.xml
         ConstraintLayout layout = (ConstraintLayout)findViewById(R.id.compassActivityParentConstraints);
@@ -121,10 +122,10 @@ public class CompassActivity extends AppCompatActivity {
         ConstraintLayout.LayoutParams labelParameters = (ConstraintLayout.LayoutParams) labelView.getLayoutParams();
 
         labelParameters.topToBottom = dotView.getId();
-        // labelParameters.bottomToBottom = dotView.getId();
+        labelParameters.startToStart = dotView.getId();
+        labelParameters.endToEnd = dotView.getId();
         labelParameters.height = ConstraintLayout.LayoutParams.WRAP_CONTENT;
         labelParameters.width = ConstraintLayout.LayoutParams.WRAP_CONTENT;
-        labelParameters.topMargin = 100;
 
         labelView.setLayoutParams(labelParameters);
 
