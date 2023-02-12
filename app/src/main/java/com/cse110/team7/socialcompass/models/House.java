@@ -17,5 +17,9 @@ public class House {
         return houseLabel;
     }
 
+    public float calculateAnge() {
+        return 180;
+    }
+
     //Still need to permanently save data; probably do it here?
 }

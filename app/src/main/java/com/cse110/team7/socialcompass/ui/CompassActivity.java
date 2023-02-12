@@ -18,6 +18,7 @@ import com.cse110.team7.socialcompass.R;
 import com.cse110.team7.socialcompass.models.Compass;
 import com.cse110.team7.socialcompass.models.House;
 import com.cse110.team7.socialcompass.models.Label;
+import com.cse110.team7.socialcompass.models.LatLong;
 
 import org.xmlpull.v1.XmlPullParser;
 
@@ -31,18 +32,12 @@ public class CompassActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_compass);
 
-        //North Label:
-        ImageView northImageView = (ImageView) findViewById(R.id.labelNorth);
-        Label northLabel = new Label(null, northImageView);
+        ImageView northLabelImageView = (ImageView) findViewById(R.id.labelNorth);
+        Label northLabel = new Label(null, northLabelImageView);
 
-        //Empty House Array:
-        ArrayList<House> allHouses = null;
-
-        //Initialize Compass Object:
+        ArrayList<House> allHouses = new ArrayList<>();
         Compass thisCompass = new Compass(northLabel, allHouses);
 
-
-        //Updating northImageView to point to top: (test)
         thisCompass.updateRotation(northLabel, 0);
 
 
@@ -55,54 +50,60 @@ public class CompassActivity extends AppCompatActivity {
 //        basicLayout.circleAngle = targetOrientationNorth;
 //        northLabel.setLayoutParams(basicLayout);
 
-
-
-
-
         //Code for Creating New Labels W/O XML (needs to be refactored) - top two would be parameters.
         float targetOrientation2 = 180; //Points straight to the bottom.
         String labelName = "Parents";
 
-        //Creates New ImageView
-        ImageView newDot = new ImageView(this);
+        House parentsHouse = plotHouse(labelName);
+        allHouses.add(parentsHouse);
+    }
 
-        newDot.setId(View.generateViewId());
-        newDot.setImageResource(R.drawable.blue_circle);
+    public House plotHouse(String labelStr) {
+        ImageView labelDot = new ImageView(this);
+
+        labelDot.setId(View.generateViewId());
+        labelDot.setImageResource(R.drawable.blue_circle);
 
         //New TextView:
-        TextView newText = new TextView(this);
+        TextView labelText = new TextView(this);
 
-        newText.setId(View.generateViewId());
-        newText.setText(labelName);
-        newText.setTextSize(20); //Change size of text here.
-        newText.setTypeface(null, Typeface.BOLD);
-        newText.setTextColor(Color.BLACK);
+        labelText.setId(View.generateViewId());
+        labelText.setText(labelStr);
+        labelText.setTextSize(20); //Change size of text here.
+        labelText.setTypeface(null, Typeface.BOLD);
+        labelText.setTextColor(Color.BLACK);
 
+        Label houseLabel = new Label(labelText, labelDot);
+        // HARDCODED LOCATION FOR NOW
+        House newHouse = new House(houseLabel, new LatLong(100, 100));
+
+        float orientation = newHouse.calculateAnge();
         //Pulls Primary Constraint from activity_compass.xml
         ConstraintLayout layout = (ConstraintLayout)findViewById(R.id.compassActivityParentConstraints);
 
         //Adds the newDot to the back of the Views
-        layout.addView(newDot, -1);
-        layout.addView(newText, -1);
+        layout.addView(labelDot, -1);
+        layout.addView(labelText, -1);
 
         //Note that for now all paremeters are hardcoded, but this may break on differing device sizes.
-        ConstraintLayout.LayoutParams newLabelsParemeters = (ConstraintLayout.LayoutParams) newDot.getLayoutParams();
+        ConstraintLayout.LayoutParams newLabelsParemeters = (ConstraintLayout.LayoutParams) labelDot.getLayoutParams();
 
         newLabelsParemeters.circleConstraint = R.id.CompassCenter;
         newLabelsParemeters.circleRadius = 380;
-        newLabelsParemeters.circleAngle = targetOrientation2;
+        newLabelsParemeters.circleAngle = orientation;
         newLabelsParemeters.width = 60;
         newLabelsParemeters.height = 60;
 
-        newDot.setLayoutParams(newLabelsParemeters);
+        labelDot.setLayoutParams(newLabelsParemeters);
 
 
-        ConstraintLayout.LayoutParams newLabelsTextParemeters = (ConstraintLayout.LayoutParams) newText.getLayoutParams();
+        ConstraintLayout.LayoutParams newLabelsTextParemeters = (ConstraintLayout.LayoutParams) labelText.getLayoutParams();
 
         newLabelsTextParemeters.circleConstraint = R.id.CompassCenter;
         newLabelsTextParemeters.circleRadius = 440;
-        newLabelsTextParemeters.circleAngle = targetOrientation2;
+        newLabelsTextParemeters.circleAngle = orientation;
 
-        newText.setLayoutParams(newLabelsTextParemeters);
+        labelText.setLayoutParams(newLabelsTextParemeters);
+        return newHouse;
     }
 }
