@@ -12,23 +12,19 @@ import java.util.ArrayList;
 
 public class Compass {
     ElementDisplay northLabel;
-    ArrayList<House> allHouses;
-
-    public Compass(ElementDisplay northLabel, ArrayList<House> allHouses) {
-        this.northLabel = northLabel;
-        this.allHouses = allHouses;
-    }
+    ArrayList<ElementDisplay> allElements;
 
     public Compass(ImageView northLabel) {
-        this.northLabel = new ElementDisplay(null, northLabel);
+        this.northLabel = new ElementDisplay(northLabel, new LatLong(90, 0));
+        allElements = new ArrayList<>();
     }
 
     public ElementDisplay getNorthLabel() {
         return northLabel;
     }
 
-    public ArrayList<House> getAllHouses() {
-        return allHouses;
+    public ArrayList<ElementDisplay> getAllElements() {
+        return allElements;
     }
 
     //To Do:
@@ -54,12 +50,12 @@ public class Compass {
     public void updateAllLabels(){
         updateRotation(northLabel, 0);
 
-        for(House i : allHouses){
-            updateRotation(i.getHouseDisplay(), 90);
+        for(ElementDisplay i : allElements){
+            updateRotation(i, 90);
         }
     }
 
-    public void insertHouse(House h) {
-        allHouses.add(h);
+    public void insert(ElementDisplay elem) {
+        allElements.add(elem);
     }
 }
