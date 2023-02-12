@@ -5,29 +5,36 @@ import android.widget.TextView;
 
 import androidx.constraintlayout.widget.ConstraintLayout;
 
+import com.cse110.team7.socialcompass.R;
+import com.cse110.team7.socialcompass.ui.ElementDisplay;
+
 import java.util.ArrayList;
 
 public class Compass {
-    Label northLabel;
+    ElementDisplay northLabel;
     ArrayList<House> allHouses;
 
-    public Compass(Label northLabel, ArrayList<House> allHouses) {
+    public Compass(ElementDisplay northLabel, ArrayList<House> allHouses) {
         this.northLabel = northLabel;
         this.allHouses = allHouses;
     }
 
-    public Label getNorthLabel() {
+    public Compass(ImageView northLabel) {
+        this.northLabel = new ElementDisplay(null, northLabel);
+    }
+
+    public ElementDisplay getNorthLabel() {
         return northLabel;
     }
 
-    public ArrayList<House> getAllHomes() {
+    public ArrayList<House> getAllHouses() {
         return allHouses;
     }
 
     //To Do:
-    public void updateRotation(Label toUpdate, float updateValue) {
-        TextView labelText = toUpdate.getLabelName();
-        ImageView labelImage = toUpdate.getLabelImageView();
+    public void updateRotation(ElementDisplay toUpdate, float updateValue) {
+        TextView labelText = toUpdate.getLabelView();
+        ImageView labelImage = toUpdate.getDotView();
 
 
         if(labelText != null) {
@@ -48,7 +55,11 @@ public class Compass {
         updateRotation(northLabel, 0);
 
         for(House i : allHouses){
-            updateRotation(i.getHouseLabel(), 90);
+            updateRotation(i.getHouseDisplay(), 90);
         }
+    }
+
+    public void insertHouse(House h) {
+        allHouses.add(h);
     }
 }

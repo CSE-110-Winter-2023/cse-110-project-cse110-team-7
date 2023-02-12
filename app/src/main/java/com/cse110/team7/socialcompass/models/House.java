@@ -1,9 +1,11 @@
 package com.cse110.team7.socialcompass.models;
 
+import com.cse110.team7.socialcompass.ui.ElementDisplay;
+
 public class House {
 
     private String labelName;
-    private Label houseLabel;
+    private ElementDisplay houseLabel;
     private LatLong location;
 
     public House(String labelName, LatLong location) {
@@ -11,7 +13,7 @@ public class House {
         this.location = location;
     }
 
-    public House(Label houseLabel, LatLong location) {
+    public House(ElementDisplay houseLabel, LatLong location) {
         this.houseLabel = houseLabel;
         this.location = location;
     }
@@ -32,7 +34,7 @@ public class House {
         this.location = location;
     }
 
-    public Label getHouseLabel() {
+    public ElementDisplay getHouseDisplay() {
         return houseLabel;
     }
 

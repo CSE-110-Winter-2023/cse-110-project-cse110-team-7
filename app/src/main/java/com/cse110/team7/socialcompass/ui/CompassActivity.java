@@ -6,8 +6,6 @@ import androidx.constraintlayout.widget.ConstraintLayout;
 import android.content.Context;
 import android.graphics.Color;
 import android.graphics.Typeface;
-import android.hardware.Sensor;
-import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.location.LocationManager;
 import android.os.Bundle;
@@ -18,14 +16,12 @@ import android.widget.TextView;
 import com.cse110.team7.socialcompass.R;
 import com.cse110.team7.socialcompass.models.Compass;
 import com.cse110.team7.socialcompass.models.House;
-import com.cse110.team7.socialcompass.models.Label;
 import com.cse110.team7.socialcompass.models.LatLong;
 import com.cse110.team7.socialcompass.services.LocationService;
 import com.cse110.team7.socialcompass.services.OrientationService;
 import com.cse110.team7.socialcompass.utils.AngleCalculator;
 
 import java.util.ArrayList;
-import java.util.Observer;
 
 public class CompassActivity extends AppCompatActivity {
 
@@ -42,14 +38,12 @@ public class CompassActivity extends AppCompatActivity {
         sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
 
         ImageView northLabelImageView = (ImageView) findViewById(R.id.labelNorth);
-        Label northLabel = new Label(null, northLabelImageView);
+        Compass compass = new Compass(northLabelImageView);
 
         ArrayList<House> savedHouses = new ArrayList<>();
-        ArrayList<HouseDisplayView> houseViews = new ArrayList<>();
+        ArrayList<ElementDisplay> houseViews = new ArrayList<>();
 
         savedHouses.add(new House("Parents", new LatLong(32.8835982026854, -117.23493663196449)));
-
-        Compass thisCompass = new Compass(northLabel, savedHouses);
 
         savedHouses.forEach(house -> houseViews.add(initHouse(house)));
 
@@ -64,7 +58,7 @@ public class CompassActivity extends AppCompatActivity {
         });
 
         OrientationService.getInstance().getAzimuth().observe(this, (currentAzimuth) -> {
-            thisCompass.updateRotation(northLabel, -currentAzimuth);
+            compass.updateRotation(compass.getNorthLabel(), -currentAzimuth); // If we don't plan to update the rotation with any other label this should be refactored
             houseViews.forEach(houseView -> {
 
             });
@@ -72,14 +66,14 @@ public class CompassActivity extends AppCompatActivity {
 
     }
 
-    public void updateHouse(LatLong currentLocation, HouseDisplayView houseView) {
+    public void updateHouse(LatLong currentLocation, ElementDisplay houseView) {
         ConstraintLayout.LayoutParams dotViewParameters = (ConstraintLayout.LayoutParams) houseView.getDotView().getLayoutParams();
         dotViewParameters.circleAngle = AngleCalculator.calculateAngle(currentLocation, new LatLong(32.8835982026854, -117.23493663196449));
 
         houseView.getDotView().setLayoutParams(dotViewParameters);
     }
 
-    public HouseDisplayView initHouse(House house) {
+    public ElementDisplay initHouse(House house) {
         ImageView dotView = new ImageView(this);
 
         dotView.setId(View.generateViewId());
@@ -117,6 +111,6 @@ public class CompassActivity extends AppCompatActivity {
 
         labelView.setLayoutParams(labelParameters);
 
-        return new HouseDisplayView(dotView, labelView);
+        return new ElementDisplay(labelView, dotView);
     }
 }
