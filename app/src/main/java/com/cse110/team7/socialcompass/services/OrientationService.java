@@ -10,6 +10,7 @@ import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 
 public class OrientationService {
+
     private static final OrientationService INSTANCE = new OrientationService();
 
     public static OrientationService getInstance() {
@@ -86,7 +87,7 @@ public class OrientationService {
         float[] orientation = new float[3];
         SensorManager.getOrientation(rMatrix, orientation);
 
-        azimuth.postValue(orientation[0]);
+        azimuth.postValue((float) Math.toDegrees((orientation[0] + 2 * Math.PI) % (2 * Math.PI)));
     }
 
     public void setSensorManager(@NonNull SensorManager sensorManager) {
@@ -100,4 +101,5 @@ public class OrientationService {
     public LiveData<Float> getAzimuth() {
         return azimuth;
     }
+
 }

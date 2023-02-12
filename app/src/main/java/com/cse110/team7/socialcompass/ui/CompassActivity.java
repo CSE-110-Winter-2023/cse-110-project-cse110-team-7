@@ -2,16 +2,17 @@ package com.cse110.team7.socialcompass.ui;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.constraintlayout.widget.ConstraintLayout;
-import androidx.constraintlayout.widget.ConstraintSet;
 
+import android.content.Context;
 import android.graphics.Color;
 import android.graphics.Typeface;
+import android.hardware.Sensor;
+import android.hardware.SensorEventListener;
+import android.hardware.SensorManager;
+import android.location.LocationManager;
 import android.os.Bundle;
-import android.util.Xml;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.cse110.team7.socialcompass.R;
@@ -19,91 +20,103 @@ import com.cse110.team7.socialcompass.models.Compass;
 import com.cse110.team7.socialcompass.models.House;
 import com.cse110.team7.socialcompass.models.Label;
 import com.cse110.team7.socialcompass.models.LatLong;
-
-import org.xmlpull.v1.XmlPullParser;
+import com.cse110.team7.socialcompass.services.LocationService;
+import com.cse110.team7.socialcompass.services.OrientationService;
+import com.cse110.team7.socialcompass.utils.AngleCalculator;
 
 import java.util.ArrayList;
+import java.util.Observer;
 
 public class CompassActivity extends AppCompatActivity {
 
+    LocationManager locationManager;
+    SensorManager sensorManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_compass);
 
+        locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+
+        sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
+
         ImageView northLabelImageView = (ImageView) findViewById(R.id.labelNorth);
         Label northLabel = new Label(null, northLabelImageView);
 
-        ArrayList<House> allHouses = new ArrayList<>();
-        Compass thisCompass = new Compass(northLabel, allHouses);
+        ArrayList<House> savedHouses = new ArrayList<>();
+        ArrayList<HouseDisplayView> houseViews = new ArrayList<>();
 
-        thisCompass.updateRotation(northLabel, 0);
+        savedHouses.add(new House("Parents", new LatLong(32.8835982026854, -117.23493663196449)));
 
+        Compass thisCompass = new Compass(northLabel, savedHouses);
 
-//        //Setting Initial Label to targetOrientation -- Refactored into the above lines.
-//
-//        //If we make an individual ImageView for each of the labels, we can just use this code.
-//        int targetOrientationNorth = 45; //Points straight to the top for now.
-//
-//        ConstraintLayout.LayoutParams basicLayout = (ConstraintLayout.LayoutParams) northLabel.getLayoutParams();
-//        basicLayout.circleAngle = targetOrientationNorth;
-//        northLabel.setLayoutParams(basicLayout);
+        savedHouses.forEach(house -> houseViews.add(initHouse(house)));
 
-        //Code for Creating New Labels W/O XML (needs to be refactored) - top two would be parameters.
-        float targetOrientation2 = 180; //Points straight to the bottom.
-        String labelName = "Parents";
+        LocationService.getInstance().setLocationManager(locationManager);
+        LocationService.getInstance().registerLocationUpdateListener(this);
 
-        House parentsHouse = plotHouse(labelName);
-        allHouses.add(parentsHouse);
+        OrientationService.getInstance().setSensorManager(sensorManager);
+        OrientationService.getInstance().registerSensorEventListener();
+
+        LocationService.getInstance().getUserLocation().observe(this, (currentLocation) -> {
+            houseViews.forEach(houseView -> updateHouse(currentLocation, houseView));
+        });
+
+        OrientationService.getInstance().getAzimuth().observe(this, (currentAzimuth) -> {
+            thisCompass.updateRotation(northLabel, -currentAzimuth);
+            houseViews.forEach(houseView -> {
+
+            });
+        });
+
     }
 
-    public House plotHouse(String labelStr) {
-        ImageView labelDot = new ImageView(this);
+    public void updateHouse(LatLong currentLocation, HouseDisplayView houseView) {
+        ConstraintLayout.LayoutParams dotViewParameters = (ConstraintLayout.LayoutParams) houseView.getDotView().getLayoutParams();
+        dotViewParameters.circleAngle = AngleCalculator.calculateAngle(currentLocation, new LatLong(32.8835982026854, -117.23493663196449));
 
-        labelDot.setId(View.generateViewId());
-        labelDot.setImageResource(R.drawable.blue_circle);
+        houseView.getDotView().setLayoutParams(dotViewParameters);
+    }
 
-        //New TextView:
-        TextView labelText = new TextView(this);
+    public HouseDisplayView initHouse(House house) {
+        ImageView dotView = new ImageView(this);
 
-        labelText.setId(View.generateViewId());
-        labelText.setText(labelStr);
-        labelText.setTextSize(20); //Change size of text here.
-        labelText.setTypeface(null, Typeface.BOLD);
-        labelText.setTextColor(Color.BLACK);
+        dotView.setId(View.generateViewId());
+        dotView.setImageResource(R.drawable.blue_circle);
 
-        Label houseLabel = new Label(labelText, labelDot);
-        // HARDCODED LOCATION FOR NOW
-        House newHouse = new House(houseLabel, new LatLong(100, 100));
+        TextView labelView = new TextView(this);
 
-        float orientation = newHouse.calculateAnge();
-        //Pulls Primary Constraint from activity_compass.xml
+        labelView.setId(View.generateViewId());
+        labelView.setText(house.getLabelName());
+        labelView.setTextSize(20); //Change size of text here.
+        labelView.setTypeface(null, Typeface.BOLD);
+        labelView.setTextColor(Color.BLACK);
+
+        // Pulls Primary Constraint from activity_compass.xml
         ConstraintLayout layout = (ConstraintLayout)findViewById(R.id.compassActivityParentConstraints);
+        layout.addView(dotView, -1);
+        layout.addView(labelView, -1);
 
-        //Adds the newDot to the back of the Views
-        layout.addView(labelDot, -1);
-        layout.addView(labelText, -1);
+        ConstraintLayout.LayoutParams dotViewParameters = (ConstraintLayout.LayoutParams) labelView.getLayoutParams();
 
-        //Note that for now all paremeters are hardcoded, but this may break on differing device sizes.
-        ConstraintLayout.LayoutParams newLabelsParemeters = (ConstraintLayout.LayoutParams) labelDot.getLayoutParams();
+        dotViewParameters.circleConstraint = R.id.CompassCenter;
+        dotViewParameters.circleRadius = 380;
+        dotViewParameters.circleAngle = 0;
+        dotViewParameters.width = 60;
+        dotViewParameters.height = 60;
 
-        newLabelsParemeters.circleConstraint = R.id.CompassCenter;
-        newLabelsParemeters.circleRadius = 380;
-        newLabelsParemeters.circleAngle = orientation;
-        newLabelsParemeters.width = 60;
-        newLabelsParemeters.height = 60;
+        dotView.setLayoutParams(dotViewParameters);
 
-        labelDot.setLayoutParams(newLabelsParemeters);
+        ConstraintLayout.LayoutParams labelParameters = (ConstraintLayout.LayoutParams) labelView.getLayoutParams();
 
+        labelParameters.topToBottom = dotView.getId();
+        labelParameters.width = ConstraintLayout.LayoutParams.WRAP_CONTENT;
+        // labelParameters.startToStart = dotView.getId();
+        // labelParameters.endToEnd = dotView.getId();
 
-        ConstraintLayout.LayoutParams newLabelsTextParemeters = (ConstraintLayout.LayoutParams) labelText.getLayoutParams();
+        labelView.setLayoutParams(labelParameters);
 
-        newLabelsTextParemeters.circleConstraint = R.id.CompassCenter;
-        newLabelsTextParemeters.circleRadius = 440;
-        newLabelsTextParemeters.circleAngle = orientation;
-
-        labelText.setLayoutParams(newLabelsTextParemeters);
-        return newHouse;
+        return new HouseDisplayView(dotView, labelView);
     }
 }

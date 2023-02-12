@@ -22,12 +22,4 @@ public class Label {
         return labelImage;
     }
 
-    //Might need to move this to somewhere else:
-    public float getLabelOrientation() {
-        return labelOrientation;
-    }
-
-    public void setLabelOrientation(float orientation) {
-        this.labelOrientation = labelOrientation;
-    }
 }

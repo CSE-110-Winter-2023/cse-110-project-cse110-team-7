@@ -3,8 +3,8 @@ package com.cse110.team7.socialcompass.models;
 import androidx.annotation.NonNull;
 
 public class LatLong {
-    private final double latitude;
-    private final double longitude;
+    private double latitude;
+    private double longitude;
 
     public LatLong(double latitude, double longitude) {
         this.latitude = latitude;
