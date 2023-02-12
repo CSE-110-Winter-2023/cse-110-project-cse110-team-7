@@ -64,11 +64,13 @@ public class CompassActivity extends AppCompatActivity {
         LocationService.getInstance().getUserLocation().observe(this, (currentLocation) -> {
             // System.out.println(currentLocation.toString());
             compass.getAllElements().forEach(house -> house.updateBearing(AngleCalculator.calculateAngle(currentLocation, house.getLocation())));
+            updateRotation(compass.getNorthLabel());
             updateRotationForAll(compass.getAllElements());
         });
 
         OrientationService.getInstance().getAzimuth().observe(this, (currentAzimuth) -> {
             azimuth = currentAzimuth;
+            updateRotation(compass.getNorthLabel());
             updateRotationForAll(compass.getAllElements());
         });
 
