@@ -40,12 +40,9 @@ public class CompassActivity extends AppCompatActivity {
         ImageView northLabelImageView = (ImageView) findViewById(R.id.labelNorth);
         Compass compass = new Compass(northLabelImageView);
 
-        ArrayList<House> savedHouses = new ArrayList<>();
-        ArrayList<ElementDisplay> houseViews = new ArrayList<>();
+        compass.insertHouse(new House("Parents", new LatLong(32.8835982026854, -117.23493663196449)));
 
-        savedHouses.add(new House("Parents", new LatLong(32.8835982026854, -117.23493663196449)));
-
-        savedHouses.forEach(house -> houseViews.add(initHouse(house)));
+        compass.getAllHouses().forEach(house -> initHouseDisplay(house));
 
         LocationService.getInstance().setLocationManager(locationManager);
         LocationService.getInstance().registerLocationUpdateListener(this);
@@ -54,26 +51,27 @@ public class CompassActivity extends AppCompatActivity {
         OrientationService.getInstance().registerSensorEventListener();
 
         LocationService.getInstance().getUserLocation().observe(this, (currentLocation) -> {
-            houseViews.forEach(houseView -> updateHouse(currentLocation, houseView));
+            compass.getAllHouses().forEach(house -> updateHouse(currentLocation, house));
         });
 
         OrientationService.getInstance().getAzimuth().observe(this, (currentAzimuth) -> {
-            compass.updateRotation(compass.getNorthLabel(), -currentAzimuth); // If we don't plan to update the rotation with any other label this should be refactored
-            houseViews.forEach(houseView -> {
+            compass.updateRotation(compass.getNorthLabel(), -currentAzimuth);
+            compass.getAllHouses().forEach(houseView -> {
 
             });
         });
 
     }
 
-    public void updateHouse(LatLong currentLocation, ElementDisplay houseView) {
+    public void updateHouse(LatLong currentLocation, House house) {
+        ElementDisplay houseView = house.getHouseDisplay();
         ConstraintLayout.LayoutParams dotViewParameters = (ConstraintLayout.LayoutParams) houseView.getDotView().getLayoutParams();
-        dotViewParameters.circleAngle = AngleCalculator.calculateAngle(currentLocation, new LatLong(32.8835982026854, -117.23493663196449));
+        dotViewParameters.circleAngle = AngleCalculator.calculateAngle(currentLocation, house.getLocation());
 
         houseView.getDotView().setLayoutParams(dotViewParameters);
     }
 
-    public ElementDisplay initHouse(House house) {
+    public void initHouseDisplay(House house) {
         ImageView dotView = new ImageView(this);
 
         dotView.setId(View.generateViewId());
@@ -96,7 +94,7 @@ public class CompassActivity extends AppCompatActivity {
 
         dotViewParameters.circleConstraint = R.id.CompassCenter;
         dotViewParameters.circleRadius = 380;
-        dotViewParameters.circleAngle = 0;
+        dotViewParameters.circleAngle = 0; //shouldn't this be the actual initial angle
         dotViewParameters.width = 60;
         dotViewParameters.height = 60;
 
@@ -109,8 +107,7 @@ public class CompassActivity extends AppCompatActivity {
         // labelParameters.startToStart = dotView.getId();
         // labelParameters.endToEnd = dotView.getId();
 
-        labelView.setLayoutParams(labelParameters);
+        house.setDisplay(new ElementDisplay(labelView, dotView));
 
-        return new ElementDisplay(labelView, dotView);
     }
 }

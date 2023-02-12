@@ -38,4 +38,8 @@ public class House {
         return houseLabel;
     }
 
+    public void setDisplay(ElementDisplay e) {
+        houseLabel = e;
+    }
+
 }
