@@ -17,7 +17,6 @@ public class Compass {
     public Compass(ImageView northLabel) {
         this.northLabel = new ElementDisplay(northLabel, new LatLong(90, 0));
         allElements = new ArrayList<>();
-        allElements.add(this.northLabel);
     }
 
     public ElementDisplay getNorthLabel() {
