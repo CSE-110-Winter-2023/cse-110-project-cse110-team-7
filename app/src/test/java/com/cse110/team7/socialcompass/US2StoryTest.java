@@ -1,7 +1,6 @@
 package com.cse110.team7.socialcompass;
 
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertEquals;
 
 import android.content.Intent;
 
@@ -55,14 +54,14 @@ public class US2StoryTest {
                 LocationService.getInstance().setUserLocation(currentLocation);
                 OrientationService.getInstance().setAzimuth(orientation);
 
-                var layoutParams = (ConstraintLayout.LayoutParams) activity.compass.getAllElements().get(0).getDotView().getLayoutParams();
+                var layoutParams = (ConstraintLayout.LayoutParams) activity.getCompass().getElements().get(1).getDotView().getLayoutParams();
                 float appAngle = layoutParams.circleAngle;
                 float realAngle = AngleCalculator.calculateAngle(currentLocation, parentLocation) - orientation;
 
                 System.out.println("App: " + appAngle);
                 System.out.println("Real: " + realAngle);
 
-                assertTrue(Double.compare(appAngle, realAngle) == 0);
+                assertEquals(Double.compare(appAngle, realAngle), 0);
             });
             scenario.close();
         });
@@ -101,14 +100,14 @@ public class US2StoryTest {
                 LocationService.getInstance().setUserLocation(currentLocation);
                 OrientationService.getInstance().setAzimuth(orientation);
 
-                var layoutParams = (ConstraintLayout.LayoutParams) activity.compass.getAllElements().get(0).getDotView().getLayoutParams();
+                var layoutParams = (ConstraintLayout.LayoutParams) activity.getCompass().getElements().get(1).getDotView().getLayoutParams();
                 float appAngle = layoutParams.circleAngle;
                 float realAngle = AngleCalculator.calculateAngle(currentLocation, parentLocation) - orientation;
 
                 System.out.println("App: " + appAngle);
                 System.out.println("Real: " + realAngle);
 
-                assertTrue(Double.compare(appAngle, realAngle) == 0);
+                assertEquals(Double.compare(appAngle, realAngle), 0);
             });
             scenario.close();
         });

@@ -1,15 +1,21 @@
 package com.cse110.team7.socialcompass.models;
 
-import com.cse110.team7.socialcompass.ui.ElementDisplay;
-
 public class House {
 
-    private ElementDisplay houseLabel;
+    private String name;
     private LatLong location;
 
-    public House(ElementDisplay houseLabel, LatLong location) {
-        this.houseLabel = houseLabel;
+    public House(String name, LatLong location) {
+        this.name = name;
         this.location = location;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 
     public LatLong getLocation() {
@@ -19,14 +25,4 @@ public class House {
     public void setLocation(LatLong location) {
         this.location = location;
     }
-
-
-    public ElementDisplay getHouseDisplay() {
-        return houseLabel;
-    }
-
-    public void setDisplay(ElementDisplay e) {
-        houseLabel = e;
-    }
-
 }

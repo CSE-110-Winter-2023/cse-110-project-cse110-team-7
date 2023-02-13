@@ -5,6 +5,7 @@ import static org.junit.Assert.assertEquals;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.cse110.team7.socialcompass.models.House;
 import com.cse110.team7.socialcompass.models.LatLong;
 import com.cse110.team7.socialcompass.ui.ElementDisplay;
 
@@ -12,59 +13,79 @@ import org.junit.Test;
 
 public class ElementDisplayClassUnitTests {
     @Test
-    public void testAlternateConstructor() {
-        LatLong testLatLong = new LatLong(1,2);
-        ElementDisplay testElementDisplay = new ElementDisplay("test", testLatLong);
+    public void testConstructor() {
 
-        assertEquals(testElementDisplay.getLabelName(), "test");
-        assertEquals(testElementDisplay.getLocation(), testLatLong);
-    }
+        String testName = "Test";
+        LatLong testLocation = new LatLong(11.1, 13.2);
 
-    @Test
-    public void testSetLocation() {
-        ElementDisplay testElementDisplay = new ElementDisplay("", null);
+        House testHouse = new House(testName, testLocation);
+        ImageView testImageView = new ImageView(null);
+        TextView testTextView = new TextView(null);
 
-        LatLong testLatLong = new LatLong(5, 10);
+        ElementDisplay testElementDisplay = new ElementDisplay(testHouse, testImageView, testTextView);
 
-        testElementDisplay.setLocation(testLatLong);
-
-        assertEquals(testElementDisplay.getLocation(), testLatLong);
+        assertEquals(testElementDisplay.getHouse(), testHouse);
+        assertEquals(testElementDisplay.getDotView(), testImageView);
+        assertEquals(testElementDisplay.getLabelView(), testTextView);
+        assertEquals(Double.compare(testElementDisplay.getBearing(), 0), 0);
     }
 
     @Test
     public void testSetDotView() {
-        ElementDisplay testElementDisplay = new ElementDisplay("", null);
 
-        ImageView labelImage = new ImageView(null);
+        String testName = "Test";
+        LatLong testLocation = new LatLong(11.1, 13.2);
 
-        labelImage.setId(1);
-        labelImage.setImageResource(R.drawable.blue_circle);
+        House testHouse = new House(testName, testLocation);
+        ImageView testImageView = new ImageView(null);
+        TextView testTextView = new TextView(null);
 
-        testElementDisplay.setDotView(labelImage);
+        ElementDisplay testElementDisplay = new ElementDisplay(testHouse, testImageView, testTextView);
 
-        assertEquals(testElementDisplay.getDotView(), labelImage);
+        ImageView newImageView = new ImageView(null);
+        newImageView.setVisibility(ImageView.INVISIBLE);
+
+        testElementDisplay.setDotView(newImageView);
+
+        assertEquals(testElementDisplay.getDotView(), newImageView);
     }
 
     @Test
     public void testSetLabelView() {
-        ElementDisplay testElementDisplay = new ElementDisplay("", null);
 
-        TextView txt = new TextView(null);
+        String testName = "Test";
+        LatLong testLocation = new LatLong(11.1, 13.2);
 
-        txt.setId(1);
-        txt.setText("test");
+        House testHouse = new House(testName, testLocation);
+        ImageView testImageView = new ImageView(null);
+        TextView testTextView = new TextView(null);
 
-        testElementDisplay.setLabelView(txt);
+        ElementDisplay testElementDisplay = new ElementDisplay(testHouse, testImageView, testTextView);
 
-        assertEquals(testElementDisplay.getLabelView(), txt);
+        TextView newTextView = new TextView(null);
+        newTextView.setVisibility(TextView.INVISIBLE);
+
+        testElementDisplay.setLabelView(newTextView);
+
+        assertEquals(testElementDisplay.getLabelView(), newTextView);
     }
 
     @Test
     public void testUpdateBearing() {
-        ElementDisplay testElementDisplay = new ElementDisplay("", null);
 
-        testElementDisplay.updateBearing(100);
+        String testName = "Test";
+        LatLong testLocation = new LatLong(11.1, 13.2);
 
-        assertEquals(testElementDisplay.getBearing(), 100, 0);
+        House testHouse = new House(testName, testLocation);
+        ImageView testImageView = new ImageView(null);
+        TextView testTextView = new TextView(null);
+
+        ElementDisplay testElementDisplay = new ElementDisplay(testHouse, testImageView, testTextView);
+
+        float newBearing = 45.7f;
+
+        testElementDisplay.updateBearing(newBearing);
+
+        assertEquals(Double.compare(testElementDisplay.getBearing(), newBearing), 0);
     }
 }
