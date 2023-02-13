@@ -27,6 +27,7 @@ import java.util.ArrayList;
 public class CompassActivity extends AppCompatActivity {
 
     public float azimuth;
+    public Compass compass;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -34,7 +35,7 @@ public class CompassActivity extends AppCompatActivity {
         setContentView(R.layout.activity_compass);
 
         ImageView northLabel = (ImageView) findViewById(R.id.labelNorth);
-        Compass compass = new Compass(northLabel);
+        compass = new Compass(northLabel);
         azimuth = 0.0f;
         // Default location from API is Google HQ in San Francisco
         // You can change the location and the orientation of the emulator in "Extended Controls" (3 dots)
