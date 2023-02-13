@@ -95,7 +95,7 @@ public class OrientationService {
     }
 
     public void setAzimuth(float azimuth) {
-        this.azimuth.postValue(azimuth);
+        this.azimuth.setValue(azimuth);
     }
 
     public LiveData<Float> getAzimuth() {
