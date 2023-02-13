@@ -4,6 +4,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.constraintlayout.widget.ConstraintLayout;
 
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.hardware.SensorManager;
@@ -36,16 +37,24 @@ public class CompassActivity extends AppCompatActivity {
         ImageView northLabel = (ImageView) findViewById(R.id.labelNorth);
         Compass compass = new Compass(northLabel);
         azimuth = 0.0f;
+        // accessing data from input screen
+        Intent intent = getIntent();
+        float inputLat = Float.parseFloat(intent.getStringExtra("lat"));
+        float inputLong = Float.parseFloat(intent.getStringExtra("long"));
+        compass.insert(new ElementDisplay("Parents", new LatLong(inputLat, inputLong)));
+
         // Default location from API is Google HQ in San Francisco
         // You can change the location and the orientation of the emulator in "Extended Controls" (3 dots)
         // To change orientation go to "Virtual sensors -> Device Pose"
         // Set "X-Rot" to about -60 and slide "Z-Rot" to change the orientation
-
+        /*
         compass.insert(new ElementDisplay("San Diego", new LatLong(32.712486975797596, -117.16466382307459)));
         compass.insert(new ElementDisplay("New York", new LatLong(40.73935160994699, -74.02956535148193)));
         compass.insert(new ElementDisplay("London", new LatLong(51.562348041090466, -0.1271620157993551)));
         compass.insert(new ElementDisplay("Shanghai", new LatLong(31.325989153258618, 121.42715900305875)));
         compass.insert(new ElementDisplay("Sydney", new LatLong(-33.26071143320893, 151.32305353994278)));
+*/
+
 
         compass.getAllElements().forEach(house -> initHouseDisplay(house));
 
