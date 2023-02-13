@@ -28,6 +28,7 @@ import java.util.ArrayList;
 public class CompassActivity extends AppCompatActivity {
 
     public float azimuth;
+    public Compass compass;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -35,7 +36,7 @@ public class CompassActivity extends AppCompatActivity {
         setContentView(R.layout.activity_compass);
 
         ImageView northLabel = (ImageView) findViewById(R.id.labelNorth);
-        Compass compass = new Compass(northLabel);
+        compass = new Compass(northLabel);
         azimuth = 0.0f;
         // accessing data from input screen
         Intent intent = getIntent();
