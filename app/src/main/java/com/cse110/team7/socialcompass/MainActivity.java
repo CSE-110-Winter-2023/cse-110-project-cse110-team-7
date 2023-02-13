@@ -23,12 +23,19 @@ public class MainActivity extends AppCompatActivity {
         TextView longView = findViewById(R.id.longTextView);
         String longStr = longView.getText().toString();
 
-        Intent intent = new Intent(this, CompassActivity.class);
+        try {
+            float latitude = Float.parseFloat(latStr);
+            float longitude = Float.parseFloat(longStr);
 
-        intent.putExtra("lat", latStr);
-        intent.putExtra("long", longStr);
+            Intent intent = new Intent(this, CompassActivity.class);
 
-        startActivity(intent);
+            intent.putExtra("lat", latitude);
+            intent.putExtra("long", longitude);
+
+            startActivity(intent);
+        } catch (NumberFormatException ignored) {
+
+        }
     }
 
     @Override
