@@ -20,13 +20,10 @@ import com.cse110.team7.socialcompass.models.LatLong;
 import com.cse110.team7.socialcompass.services.LocationService;
 import com.cse110.team7.socialcompass.services.OrientationService;
 import com.cse110.team7.socialcompass.ui.ElementDisplay;
-import com.cse110.team7.socialcompass.utils.AngleCalculator;
 
 import java.util.ArrayList;
 
 public class CompassActivity extends AppCompatActivity {
-
-    private float azimuth;
 
     private Compass compass;
 
@@ -34,8 +31,6 @@ public class CompassActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_compass);
-
-        azimuth = 0;
 
         ArrayList<House> savedHouses = new ArrayList<>();
 
@@ -74,28 +69,16 @@ public class CompassActivity extends AppCompatActivity {
         OrientationService.getInstance().registerSensorEventListener();
 
         LocationService.getInstance().getUserLocation().observe(this, (currentLocation) -> {
-            // System.out.println(currentLocation.toString());
-            compass.getElements().forEach(elementDisplay ->
-                    elementDisplay.updateBearing(AngleCalculator.calculateAngle(currentLocation, elementDisplay.getHouse())));
-            updateRotationForAll(compass.getElements());
+            compass.updateBearingForAll(currentLocation);
+            compass.updateRotationForAll();
         });
 
         OrientationService.getInstance().getAzimuth().observe(this, (currentAzimuth) -> {
-            azimuth = currentAzimuth;
-            updateRotationForAll(compass.getElements());
+            compass.updateAzimuth(currentAzimuth);
+            compass.updateRotationForAll();
         });
 
 
-    }
-
-    public void updateRotationForAll(ArrayList<ElementDisplay> elements) {
-        elements.forEach(this::updateRotation);
-    }
-
-    public void updateRotation(ElementDisplay elementDisplay) {
-        ConstraintLayout.LayoutParams imageBasicLayout = (ConstraintLayout.LayoutParams) elementDisplay.getDotView().getLayoutParams();
-        imageBasicLayout.circleAngle = elementDisplay.getBearing() - azimuth;
-        elementDisplay.getDotView().setLayoutParams(imageBasicLayout);
     }
 
     public ElementDisplay initHouseDisplay(House house) {

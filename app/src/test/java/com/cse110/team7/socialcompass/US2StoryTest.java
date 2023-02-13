@@ -58,9 +58,6 @@ public class US2StoryTest {
                 float appAngle = layoutParams.circleAngle;
                 float realAngle = AngleCalculator.calculateAngle(currentLocation, parentLocation) - orientation;
 
-                System.out.println("App: " + appAngle);
-                System.out.println("Real: " + realAngle);
-
                 assertEquals(Double.compare(appAngle, realAngle), 0);
             });
             scenario.close();
@@ -103,9 +100,6 @@ public class US2StoryTest {
                 var layoutParams = (ConstraintLayout.LayoutParams) activity.getCompass().getElements().get(1).getDotView().getLayoutParams();
                 float appAngle = layoutParams.circleAngle;
                 float realAngle = AngleCalculator.calculateAngle(currentLocation, parentLocation) - orientation;
-
-                System.out.println("App: " + appAngle);
-                System.out.println("Real: " + realAngle);
 
                 assertEquals(Double.compare(appAngle, realAngle), 0);
             });

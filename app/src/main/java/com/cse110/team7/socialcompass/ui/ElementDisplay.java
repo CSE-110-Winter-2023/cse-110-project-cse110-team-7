@@ -4,6 +4,8 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.cse110.team7.socialcompass.models.House;
+import com.cse110.team7.socialcompass.models.LatLong;
+import com.cse110.team7.socialcompass.utils.AngleCalculator;
 
 public class ElementDisplay {
 
@@ -45,6 +47,10 @@ public class ElementDisplay {
 
     public void updateBearing(float currentBearing) {
         bearing = currentBearing;
+    }
+
+    public void updateBearing(LatLong currentLocation) {
+        bearing = AngleCalculator.calculateAngle(currentLocation, house);
     }
 
 }
