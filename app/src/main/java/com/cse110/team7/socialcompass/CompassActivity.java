@@ -52,6 +52,7 @@ public class CompassActivity extends AppCompatActivity {
         // Set "X-Rot" to about -60 and slide "Z-Rot" to change the orientation
 
         LocationService.getInstance().setLocationManager((LocationManager) getSystemService(Context.LOCATION_SERVICE));
+        // this is bad, may need to refactor
         while (true) {
             try {
                 LocationService.getInstance().registerLocationUpdateListener(this);
