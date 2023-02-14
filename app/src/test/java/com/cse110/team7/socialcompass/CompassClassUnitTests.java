@@ -7,7 +7,7 @@ import android.widget.ImageView;
 import com.cse110.team7.socialcompass.models.House;
 import com.cse110.team7.socialcompass.ui.Compass;
 import com.cse110.team7.socialcompass.models.LatLong;
-import com.cse110.team7.socialcompass.ui.ElementDisplay;
+import com.cse110.team7.socialcompass.ui.LabelInformation;
 
 import org.junit.Test;
 
@@ -32,7 +32,7 @@ public class CompassClassUnitTests {
         LatLong testLocation = new LatLong(11.1, 13.2);
 
         House test = new House(testName, testLocation);
-        ElementDisplay testElement = new ElementDisplay(test, null, null);
+        LabelInformation testElement = new LabelInformation(test, null, null);
 
         Compass testCompass = new Compass(null);
         testCompass.add(testElement);

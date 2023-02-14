@@ -7,11 +7,11 @@ import android.widget.TextView;
 
 import com.cse110.team7.socialcompass.models.House;
 import com.cse110.team7.socialcompass.models.LatLong;
-import com.cse110.team7.socialcompass.ui.ElementDisplay;
+import com.cse110.team7.socialcompass.ui.LabelInformation;
 
 import org.junit.Test;
 
-public class ElementDisplayClassUnitTests {
+public class LabelInformationClassUnitTests {
     @Test
     public void testConstructor() {
 
@@ -22,12 +22,12 @@ public class ElementDisplayClassUnitTests {
         ImageView testImageView = new ImageView(null);
         TextView testTextView = new TextView(null);
 
-        ElementDisplay testElementDisplay = new ElementDisplay(testHouse, testImageView, testTextView);
+        LabelInformation testLabelInformation = new LabelInformation(testHouse, testImageView, testTextView);
 
-        assertEquals(testElementDisplay.getHouse(), testHouse);
-        assertEquals(testElementDisplay.getDotView(), testImageView);
-        assertEquals(testElementDisplay.getLabelView(), testTextView);
-        assertEquals(Double.compare(testElementDisplay.getBearing(), 0), 0);
+        assertEquals(testLabelInformation.getHouse(), testHouse);
+        assertEquals(testLabelInformation.getDotView(), testImageView);
+        assertEquals(testLabelInformation.getLabelView(), testTextView);
+        assertEquals(Double.compare(testLabelInformation.getBearing(), 0), 0);
     }
 
     @Test
@@ -40,14 +40,14 @@ public class ElementDisplayClassUnitTests {
         ImageView testImageView = new ImageView(null);
         TextView testTextView = new TextView(null);
 
-        ElementDisplay testElementDisplay = new ElementDisplay(testHouse, testImageView, testTextView);
+        LabelInformation testLabelInformation = new LabelInformation(testHouse, testImageView, testTextView);
 
         ImageView newImageView = new ImageView(null);
         newImageView.setVisibility(ImageView.INVISIBLE);
 
-        testElementDisplay.setDotView(newImageView);
+        testLabelInformation.setDotView(newImageView);
 
-        assertEquals(testElementDisplay.getDotView(), newImageView);
+        assertEquals(testLabelInformation.getDotView(), newImageView);
     }
 
     @Test
@@ -60,14 +60,14 @@ public class ElementDisplayClassUnitTests {
         ImageView testImageView = new ImageView(null);
         TextView testTextView = new TextView(null);
 
-        ElementDisplay testElementDisplay = new ElementDisplay(testHouse, testImageView, testTextView);
+        LabelInformation testLabelInformation = new LabelInformation(testHouse, testImageView, testTextView);
 
         TextView newTextView = new TextView(null);
         newTextView.setVisibility(TextView.INVISIBLE);
 
-        testElementDisplay.setLabelView(newTextView);
+        testLabelInformation.setLabelView(newTextView);
 
-        assertEquals(testElementDisplay.getLabelView(), newTextView);
+        assertEquals(testLabelInformation.getLabelView(), newTextView);
     }
 
     @Test
@@ -80,12 +80,12 @@ public class ElementDisplayClassUnitTests {
         ImageView testImageView = new ImageView(null);
         TextView testTextView = new TextView(null);
 
-        ElementDisplay testElementDisplay = new ElementDisplay(testHouse, testImageView, testTextView);
+        LabelInformation testLabelInformation = new LabelInformation(testHouse, testImageView, testTextView);
 
         float newBearing = 45.7f;
 
-        testElementDisplay.updateBearing(newBearing);
+        testLabelInformation.updateBearing(newBearing);
 
-        assertEquals(Double.compare(testElementDisplay.getBearing(), newBearing), 0);
+        assertEquals(Double.compare(testLabelInformation.getBearing(), newBearing), 0);
     }
 }

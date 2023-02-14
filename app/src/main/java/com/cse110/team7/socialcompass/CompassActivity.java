@@ -19,7 +19,7 @@ import com.cse110.team7.socialcompass.ui.Compass;
 import com.cse110.team7.socialcompass.models.LatLong;
 import com.cse110.team7.socialcompass.services.LocationService;
 import com.cse110.team7.socialcompass.services.OrientationService;
-import com.cse110.team7.socialcompass.ui.ElementDisplay;
+import com.cse110.team7.socialcompass.ui.LabelInformation;
 
 import java.util.ArrayList;
 
@@ -81,7 +81,7 @@ public class CompassActivity extends AppCompatActivity {
 
     }
 
-    public ElementDisplay initHouseDisplay(House house) {
+    public LabelInformation initHouseDisplay(House house) {
         ImageView dotView = new ImageView(this);
 
         dotView.setId(View.generateViewId());
@@ -119,7 +119,7 @@ public class CompassActivity extends AppCompatActivity {
         labelParameters.height = ConstraintLayout.LayoutParams.WRAP_CONTENT;
         labelParameters.width = ConstraintLayout.LayoutParams.WRAP_CONTENT;
 
-        return new ElementDisplay(house, dotView, labelView);
+        return new LabelInformation(house, dotView, labelView);
     }
 
     public Compass getCompass() {

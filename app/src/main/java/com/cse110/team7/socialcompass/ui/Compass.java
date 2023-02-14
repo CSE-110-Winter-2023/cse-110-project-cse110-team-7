@@ -11,34 +11,34 @@ import java.util.ArrayList;
 
 public class Compass {
 
-    private ArrayList<ElementDisplay> elements;
+    private ArrayList<LabelInformation> elements;
     private float azimuth;
 
     public Compass(ImageView northView) {
         House north = new House("North", new LatLong(90, 0));
         this.elements = new ArrayList<>();
-        this.elements.add(new ElementDisplay(north, northView, null));
+        this.elements.add(new LabelInformation(north, northView, null));
         this.azimuth = 0;
     }
 
-    public ArrayList<ElementDisplay> getElements() {
+    public ArrayList<LabelInformation> getElements() {
         return elements;
     }
 
-    public ElementDisplay getNorthElementDisplay() {
+    public LabelInformation getNorthElementDisplay() {
         return elements.get(0);
     }
 
-    public void setElements(ArrayList<ElementDisplay> elements) {
+    public void setElements(ArrayList<LabelInformation> elements) {
         this.elements = elements;
     }
 
-    public void add(ElementDisplay elementDisplay) {
-        elements.add(elementDisplay);
+    public void add(LabelInformation labelInformation) {
+        elements.add(labelInformation);
     }
 
     public void updateBearingForAll(LatLong currentLocation) {
-        elements.forEach(elementDisplay -> elementDisplay.updateBearing(currentLocation));
+        elements.forEach(labelInformation -> labelInformation.updateBearing(currentLocation));
     }
 
     public float getAzimuth() {
@@ -53,10 +53,10 @@ public class Compass {
         elements.forEach(this::updateRotation);
     }
 
-    public void updateRotation(ElementDisplay elementDisplay) {
-        ConstraintLayout.LayoutParams imageBasicLayout = (ConstraintLayout.LayoutParams) elementDisplay.getDotView().getLayoutParams();
-        imageBasicLayout.circleAngle = elementDisplay.getBearing() - azimuth;
-        elementDisplay.getDotView().setLayoutParams(imageBasicLayout);
+    public void updateRotation(LabelInformation labelInformation) {
+        ConstraintLayout.LayoutParams imageBasicLayout = (ConstraintLayout.LayoutParams) labelInformation.getDotView().getLayoutParams();
+        imageBasicLayout.circleAngle = labelInformation.getBearing() - azimuth;
+        labelInformation.getDotView().setLayoutParams(imageBasicLayout);
     }
 
 }

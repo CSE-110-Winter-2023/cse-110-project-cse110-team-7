@@ -7,14 +7,14 @@ import com.cse110.team7.socialcompass.models.House;
 import com.cse110.team7.socialcompass.models.LatLong;
 import com.cse110.team7.socialcompass.utils.AngleCalculator;
 
-public class ElementDisplay {
+public class LabelInformation {
 
     private final House house;
     private ImageView dotView;
     private TextView labelView;
     private float bearing;
 
-    public ElementDisplay(House house, ImageView dotView, TextView labelView) {
+    public LabelInformation(House house, ImageView dotView, TextView labelView) {
         this.house = house;
         this.dotView = dotView;
         this.labelView = labelView;
