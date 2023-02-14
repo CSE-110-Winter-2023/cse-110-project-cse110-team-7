@@ -14,51 +14,42 @@ import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.cse110.team7.socialcompass.R;
-import com.cse110.team7.socialcompass.models.Compass;
 import com.cse110.team7.socialcompass.models.House;
+import com.cse110.team7.socialcompass.ui.Compass;
 import com.cse110.team7.socialcompass.models.LatLong;
 import com.cse110.team7.socialcompass.services.LocationService;
 import com.cse110.team7.socialcompass.services.OrientationService;
-import com.cse110.team7.socialcompass.ui.ElementDisplay;
-import com.cse110.team7.socialcompass.utils.AngleCalculator;
+import com.cse110.team7.socialcompass.ui.LabelInformation;
 
 import java.util.ArrayList;
 
 public class CompassActivity extends AppCompatActivity {
 
-    public float azimuth;
-    public Compass compass;
+    private Compass compass;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_compass);
 
-        ImageView northLabel = (ImageView) findViewById(R.id.labelNorth);
-        compass = new Compass(northLabel);
-        azimuth = 0.0f;
-        // accessing data from input screen
+        ArrayList<House> savedHouses = new ArrayList<>();
 
+        ImageView northLabel = findViewById(R.id.labelNorth);
+        compass = new Compass(northLabel);
+
+        // Accessing data from input screen
         Intent intent = getIntent();
         float inputLat = intent.getFloatExtra("lat", 0);
         float inputLong = intent.getFloatExtra("long", 0);
-        compass.insert(new ElementDisplay("Parents", new LatLong(inputLat, inputLong)));
+
+        savedHouses.add(new House("Parents", new LatLong(inputLat, inputLong)));
+
+        savedHouses.forEach(house -> compass.add(initHouseDisplay(house)));
 
         // Default location from API is Google HQ in San Francisco
         // You can change the location and the orientation of the emulator in "Extended Controls" (3 dots)
         // To change orientation go to "Virtual sensors -> Device Pose"
         // Set "X-Rot" to about -60 and slide "Z-Rot" to change the orientation
-/*
-        compass.insert(new ElementDisplay("San Diego", new LatLong(32.712486975797596, -117.16466382307459)));
-        compass.insert(new ElementDisplay("New York", new LatLong(40.73935160994699, -74.02956535148193)));
-        compass.insert(new ElementDisplay("London", new LatLong(51.562348041090466, -0.1271620157993551)));
-        compass.insert(new ElementDisplay("Shanghai", new LatLong(31.325989153258618, 121.42715900305875)));
-        compass.insert(new ElementDisplay("Sydney", new LatLong(-33.26071143320893, 151.32305353994278)));
-
-*/
-
-        compass.getAllElements().forEach(house -> initHouseDisplay(house));
 
         LocationService.getInstance().setLocationManager((LocationManager) getSystemService(Context.LOCATION_SERVICE));
         while (true) {
@@ -67,38 +58,30 @@ public class CompassActivity extends AppCompatActivity {
                 break;
             } catch (Exception e) {
                 System.err.println(e.getMessage());
+                try {
+                    wait(1000);
+                } catch (Exception ex) {
+                    System.err.println(ex.getMessage());
+                }
             }
         }
         OrientationService.getInstance().setSensorManager((SensorManager) getSystemService(Context.SENSOR_SERVICE));
         OrientationService.getInstance().registerSensorEventListener();
 
         LocationService.getInstance().getUserLocation().observe(this, (currentLocation) -> {
-            // System.out.println(currentLocation.toString());
-            compass.getAllElements().forEach(house -> house.updateBearing(AngleCalculator.calculateAngle(currentLocation, house.getLocation())));
-            updateRotation(compass.getNorthLabel());
-            updateRotationForAll(compass.getAllElements());
+            compass.updateBearingForAll(currentLocation);
+            compass.updateRotationForAll();
         });
 
         OrientationService.getInstance().getAzimuth().observe(this, (currentAzimuth) -> {
-            azimuth = currentAzimuth;
-            updateRotation(compass.getNorthLabel());
-            updateRotationForAll(compass.getAllElements());
+            compass.updateAzimuth(currentAzimuth);
+            compass.updateRotationForAll();
         });
 
 
     }
 
-    public void updateRotationForAll(ArrayList<ElementDisplay> houses) {
-        houses.forEach(this::updateRotation);
-    }
-
-    public void updateRotation(ElementDisplay house) {
-        ConstraintLayout.LayoutParams imageBasicLayout = (ConstraintLayout.LayoutParams) house.getDotView().getLayoutParams();
-        imageBasicLayout.circleAngle = house.getBearing() - azimuth;
-        house.getDotView().setLayoutParams(imageBasicLayout);
-    }
-
-    public void initHouseDisplay(ElementDisplay house) {
+    public LabelInformation initHouseDisplay(House house) {
         ImageView dotView = new ImageView(this);
 
         dotView.setId(View.generateViewId());
@@ -107,14 +90,14 @@ public class CompassActivity extends AppCompatActivity {
         TextView labelView = new TextView(this);
 
         labelView.setId(View.generateViewId());
-        labelView.setText(house.getLabelName());
+        labelView.setText(house.getName());
         labelView.setTextSize(20); //Change size of text here.
         labelView.setTypeface(null, Typeface.BOLD);
         labelView.setTextColor(Color.WHITE);
         labelView.setShadowLayer(6, 1, 1, Color.BLACK);
 
         // Pulls Primary Constraint from activity_compass.xml
-        ConstraintLayout layout = (ConstraintLayout)findViewById(R.id.compassActivityParentConstraints);
+        ConstraintLayout layout = findViewById(R.id.compassActivityParentConstraints);
         layout.addView(dotView, -1);
         layout.addView(labelView, -1);
 
@@ -136,7 +119,10 @@ public class CompassActivity extends AppCompatActivity {
         labelParameters.height = ConstraintLayout.LayoutParams.WRAP_CONTENT;
         labelParameters.width = ConstraintLayout.LayoutParams.WRAP_CONTENT;
 
-        house.setDotView(dotView);
-        house.setLabelView(labelView);
+        return new LabelInformation(house, dotView, labelView);
+    }
+
+    public Compass getCompass() {
+        return compass;
     }
 }
