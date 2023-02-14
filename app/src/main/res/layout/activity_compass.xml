@@ -33,7 +33,8 @@
             android:layout_height="60dp"
             app:layout_constraintCircle="@+id/compassImage"
             app:layout_constraintCircleRadius="160dp"
-            app:srcCompat="@drawable/n" />
+            app:srcCompat="@drawable/n"
+            tools:ignore="MissingConstraints" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>

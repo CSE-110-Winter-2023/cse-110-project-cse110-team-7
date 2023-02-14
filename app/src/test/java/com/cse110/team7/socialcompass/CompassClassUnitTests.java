@@ -4,9 +4,10 @@ import static org.junit.Assert.assertEquals;
 
 import android.widget.ImageView;
 
-import com.cse110.team7.socialcompass.models.Compass;
+import com.cse110.team7.socialcompass.models.House;
+import com.cse110.team7.socialcompass.ui.Compass;
 import com.cse110.team7.socialcompass.models.LatLong;
-import com.cse110.team7.socialcompass.ui.ElementDisplay;
+import com.cse110.team7.socialcompass.ui.LabelInformation;
 
 import org.junit.Test;
 
@@ -20,20 +21,23 @@ public class CompassClassUnitTests {
 
         Compass testCompass = new Compass(img);
 
-        assertEquals(testCompass.getNorthLabel().getDotView(), img);
-        assertEquals(testCompass.getNorthLabel().getLocation(), new LatLong(90, 0));
-        assertEquals(testCompass.getAllElements().size(), 0);
+        assertEquals(testCompass.getNorthElementDisplay().getDotView(), img);
+        assertEquals(testCompass.getNorthElementDisplay().getHouse().getLocation(), new LatLong(90, 0));
+        assertEquals(testCompass.getElements().size(), 1);
     }
 
     @Test
-    public void testElementInsert() {
-        ElementDisplay testElement = new ElementDisplay("House", null);
+    public void testAdd() {
+        String testName = "Test";
+        LatLong testLocation = new LatLong(11.1, 13.2);
+
+        House test = new House(testName, testLocation);
+        LabelInformation testElement = new LabelInformation(test, null, null);
 
         Compass testCompass = new Compass(null);
-        testCompass.insert(testElement);
+        testCompass.add(testElement);
 
-        assertEquals(testCompass.getAllElements().get(0), testElement);
-        assertEquals(testCompass.getAllElements().get(0).getLabelName(), "House");
-        assertEquals(testCompass.getAllElements().size(), 1);
+        assertEquals(testCompass.getElements().get(1), testElement);
+        assertEquals(testCompass.getElements().size(), 2);
     }
 }

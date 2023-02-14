@@ -29,8 +29,8 @@ public class US4StoryTest {
       scenario.moveToState(Lifecycle.State.STARTED);
 
       scenario.onActivity(activity -> {
-         ImageView compass = (ImageView) activity.findViewById(R.id.compassImage);
-         ImageView north = (ImageView) activity.findViewById(R.id.labelNorth);
+         ImageView compass = activity.findViewById(R.id.compassImage);
+         ImageView north = activity.findViewById(R.id.labelNorth);
 
          assertNotNull(compass);
          assertNotNull(north);
@@ -53,14 +53,14 @@ public class US4StoryTest {
 
          float parentBearing = AngleCalculator.calculateAngle(fakeLocation, fakeParentLocation);
 
-         activity.compass.getAllElements().get(0).setLocation(fakeParentLocation);
+         activity.getCompass().getElements().get(1).getHouse().setLocation(fakeParentLocation);
 
          OrientationService.getInstance().setAzimuth(0);
          LocationService.getInstance().setUserLocation(fakeLocation);
 
-         var layoutParams = (ConstraintLayout.LayoutParams) activity.compass.getAllElements().get(0).getDotView().getLayoutParams();
+         var layoutParams = (ConstraintLayout.LayoutParams) activity.getCompass().getElements().get(1).getDotView().getLayoutParams();
 
-         assertTrue(Double.compare(layoutParams.circleAngle, parentBearing) == 0);
+         assertEquals(Double.compare(layoutParams.circleAngle, parentBearing), 0);
       });
    }
    @Test
@@ -80,14 +80,14 @@ public class US4StoryTest {
 
          float parentBearing = AngleCalculator.calculateAngle(fakeLocation, fakeParentLocation);
 
-         activity.compass.getAllElements().get(0).setLocation(fakeParentLocation);
+         activity.getCompass().getElements().get(0).getHouse().setLocation(fakeParentLocation);
 
          LocationService.getInstance().setUserLocation(fakeLocation);
          OrientationService.getInstance().setAzimuth(fakeOrientation);
 
-         var layoutParams = (ConstraintLayout.LayoutParams) activity.compass.getAllElements().get(0).getDotView().getLayoutParams();
+         var layoutParams = (ConstraintLayout.LayoutParams) activity.getCompass().getElements().get(0).getDotView().getLayoutParams();
 
-         assertTrue(Double.compare(layoutParams.circleAngle, parentBearing - fakeOrientation) == 0);
+         assertEquals(Double.compare(layoutParams.circleAngle, parentBearing - fakeOrientation), 0);
       });
    }
 }
