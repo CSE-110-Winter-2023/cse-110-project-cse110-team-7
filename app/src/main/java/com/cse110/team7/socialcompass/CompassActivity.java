@@ -55,37 +55,39 @@ public class CompassActivity extends AppCompatActivity {
         compass.insert(new ElementDisplay("London", new LatLong(51.562348041090466, -0.1271620157993551)));
         compass.insert(new ElementDisplay("Shanghai", new LatLong(31.325989153258618, 121.42715900305875)));
         compass.insert(new ElementDisplay("Sydney", new LatLong(-33.26071143320893, 151.32305353994278)));
-
 */
-
         compass.getAllElements().forEach(house -> initHouseDisplay(house));
 
+        // set system location service
         LocationService.getInstance().setLocationManager((LocationManager) getSystemService(Context.LOCATION_SERVICE));
+        // this is bad, may need to be changed
         while (true) {
             try {
+                // start receiving updates from system location service
                 LocationService.getInstance().registerLocationUpdateListener(this);
                 break;
             } catch (Exception e) {
                 System.err.println(e.getMessage());
             }
         }
+        // set system sensor service
         OrientationService.getInstance().setSensorManager((SensorManager) getSystemService(Context.SENSOR_SERVICE));
+        // start receiving updates from system sensor service
         OrientationService.getInstance().registerSensorEventListener();
 
         LocationService.getInstance().getUserLocation().observe(this, (currentLocation) -> {
-            // System.out.println(currentLocation.toString());
+            // this function gets called whenever a new location is available
             compass.getAllElements().forEach(house -> house.updateBearing(AngleCalculator.calculateAngle(currentLocation, house.getLocation())));
             updateRotation(compass.getNorthLabel());
             updateRotationForAll(compass.getAllElements());
         });
 
         OrientationService.getInstance().getAzimuth().observe(this, (currentAzimuth) -> {
+            // this function gets called whenever a new azimuth is available
             azimuth = currentAzimuth;
             updateRotation(compass.getNorthLabel());
             updateRotationForAll(compass.getAllElements());
         });
-
-
     }
 
     public void updateRotationForAll(ArrayList<ElementDisplay> houses) {

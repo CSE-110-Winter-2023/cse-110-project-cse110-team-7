@@ -44,6 +44,7 @@ public class US4StoryTest {
       scenario.moveToState(Lifecycle.State.STARTED);
 
       scenario.onActivity(activity -> {
+         // stop receiving update from system services, as we want to manually set them
          LocationService.getInstance().unregisterLocationUpdateListener();
          OrientationService.getInstance().unregisterSensorEventListener();
 
@@ -69,6 +70,7 @@ public class US4StoryTest {
       scenario.moveToState(Lifecycle.State.STARTED);
 
       scenario.onActivity(activity -> {
+         // stop receiving update from system services, as we want to manually set them
          LocationService.getInstance().unregisterLocationUpdateListener();
          OrientationService.getInstance().unregisterSensorEventListener();
 
