@@ -18,28 +18,28 @@
         app:layout_constraintTop_toTopOf="parent" />
 
     <EditText
-        android:id="@+id/latTextView"
+        android:id="@+id/parentLabelName"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginBottom="25dp"
         android:ems="10"
+        android:hint="Parent Label"
         android:inputType="textPersonName"
-        android:text="Latitude"
-        android:hint="Latitude"
-        app:layout_constraintBottom_toTopOf="@+id/longTextView"
+        android:text="Parent Label"
+        app:layout_constraintBottom_toTopOf="@+id/latLongTextView"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintStart_toStartOf="parent" />
 
     <EditText
-        android:id="@+id/longTextView"
+        android:id="@+id/latLongTextView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginBottom="110dp"
         android:ems="10"
         android:inputType="textPersonName"
-        android:text="Longitude"
-        android:hint="Longitude"
+        android:text="Coordinates"
+        android:hint="Coordinates"
         app:layout_constraintBottom_toTopOf="@+id/goToCompass"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent" />

@@ -45,8 +45,9 @@ public class CompassActivity extends AppCompatActivity {
         Intent intent = getIntent();
         float inputLat = intent.getFloatExtra("lat", 0);
         float inputLong = intent.getFloatExtra("long", 0);
+        String parentLabelName = intent.getStringExtra("parentLabelName");
 
-        savedHouses.add(new House("Parents", new LatLong(inputLat, inputLong)));
+        savedHouses.add(new House(parentLabelName, new LatLong(inputLat, inputLong)));
 
         savedHouses.forEach(house -> compass.add(initHouseDisplay(house)));
 
