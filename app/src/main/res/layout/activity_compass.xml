@@ -31,6 +31,7 @@
             android:id="@+id/labelNorth"
             android:layout_width="60dp"
             android:layout_height="60dp"
+            android:clickable="true"
             app:layout_constraintCircle="@+id/compassImage"
             app:layout_constraintCircleRadius="160dp"
             app:srcCompat="@drawable/n"

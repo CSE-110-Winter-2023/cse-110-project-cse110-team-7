@@ -5,6 +5,7 @@ import androidx.constraintlayout.widget.ConstraintLayout;
 
 import android.content.Context;
 import android.content.Intent;
+import android.content.res.Resources;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.hardware.SensorManager;
@@ -35,6 +36,9 @@ public class CompassActivity extends AppCompatActivity {
         ArrayList<House> savedHouses = new ArrayList<>();
 
         ImageView northLabel = findViewById(R.id.labelNorth);
+        //Sets North Label to always be the correct radius, regardless of size of the screen.
+        ((ConstraintLayout.LayoutParams)northLabel.getLayoutParams()).circleRadius =
+                Math.min((getScreenWidth() * 6) / 14 - 10, (getScreenHeight()  * 5) / 15 - 10);
         compass = new Compass(northLabel);
 
         // Accessing data from input screen
@@ -105,7 +109,8 @@ public class CompassActivity extends AppCompatActivity {
         ConstraintLayout.LayoutParams dotViewParameters = (ConstraintLayout.LayoutParams) labelView.getLayoutParams();
 
         dotViewParameters.circleConstraint = R.id.CompassCenter;
-        dotViewParameters.circleRadius = 380;
+        //Sets all Houses to always be the correct radius, regardless of size of the screen.
+        dotViewParameters.circleRadius = Math.min((getScreenWidth() * 5) / 14, (getScreenHeight()  * 4) / 15);
         dotViewParameters.circleAngle = 0; //shouldn't this be the actual initial angle
         dotViewParameters.width = 60;
         dotViewParameters.height = 60;
@@ -125,5 +130,13 @@ public class CompassActivity extends AppCompatActivity {
 
     public Compass getCompass() {
         return compass;
+    }
+
+    public static int getScreenWidth() {
+        return Resources.getSystem().getDisplayMetrics().widthPixels;
+    }
+
+    public static int getScreenHeight() {
+        return Resources.getSystem().getDisplayMetrics().heightPixels;
     }
 }
