@@ -15,7 +15,7 @@ public class AngleCalculator {
     }
 
     public static float calculateAngle(LatLong currentLocation, House house) {
-        return  calculateAngle(currentLocation, house.getLocation());
+        return calculateAngle(currentLocation, house.getLocation());
     }
 
 }
