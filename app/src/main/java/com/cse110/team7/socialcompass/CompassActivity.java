@@ -44,6 +44,7 @@ public class CompassActivity extends AppCompatActivity {
         // Accessing data from input screen
         Intent intent = getIntent();
         float inputLat = intent.getFloatExtra("lat", 0);
+        System.out.println(inputLat);
         float inputLong = intent.getFloatExtra("long", 0);
         String parentLabelName = intent.getStringExtra("parentLabelName");
 

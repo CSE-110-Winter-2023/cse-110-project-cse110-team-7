@@ -18,7 +18,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        loadProfile();
+//        loadProfile();
     }
 
     public void onGoToCompass(View view) {
@@ -31,8 +31,8 @@ public class MainActivity extends AppCompatActivity {
         LatLong parentLatLong = stringToLatLong(parentCoordinates);
 
         try {
-            double latitude = parentLatLong.getLatitude();
-            double longitude = parentLatLong.getLongitude();
+            float latitude = (float)parentLatLong.getLatitude();
+            float longitude = (float)parentLatLong.getLongitude();
 
             Intent intent = new Intent(this, CompassActivity.class);
 
@@ -56,7 +56,7 @@ public class MainActivity extends AppCompatActivity {
         SharedPreferences preferences = getPreferences(MODE_PRIVATE);
 
         String lat = preferences.getString("lat", "");
-        String longitude = preferences.getString("long", "");
+        String longitude = (preferences.getString("long", ""));
         String parentLabel = preferences.getString("parentLabelName", "");
 
         TextView parentCoordinatesView = findViewById(R.id.latLongTextView);
@@ -76,8 +76,8 @@ public class MainActivity extends AppCompatActivity {
 
         LatLong toSave = stringToLatLong(parentCoordinates);
 
-        editor.putString("lat", Double.toString(toSave.getLatitude()));
-        editor.putString("long", Double.toString(toSave.getLongitude()));
+        editor.putFloat("lat", (float)(toSave.getLatitude()));
+        editor.putFloat("long", (float)(toSave.getLongitude()));
 
         TextView parentLabel = findViewById(R.id.parentLabelName);
 
