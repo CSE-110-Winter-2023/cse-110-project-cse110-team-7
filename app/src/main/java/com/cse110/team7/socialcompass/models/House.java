@@ -1,7 +1,14 @@
 package com.cse110.team7.socialcompass.models;
 
-public class House {
 
+import androidx.annotation.NonNull;
+import androidx.room.Entity;
+import androidx.room.PrimaryKey;
+
+@Entity(tableName = "compass_houses")
+public class House {
+    @PrimaryKey(autoGenerate = true)
+    public long id;
     private String name;
     private LatLong location;
 
@@ -24,5 +31,19 @@ public class House {
 
     public void setLocation(LatLong location) {
         this.location = location;
+    }
+
+    public long getId() {
+        return id;
+    }
+
+    @NonNull
+    @Override
+    public String toString() {
+        return "House{" +
+                "id=" + id +
+                ", name='" + name + '\'' +
+                ", location=" + location +
+                '}';
     }
 }
