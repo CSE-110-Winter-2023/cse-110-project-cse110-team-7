@@ -43,6 +43,11 @@ public class InputDisplayAdapter extends RecyclerView.Adapter<InputDisplayAdapte
         return houseList.size();
     }
 
+    @Override
+    public long getItemId(int position) {
+        return houseList.get(position).id;
+    }
+
     /**
      * Creates each Recyclerview, which will appear in activity_main.xml
      *

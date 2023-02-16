@@ -13,7 +13,7 @@ public class House {
     private LatLong location;
 
     //May Need This (Page 7, Lab 6):
-    private int houseNum;
+    //private int houseNum;
 
     public House(String name, LatLong location) {
         this.name = name;
