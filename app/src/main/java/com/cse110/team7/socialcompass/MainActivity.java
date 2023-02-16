@@ -1,9 +1,9 @@
 package com.cse110.team7.socialcompass;
 
+
 import static java.lang.Double.parseDouble;
 
 import androidx.appcompat.app.AppCompatActivity;
-
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
@@ -11,6 +11,7 @@ import android.view.View;
 import android.widget.TextView;
 
 import com.cse110.team7.socialcompass.models.LatLong;
+import androidx.appcompat.app.AppCompatActivity;
 
 public class MainActivity extends AppCompatActivity {
 
