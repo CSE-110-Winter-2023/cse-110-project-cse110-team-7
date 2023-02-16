@@ -40,8 +40,8 @@ public class US2StoryTest {
 
         mainScenario.onActivity(mainActivity -> {
             Intent intent = new Intent(mainActivity, CompassActivity.class);
-            intent.putExtra("lat", parentLat);
-            intent.putExtra("long", parentLong);
+            intent.putExtra("latLong", parentLat + ", " + parentLong);
+            intent.putExtra("parentLabelName", "My Parents");
 
             ActivityScenario<CompassActivity> scenario = ActivityScenario.launch(intent);
             scenario.moveToState(Lifecycle.State.CREATED);
@@ -83,8 +83,8 @@ public class US2StoryTest {
 
         mainScenario.onActivity(mainActivity -> {
             Intent intent = new Intent(mainActivity, CompassActivity.class);
-            intent.putExtra("lat", parentLat);
-            intent.putExtra("long", parentLong);
+            intent.putExtra("latLong",  parentLat + ", " + parentLong);
+            intent.putExtra("parentLabelName", "My Parents");
 
             ActivityScenario<CompassActivity> scenario = ActivityScenario.launch(intent);
             scenario.moveToState(Lifecycle.State.CREATED);
@@ -99,6 +99,7 @@ public class US2StoryTest {
 
                 var layoutParams = (ConstraintLayout.LayoutParams) activity.getCompass().getElements().get(1).getDotView().getLayoutParams();
                 float appAngle = layoutParams.circleAngle;
+                System.out.println(appAngle);
                 float realAngle = AngleCalculator.calculateAngle(currentLocation, parentLocation) - orientation;
 
                 assertEquals(Double.compare(appAngle, realAngle), 0);

@@ -1,6 +1,7 @@
 package com.cse110.team7.socialcompass;
 
 import static java.lang.Double.parseDouble;
+import static java.lang.Float.parseFloat;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.constraintlayout.widget.ConstraintLayout;

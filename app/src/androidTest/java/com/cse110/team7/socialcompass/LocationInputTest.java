@@ -52,7 +52,7 @@ public class LocationInputTest {
         Context appContext = InstrumentationRegistry.getInstrumentation().getTargetContext();
         assertEquals("com.cse110.team7.socialcompass", appContext.getPackageName());
     }
-    
+
     //Needs to be fixed.
 //    @Test
 //    public void locInputTest() {
