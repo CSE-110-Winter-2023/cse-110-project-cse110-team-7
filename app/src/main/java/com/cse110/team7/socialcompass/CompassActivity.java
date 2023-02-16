@@ -1,8 +1,5 @@
 package com.cse110.team7.socialcompass;
 
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.constraintlayout.widget.ConstraintLayout;
-
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
@@ -14,11 +11,14 @@ import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.constraintlayout.widget.ConstraintLayout;
+
 import com.cse110.team7.socialcompass.models.House;
-import com.cse110.team7.socialcompass.ui.Compass;
 import com.cse110.team7.socialcompass.models.LatLong;
 import com.cse110.team7.socialcompass.services.LocationService;
 import com.cse110.team7.socialcompass.services.OrientationService;
+import com.cse110.team7.socialcompass.ui.Compass;
 import com.cse110.team7.socialcompass.ui.LabelInformation;
 
 import java.util.ArrayList;
