@@ -18,7 +18,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-//        loadProfile();
+        loadProfile();
     }
 
     public void onGoToCompass(View view) {
@@ -28,16 +28,10 @@ public class MainActivity extends AppCompatActivity {
         TextView parentLabelName = findViewById(R.id.parentLabelName);
         String parentLabel = parentLabelName.getText().toString();
 
-        LatLong parentLatLong = stringToLatLong(parentCoordinates);
-
         try {
-            float latitude = (float)parentLatLong.getLatitude();
-            float longitude = (float)parentLatLong.getLongitude();
-
             Intent intent = new Intent(this, CompassActivity.class);
 
-            intent.putExtra("lat", latitude);
-            intent.putExtra("long", longitude);
+            intent.putExtra("latLong", parentCoordinates);
             intent.putExtra("parentLabelName", parentLabel);
 
             startActivity(intent);
@@ -55,15 +49,14 @@ public class MainActivity extends AppCompatActivity {
     public void loadProfile() {
         SharedPreferences preferences = getPreferences(MODE_PRIVATE);
 
-        String lat = preferences.getString("lat", "");
-        String longitude = (preferences.getString("long", ""));
+        String latLong = preferences.getString("latLong", "");
         String parentLabel = preferences.getString("parentLabelName", "");
 
         TextView parentCoordinatesView = findViewById(R.id.latLongTextView);
         TextView parentLabelName = findViewById(R.id.parentLabelName);
 
 
-        parentCoordinatesView.setText(lat + ", " + longitude);
+        parentCoordinatesView.setText(latLong);
         parentLabelName.setText(parentLabel);
     }
 
@@ -74,29 +67,11 @@ public class MainActivity extends AppCompatActivity {
         TextView parentCoordinatesView = findViewById(R.id.latLongTextView);
         String parentCoordinates = parentCoordinatesView.getText().toString();
 
-        LatLong toSave = stringToLatLong(parentCoordinates);
-
-        editor.putFloat("lat", (float)(toSave.getLatitude()));
-        editor.putFloat("long", (float)(toSave.getLongitude()));
+        editor.putString("latLong", parentCoordinates);
 
         TextView parentLabel = findViewById(R.id.parentLabelName);
-
         editor.putString("parentLabelName", parentLabel.getText().toString());
 
         editor.apply();
-    }
-
-    //Just temporarily pulled this method from backend (to be merged with this) to make it easier to rework things later
-    public static LatLong stringToLatLong(String value) {
-        if (value == null) return null;
-
-        String[] latitudeAndLongitude = value.split(",");
-
-        if (latitudeAndLongitude.length != 2) return null;
-
-        double latitude = parseDouble(latitudeAndLongitude[0]);
-        double longitude = parseDouble(latitudeAndLongitude[1]);
-
-        return new LatLong(latitude, longitude);
     }
 }

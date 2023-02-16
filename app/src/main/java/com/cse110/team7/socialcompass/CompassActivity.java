@@ -1,5 +1,7 @@
 package com.cse110.team7.socialcompass;
 
+import static java.lang.Double.parseDouble;
+
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.constraintlayout.widget.ConstraintLayout;
 
@@ -43,12 +45,11 @@ public class CompassActivity extends AppCompatActivity {
 
         // Accessing data from input screen
         Intent intent = getIntent();
-        float inputLat = intent.getFloatExtra("lat", 0);
-        System.out.println(inputLat);
-        float inputLong = intent.getFloatExtra("long", 0);
+        String inputLatLong = intent.getStringExtra("latLong");
         String parentLabelName = intent.getStringExtra("parentLabelName");
 
-        savedHouses.add(new House(parentLabelName, new LatLong(inputLat, inputLong)));
+
+        savedHouses.add(new House(parentLabelName, stringToLatLong(inputLatLong)));
 
         savedHouses.forEach(house -> compass.add(initHouseDisplay(house)));
 
@@ -140,5 +141,19 @@ public class CompassActivity extends AppCompatActivity {
 
     public static int getScreenHeight() {
         return Resources.getSystem().getDisplayMetrics().heightPixels;
+    }
+
+    //Just temporarily pulled this method from backend (to be merged with this) to make it easier to rework things later
+    public static LatLong stringToLatLong(String value) {
+        if (value == null) return null;
+
+        String[] latitudeAndLongitude = value.split(",");
+
+        if (latitudeAndLongitude.length != 2) return null;
+
+        double latitude = parseDouble(latitudeAndLongitude[0]);
+        double longitude = parseDouble(latitudeAndLongitude[1]);
+
+        return new LatLong(latitude, longitude);
     }
 }
