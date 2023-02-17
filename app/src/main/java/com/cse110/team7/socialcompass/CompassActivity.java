@@ -13,15 +13,20 @@ import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.constraintlayout.widget.ConstraintLayout;
+import androidx.lifecycle.ViewModelProvider;
 
+import com.cse110.team7.socialcompass.backend.HouseDao;
+import com.cse110.team7.socialcompass.backend.HouseDatabase;
 import com.cse110.team7.socialcompass.models.House;
 import com.cse110.team7.socialcompass.services.LocationService;
 import com.cse110.team7.socialcompass.services.OrientationService;
 import com.cse110.team7.socialcompass.ui.Compass;
+import com.cse110.team7.socialcompass.ui.inputDislayViewModel;
 import com.cse110.team7.socialcompass.ui.inputDisplayAdapter;
 import com.cse110.team7.socialcompass.ui.LabelInformation;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class CompassActivity extends AppCompatActivity {
 
@@ -35,28 +40,22 @@ public class CompassActivity extends AppCompatActivity {
         //Getting the input adapter, to access house list (this is a temporary solution):
         Intent intent = getIntent();
 
-//        inputDisplayAdapter savedHousesFromAdapter = (inputDisplayAdapter)intent
-//                .getSerializableExtra("House List");
-//        ArrayList<House> savedHouses = savedHousesFromAdapter.getHouseList();
+        Context context = getApplication().getApplicationContext();
+        HouseDatabase houseDao = HouseDatabase.getInstance(context);
+        final HouseDao db = houseDao.getHouseDao();
+
         //To be populated eventually
-        ArrayList<House> savedHouses = new ArrayList<>();
+        db.selectHouses().observe(this, houses -> {
+            for(House i : houses){
+                if(i.getLocation() != null){
+                    compass.add(initHouseDisplay(i));
+                }
+            }
+        });
 
         ImageView northLabel = findViewById(R.id.labelNorth);
         compass = new Compass(northLabel);
 
-//
-//        // Accessing data from input screen
-//        Intent intent = getIntent();
-//        float inputLat = intent.getFloatExtra("lat", 0);
-//        float inputLong = intent.getFloatExtra("long", 0);
-//
-//        savedHouses.add(new House("Parents", new LatLong(inputLat, inputLong)));
-//
-        for(House i : savedHouses){
-            if(i.getLocation() != null){
-                compass.add(initHouseDisplay(i));
-            }
-        }
 
         // Default location from API is Google HQ in San Francisco
         // You can change the location and the orientation of the emulator in "Extended Controls" (3 dots)
