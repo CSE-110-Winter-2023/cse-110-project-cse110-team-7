@@ -5,6 +5,7 @@ import android.os.Bundle;
 import android.view.View;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.lifecycle.LiveData;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -38,35 +39,22 @@ public class MainActivity extends AppCompatActivity {
 
         viewModel.getHouseItems().observe(this, adapter::setHouseList);
 
-        //after adding this and commenting out the next section,
-        // things stopped appearing; needs to be fixed.
-
-//        //Loads saved values
-//        HouseDao houseDao = HouseDatabase.getInstance(this).getHouseDao();
-//        LiveData<List<House>> houseListLive = houseDao.selectHouses();
-//        List<House> houseList = houseListLive.getValue(); //Current Values of Houses
-
-        List<House> houseList = adapter.houseList;
+        LiveData<List<House>> houseList = viewModel.getHouseItems();
 
         //If no data is already saved, then adds three empty houses to the database.
-        if(houseList == null || houseList.size() == 0){
+        if(houseList == null || houseList.getValue().size() == 0){
             House parentsHome = new House("Parents", null);
             House friendsHome = new House("Friends", null);
             House myHome = new House("My Home", null);
 
-            //houseList = new ArrayList<House>();
-            adapter.houseList.add(parentsHome);
-            adapter.houseList.add(friendsHome);
-            adapter.houseList.add(myHome);
-
-            //adapter.setHouseList(houseList); //Displays Houses
+            viewModel.addHouse(parentsHome);
+            viewModel.addHouse(friendsHome);
+            viewModel.addHouse(myHome);
         }
 
         recyclerView = findViewById(R.id.houseInputItems);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         recyclerView.setAdapter(adapter);
-
-        //Over here we need to enable saving stored values:
     }
 
     public void onGoToCompass(View view) {

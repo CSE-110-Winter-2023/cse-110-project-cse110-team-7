@@ -19,6 +19,10 @@ public class inputDislayViewModel extends AndroidViewModel {
     private LiveData<List<House>> allHouses;
     private final HouseDao houseDao;
 
+    public void addHouse(House newHouse){
+        houseDao.insertHouse(newHouse);
+    }
+
     public void updateLabelText(House currHouse, String labelText) {
         currHouse.setName(labelText);
         houseDao.updateHouse(currHouse);
