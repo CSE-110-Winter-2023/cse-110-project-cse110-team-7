@@ -13,8 +13,9 @@
         android:layout_marginTop="36dp"
         android:layout_marginEnd="16dp"
         android:ems="10"
-        android:hint="Parent Label"
+        android:hint="Label Name"
         android:inputType="textPersonName"
+        android:maxLines="1"
         app:layout_constraintBottom_toTopOf="@id/latLongTextView"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -29,6 +30,7 @@
         android:ems="10"
         android:hint="Coordinates"
         android:inputType="textPersonName"
+        android:maxLines="1"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/parentLabelName" />

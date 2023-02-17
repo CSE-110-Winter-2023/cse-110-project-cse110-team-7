@@ -10,10 +10,12 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.cse110.team7.socialcompass.R;
 import com.cse110.team7.socialcompass.models.House;
 
+import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-public class InputDisplayAdapter extends RecyclerView.Adapter<InputDisplayAdapter.ViewHolder> {
+public class InputDisplayAdapter extends RecyclerView.Adapter<InputDisplayAdapter.ViewHolder> implements Serializable {
     public List<House> houseList = Collections.emptyList();
 
     //May have issues later with clear; make sure to check.
@@ -22,6 +24,10 @@ public class InputDisplayAdapter extends RecyclerView.Adapter<InputDisplayAdapte
         this.houseList.clear();
         this.houseList = newHouses;
         notifyDataSetChanged();
+    }
+
+    public ArrayList<House> getHouseList() {
+        return (ArrayList<House>)(houseList);
     }
 
     @NonNull
@@ -54,7 +60,7 @@ public class InputDisplayAdapter extends RecyclerView.Adapter<InputDisplayAdapte
      * The details for what constitutes each element of a Recyclerview is on the
      * label_input_format.xml file.
      */
-    public static class ViewHolder extends RecyclerView.ViewHolder{
+    public static class ViewHolder extends RecyclerView.ViewHolder implements Serializable{
         private final TextView coordinates;
         private final TextView labelName;
 
@@ -74,9 +80,10 @@ public class InputDisplayAdapter extends RecyclerView.Adapter<InputDisplayAdapte
         //(and its corresponding textViews to certain values):
         public void setHouse(House houseToSet) {
             currHouse = houseToSet;
-
-            String latLongValue = houseToSet.getLocation().toString();
-            this.coordinates.setText(latLongValue);
+            if(houseToSet.getLocation() != null){
+                String latLongValue = houseToSet.getLocation().toString();
+                this.coordinates.setText(latLongValue);
+            }
             this.labelName.setText(houseToSet.getName());
         }
     }

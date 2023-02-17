@@ -19,6 +19,7 @@ import com.cse110.team7.socialcompass.models.LatLong;
 import com.cse110.team7.socialcompass.services.LocationService;
 import com.cse110.team7.socialcompass.services.OrientationService;
 import com.cse110.team7.socialcompass.ui.Compass;
+import com.cse110.team7.socialcompass.ui.InputDisplayAdapter;
 import com.cse110.team7.socialcompass.ui.LabelInformation;
 
 import java.util.ArrayList;
@@ -32,19 +33,31 @@ public class CompassActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_compass);
 
-        ArrayList<House> savedHouses = new ArrayList<>();
+        //Getting the input adapter, to access house list (this is a temporary solution):
+        Intent intent = getIntent();
+
+        InputDisplayAdapter savedHousesFromAdapter = (InputDisplayAdapter)intent
+                .getSerializableExtra("House List");
+        ArrayList<House> savedHouses = savedHousesFromAdapter.getHouseList();
+
+
 
         ImageView northLabel = findViewById(R.id.labelNorth);
         compass = new Compass(northLabel);
 
-        // Accessing data from input screen
-        Intent intent = getIntent();
-        float inputLat = intent.getFloatExtra("lat", 0);
-        float inputLong = intent.getFloatExtra("long", 0);
-
-        savedHouses.add(new House("Parents", new LatLong(inputLat, inputLong)));
-
-        savedHouses.forEach(house -> compass.add(initHouseDisplay(house)));
+//
+//        // Accessing data from input screen
+//        Intent intent = getIntent();
+//        float inputLat = intent.getFloatExtra("lat", 0);
+//        float inputLong = intent.getFloatExtra("long", 0);
+//
+//        savedHouses.add(new House("Parents", new LatLong(inputLat, inputLong)));
+//
+        for(House i : savedHouses){
+            if(i.getLocation() != null){
+                compass.add(initHouseDisplay(i));
+            }
+        }
 
         // Default location from API is Google HQ in San Francisco
         // You can change the location and the orientation of the emulator in "Extended Controls" (3 dots)

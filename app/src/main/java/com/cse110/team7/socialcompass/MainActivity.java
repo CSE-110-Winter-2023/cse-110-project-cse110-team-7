@@ -1,70 +1,68 @@
 package com.cse110.team7.socialcompass;
 
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.View;
-import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.lifecycle.LiveData;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.cse110.team7.socialcompass.backend.HouseDao;
+import com.cse110.team7.socialcompass.backend.HouseDatabase;
 import com.cse110.team7.socialcompass.models.House;
 import com.cse110.team7.socialcompass.models.LatLong;
 import com.cse110.team7.socialcompass.ui.InputDisplayAdapter;
-import com.google.gson.reflect.TypeToken;
 
-import java.lang.reflect.Type;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
     public RecyclerView recyclerView;
+    InputDisplayAdapter adapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        InputDisplayAdapter adapter = new InputDisplayAdapter();
-        adapter.setHasStableIds(true);
+        //Creates new adapter
+        adapter = new InputDisplayAdapter();
+        adapter.setHasStableIds(true); //May be unecessary.
 
-        //Start temporary:
-        House tempAdd = new House("Parents", new LatLong(31, 31));
-        House tempAdd2 = new House("Friends", new LatLong(31, 31));
-        House tempAdd3 = new House("My Home", new LatLong(31, 31));
+        //Loads saved values
+        HouseDao houseDao = HouseDatabase.getInstance(this).getHouseDao();
+        LiveData<List<House>> houseListLive = houseDao.selectHouses();
+        List<House> houseList = houseListLive.getValue(); //Current Values of Houses
 
-        //Type type = new TypeToken<List<House>>(){}.getType();
-        List<House> houseList = new ArrayList<House>();
-        houseList.add(tempAdd);
-        houseList.add(tempAdd2);
-        houseList.add(tempAdd3);
-        adapter.setHouseList(houseList);
-        //End temp
+        //If no data is already saved, then adds three empty houses to the database.
+        if(houseList == null || houseList.size() != 0){
+            House parentsHome = new House("Parents", null);
+            House friendsHome = new House("Friends", null);
+            House myHome = new House("My Home", null);
+
+            houseList = new ArrayList<House>();
+            houseList.add(parentsHome);
+            houseList.add(friendsHome);
+            houseList.add(myHome);
+        }
+
+        adapter.setHouseList(houseList); //Displays Houses Currently In Database
 
         recyclerView = findViewById(R.id.houseInputItems);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         recyclerView.setAdapter(adapter);
 
-//        loadProfile();
+        //Over here we need to enable saving stored values:
     }
 
     public void onGoToCompass(View view) {
-//        TextView latView = findViewById(R.id.latTextView);
-//        String latStr = latView.getText().toString();
-//        TextView longView = findViewById(R.id.longTextView);
-//        String longStr = longView.getText().toString();
 
         try {
-//            float latitude = Float.parseFloat(latStr);
-//            float longitude = Float.parseFloat(longStr);
 
             Intent intent = new Intent(this, CompassActivity.class);
-
-//            intent.putExtra("lat", latitude);
-//            intent.putExtra("long", longitude);
+            intent.putExtra("House List", adapter); //Not working.
 
             startActivity(intent);
         } catch (NumberFormatException ignored) {
@@ -75,7 +73,6 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-//        saveProfile();
     }
 
 //    public void loadProfile() {
