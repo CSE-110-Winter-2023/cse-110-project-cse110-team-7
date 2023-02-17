@@ -23,9 +23,8 @@
         android:layout_height="wrap_content"
         android:layout_marginBottom="25dp"
         android:ems="10"
-        android:inputType="textPersonName"
-        android:text="Latitude"
         android:hint="Latitude"
+        android:inputType="textPersonName"
         app:layout_constraintBottom_toTopOf="@+id/longTextView"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.5"
@@ -37,11 +36,23 @@
         android:layout_height="wrap_content"
         android:layout_marginBottom="110dp"
         android:ems="10"
-        android:inputType="textPersonName"
-        android:text="Longitude"
         android:hint="Longitude"
+        android:inputType="textPersonName"
         app:layout_constraintBottom_toTopOf="@+id/goToCompass"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <EditText
+        android:id="@+id/mockOrientationView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="33dp"
+        android:ems="10"
+        android:hint="Mock Orientation"
+        android:inputType="textPersonName"
+        app:layout_constraintBottom_toTopOf="@+id/goToCompass"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintStart_toStartOf="parent" />
 
 
