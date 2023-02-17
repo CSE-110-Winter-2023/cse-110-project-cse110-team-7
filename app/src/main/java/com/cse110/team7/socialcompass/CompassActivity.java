@@ -80,7 +80,7 @@ public class CompassActivity extends AppCompatActivity {
         });
 
         // override with mock orientation
-        if (mockOrientation > 0) {
+        if (mockOrientation >=  0) {
             OrientationService.getInstance().setAzimuth(mockOrientation);
         } else {
             OrientationService.getInstance().registerSensorEventListener();
