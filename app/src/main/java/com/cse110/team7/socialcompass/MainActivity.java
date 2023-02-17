@@ -8,6 +8,8 @@ import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import org.w3c.dom.Text;
+
 public class MainActivity extends AppCompatActivity {
 
     @Override
@@ -22,15 +24,19 @@ public class MainActivity extends AppCompatActivity {
         String latStr = latView.getText().toString();
         TextView longView = findViewById(R.id.longTextView);
         String longStr = longView.getText().toString();
+        TextView mockOrientation = findViewById(R.id.mockOrientationView);
+        String mockOrientationStr = mockOrientation.getText().toString();
 
         try {
             float latitude = Float.parseFloat(latStr);
             float longitude = Float.parseFloat(longStr);
+            float orientation = Float.parseFloat(mockOrientationStr);
 
             Intent intent = new Intent(this, CompassActivity.class);
 
             intent.putExtra("lat", latitude);
             intent.putExtra("long", longitude);
+            intent.putExtra("orientation", orientation);
 
             startActivity(intent);
         } catch (NumberFormatException ignored) {
