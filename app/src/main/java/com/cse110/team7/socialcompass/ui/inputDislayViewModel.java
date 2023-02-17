@@ -29,6 +29,11 @@ public class inputDislayViewModel extends AndroidViewModel {
     }
 
     public void updateCoordinateText(House currHouse, String coordinateText) {
+        if(coordinateText == null || coordinateText.equals("")){
+            currHouse.setLocation(null);
+            houseDao.updateHouse(currHouse);
+            return;
+        }
         currHouse.setLocation(LatLongConverter.stringToLatLong(coordinateText));
         houseDao.updateHouse(currHouse);
     }

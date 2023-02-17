@@ -55,15 +55,11 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void onGoToCompass(View view) {
-
-        try {
-
-            Intent intent = new Intent(this, CompassActivity.class);
-//            intent.putExtra("House List", adapter); //Not working.
-
-            startActivity(intent);
-        } catch (NumberFormatException ignored) {
-
+        for(House i : adapter.houseList){
+            if(i.getLocation() != null){
+                Intent intent = new Intent(this, CompassActivity.class);
+                startActivity(intent);
+            }
         }
     }
 
