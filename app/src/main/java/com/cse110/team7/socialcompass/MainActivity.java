@@ -10,6 +10,7 @@ import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.cse110.team7.socialcompass.backend.HouseDatabase;
 import com.cse110.team7.socialcompass.models.House;
 import com.cse110.team7.socialcompass.ui.inputDisplayAdapter;
 import com.cse110.team7.socialcompass.ui.inputDislayViewModel;
@@ -39,18 +40,14 @@ public class MainActivity extends AppCompatActivity {
 
         viewModel.getHouseItems().observe(this, adapter::setHouseList);
 
-        LiveData<List<House>> houseList = viewModel.getHouseItems();
-
         //If no data is already saved, then adds three empty houses to the database.
-        if(houseList == null || houseList.getValue().size() == 0){
-            House parentsHome = new House("Parents", null);
-            House friendsHome = new House("Friends", null);
-            House myHome = new House("My Home", null);
-
-            viewModel.addHouse(parentsHome);
-            viewModel.addHouse(friendsHome);
-            viewModel.addHouse(myHome);
-        }
+        viewModel.getHouseItems().observe(this, houses -> {
+            if (houses.size() == 0) {
+                viewModel.addHouse(new House("Parents", null));
+                viewModel.addHouse(new House("Friends", null));
+                viewModel.addHouse(new House("My Home", null));
+            }
+        });
 
         recyclerView = findViewById(R.id.houseInputItems);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
