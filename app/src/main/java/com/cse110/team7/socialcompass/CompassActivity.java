@@ -15,11 +15,10 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.constraintlayout.widget.ConstraintLayout;
 
 import com.cse110.team7.socialcompass.models.House;
-import com.cse110.team7.socialcompass.models.LatLong;
 import com.cse110.team7.socialcompass.services.LocationService;
 import com.cse110.team7.socialcompass.services.OrientationService;
 import com.cse110.team7.socialcompass.ui.Compass;
-import com.cse110.team7.socialcompass.ui.InputDisplayAdapter;
+import com.cse110.team7.socialcompass.ui.inputDisplayAdapter;
 import com.cse110.team7.socialcompass.ui.LabelInformation;
 
 import java.util.ArrayList;
@@ -36,11 +35,11 @@ public class CompassActivity extends AppCompatActivity {
         //Getting the input adapter, to access house list (this is a temporary solution):
         Intent intent = getIntent();
 
-        InputDisplayAdapter savedHousesFromAdapter = (InputDisplayAdapter)intent
-                .getSerializableExtra("House List");
-        ArrayList<House> savedHouses = savedHousesFromAdapter.getHouseList();
-
-
+//        inputDisplayAdapter savedHousesFromAdapter = (inputDisplayAdapter)intent
+//                .getSerializableExtra("House List");
+//        ArrayList<House> savedHouses = savedHousesFromAdapter.getHouseList();
+        //To be populated eventually
+        ArrayList<House> savedHouses = new ArrayList<>();
 
         ImageView northLabel = findViewById(R.id.labelNorth);
         compass = new Compass(northLabel);

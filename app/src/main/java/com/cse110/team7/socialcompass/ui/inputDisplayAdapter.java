@@ -14,9 +14,20 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.function.BiConsumer;
 
-public class InputDisplayAdapter extends RecyclerView.Adapter<InputDisplayAdapter.ViewHolder> implements Serializable {
+public class inputDisplayAdapter extends RecyclerView.Adapter<inputDisplayAdapter.ViewHolder> {
     public List<House> houseList = Collections.emptyList();
+    private BiConsumer<House, String> onParentLabelChanged;
+    private BiConsumer<House, String> onCoordinatesChanged;
+
+    public void setParentLabelChanged(BiConsumer<House, String> onTextEdited) {
+        this.onParentLabelChanged = onTextEdited;
+    }
+
+    public void setCoordinatesChanged(BiConsumer<House, String> onTextEdited){
+        this.onCoordinatesChanged = onTextEdited;
+    }
 
     //May have issues later with clear; make sure to check.
     //This method simply sets up the house list with whatever values need to be inputted.
@@ -40,7 +51,7 @@ public class InputDisplayAdapter extends RecyclerView.Adapter<InputDisplayAdapte
     }
 
     @Override
-    public void onBindViewHolder(@NonNull InputDisplayAdapter.ViewHolder holder, int position) {
+    public void onBindViewHolder(@NonNull inputDisplayAdapter.ViewHolder holder, int position) {
         holder.setHouse(houseList.get(position));
     }
 
@@ -60,7 +71,7 @@ public class InputDisplayAdapter extends RecyclerView.Adapter<InputDisplayAdapte
      * The details for what constitutes each element of a Recyclerview is on the
      * label_input_format.xml file.
      */
-    public static class ViewHolder extends RecyclerView.ViewHolder implements Serializable{
+    public class ViewHolder extends RecyclerView.ViewHolder{
         private final TextView coordinates;
         private final TextView labelName;
 
@@ -70,6 +81,18 @@ public class InputDisplayAdapter extends RecyclerView.Adapter<InputDisplayAdapte
             super(itemView);
             this.coordinates = itemView.findViewById(R.id.latLongTextView);
             this.labelName = itemView.findViewById(R.id.parentLabelName);
+
+            this.coordinates.setOnFocusChangeListener((view, hasFocus) -> {
+                if(!hasFocus) {
+                    onCoordinatesChanged.accept(currHouse, coordinates.getText().toString());
+                }
+            });
+
+            this.labelName.setOnFocusChangeListener((view, hasFocus) -> {
+                if(!hasFocus) {
+                    onParentLabelChanged.accept(currHouse, labelName.getText().toString());
+                }
+            });
         }
 
         public House getHouse() {
