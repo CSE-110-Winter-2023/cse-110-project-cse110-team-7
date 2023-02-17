@@ -10,18 +10,25 @@ import static androidx.test.espresso.matcher.ViewMatchers.withParent;
 import static androidx.test.espresso.matcher.ViewMatchers.withText;
 import static org.hamcrest.Matchers.allOf;
 
+import android.content.Context;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewParent;
 
+import androidx.room.Room;
+import androidx.test.core.app.ApplicationProvider;
 import androidx.test.espresso.ViewInteraction;
 import androidx.test.ext.junit.rules.ActivityScenarioRule;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.filters.LargeTest;
 
+import com.cse110.team7.socialcompass.backend.HouseDao;
+import com.cse110.team7.socialcompass.backend.HouseDatabase;
+
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;
 import org.hamcrest.TypeSafeMatcher;
+import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -36,6 +43,20 @@ import org.junit.runner.RunWith;
 @LargeTest
 @RunWith(AndroidJUnit4.class)
 public class hitGoToCompassWithNoInputTest {
+
+    private HouseDao houseDao;
+    private HouseDatabase houseDatabase;
+
+    @Before
+    public void createDatabase() {
+        Context context = ApplicationProvider.getApplicationContext();
+
+        houseDatabase = Room.inMemoryDatabaseBuilder(context, HouseDatabase.class)
+                .allowMainThreadQueries()
+                .build();
+
+        houseDao = houseDatabase.getHouseDao();
+    }
 
     @Rule
     public ActivityScenarioRule<MainActivity> mActivityScenarioRule =
