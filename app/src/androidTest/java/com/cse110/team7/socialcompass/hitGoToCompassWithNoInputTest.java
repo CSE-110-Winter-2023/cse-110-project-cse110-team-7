@@ -18,7 +18,6 @@ import androidx.test.espresso.ViewInteraction;
 import androidx.test.ext.junit.rules.ActivityScenarioRule;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.filters.LargeTest;
-import androidx.test.rule.GrantPermissionRule;
 
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;
@@ -27,21 +26,23 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+/**
+ * This Espresso Test checks to make sure that after the Go To Compass button is hit, if there
+ * has been no input, the elements on the screen do not change, and thus the view does not change.
+ *
+ * Note: Currently none of these tests pass; I'm guessing it's because of differing ids between
+ * instances and because of the database (in this case).
+ */
 @LargeTest
 @RunWith(AndroidJUnit4.class)
-public class LocationDefaultsTest {
+public class hitGoToCompassWithNoInputTest {
 
     @Rule
     public ActivityScenarioRule<MainActivity> mActivityScenarioRule =
             new ActivityScenarioRule<>(MainActivity.class);
 
-    @Rule
-    public GrantPermissionRule mGrantPermissionRule =
-            GrantPermissionRule.grant(
-                    "android.permission.ACCESS_FINE_LOCATION");
-
     @Test
-    public void locationDefaultsTest() {
+    public void hitGoToCompassWithNoInput() throws InterruptedException {
         ViewInteraction materialButton = onView(
                 allOf(withId(R.id.goToCompass), withText("Go To Compass"),
                         childAtPosition(
@@ -52,32 +53,12 @@ public class LocationDefaultsTest {
                         isDisplayed()));
         materialButton.perform(click());
 
-        ViewInteraction imageView = onView(
-                allOf(withParent(allOf(withId(R.id.compassActivityParentConstraints),
-                                withParent(withId(android.R.id.content)))),
-                        isDisplayed()));
-        imageView.check(matches(isDisplayed()));
 
-        ViewInteraction imageView2 = onView(
-                allOf(withId(R.id.compassImage),
-                        withParent(allOf(withId(R.id.CompassCenter),
-                                withParent(withId(R.id.compassActivityParentConstraints)))),
+        ViewInteraction button = onView(
+                allOf(withId(R.id.goToCompass), withText("GO TO COMPASS"),
+                        withParent(withParent(withId(android.R.id.content))),
                         isDisplayed()));
-        imageView2.check(matches(isDisplayed()));
-
-        ViewInteraction imageView3 = onView(
-                allOf(withId(R.id.labelNorth),
-                        withParent(allOf(withId(R.id.CompassCenter),
-                                withParent(withId(R.id.compassActivityParentConstraints)))),
-                        isDisplayed()));
-        imageView3.check(matches(isDisplayed()));
-
-        ViewInteraction imageView4 = onView(
-                allOf(withId(R.id.labelNorth),
-                        withParent(allOf(withId(R.id.CompassCenter),
-                                withParent(withId(R.id.compassActivityParentConstraints)))),
-                        isDisplayed()));
-        imageView4.check(matches(isDisplayed()));
+        button.check(matches(isDisplayed()));
     }
 
     private static Matcher<View> childAtPosition(

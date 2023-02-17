@@ -4,6 +4,7 @@ package com.cse110.team7.socialcompass;
 import static androidx.test.espresso.Espresso.onView;
 import static androidx.test.espresso.action.ViewActions.click;
 import static androidx.test.espresso.action.ViewActions.closeSoftKeyboard;
+import static androidx.test.espresso.action.ViewActions.pressImeActionButton;
 import static androidx.test.espresso.action.ViewActions.replaceText;
 import static androidx.test.espresso.assertion.ViewAssertions.matches;
 import static androidx.test.espresso.matcher.ViewMatchers.isDisplayed;
@@ -29,9 +30,15 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+/**
+ * Inputs locationis for all 3 potential labels and checks that the compass displays three labels.
+ *
+ * Note: Currently none of these tests pass; I'm guessing it's because of differing ids between
+ * instances and because of the database (in this case).
+ */
 @LargeTest
 @RunWith(AndroidJUnit4.class)
-public class LocationInputTest {
+public class inputAllLocationsTest {
 
     @Rule
     public ActivityScenarioRule<MainActivity> mActivityScenarioRule =
@@ -43,36 +50,86 @@ public class LocationInputTest {
                     "android.permission.ACCESS_FINE_LOCATION");
 
     @Test
-    public void locInputTest() {
+    public void inputAllLocationsTest() {
         ViewInteraction appCompatEditText = onView(
-                allOf(withId(R.id.latTextView),
+                allOf(withId(R.id.latLongTextView),
                         childAtPosition(
                                 childAtPosition(
-                                        withId(android.R.id.content),
+                                        withId(R.id.houseInputItems),
                                         0),
                                 1),
                         isDisplayed()));
-        appCompatEditText.perform(click());
+        appCompatEditText.perform(replaceText("31, 31"), closeSoftKeyboard());
 
         ViewInteraction appCompatEditText2 = onView(
-                allOf(withId(R.id.latTextView),
+                allOf(withId(R.id.latLongTextView), withText("31, 31"),
                         childAtPosition(
                                 childAtPosition(
-                                        withId(android.R.id.content),
+                                        withId(R.id.houseInputItems),
                                         0),
                                 1),
                         isDisplayed()));
-        appCompatEditText2.perform(replaceText("32"), closeSoftKeyboard());
+        appCompatEditText2.perform(pressImeActionButton());
 
         ViewInteraction appCompatEditText3 = onView(
-                allOf(withId(R.id.longTextView),
+                allOf(withId(R.id.parentLabelName), withText("Friends"),
                         childAtPosition(
                                 childAtPosition(
-                                        withId(android.R.id.content),
-                                        0),
-                                2),
+                                        withId(R.id.houseInputItems),
+                                        1),
+                                0),
                         isDisplayed()));
-        appCompatEditText3.perform(replaceText("-117"), closeSoftKeyboard());
+        appCompatEditText3.perform(pressImeActionButton());
+
+        ViewInteraction appCompatEditText4 = onView(
+                allOf(withId(R.id.latLongTextView),
+                        childAtPosition(
+                                childAtPosition(
+                                        withId(R.id.houseInputItems),
+                                        1),
+                                1),
+                        isDisplayed()));
+        appCompatEditText4.perform(replaceText("60,60"), closeSoftKeyboard());
+
+        ViewInteraction appCompatEditText5 = onView(
+                allOf(withId(R.id.latLongTextView), withText("60,60"),
+                        childAtPosition(
+                                childAtPosition(
+                                        withId(R.id.houseInputItems),
+                                        1),
+                                1),
+                        isDisplayed()));
+        appCompatEditText5.perform(pressImeActionButton());
+
+        ViewInteraction appCompatEditText6 = onView(
+                allOf(withId(R.id.parentLabelName), withText("My Home"),
+                        childAtPosition(
+                                childAtPosition(
+                                        withId(R.id.houseInputItems),
+                                        2),
+                                0),
+                        isDisplayed()));
+        appCompatEditText6.perform(pressImeActionButton());
+
+        ViewInteraction appCompatEditText7 = onView(
+                allOf(withId(R.id.latLongTextView),
+                        childAtPosition(
+                                childAtPosition(
+                                        withId(R.id.houseInputItems),
+                                        2),
+                                1),
+                        isDisplayed()));
+        appCompatEditText7.perform(replaceText("30,-111"), closeSoftKeyboard());
+
+        ViewInteraction appCompatEditText8 = onView(
+                allOf(withId(R.id.latLongTextView), withText("30,-111"),
+                        childAtPosition(
+                                childAtPosition(
+                                        withId(R.id.houseInputItems),
+                                        2),
+                                1),
+                        isDisplayed()));
+        appCompatEditText8.perform(pressImeActionButton());
 
         ViewInteraction materialButton = onView(
                 allOf(withId(R.id.goToCompass), withText("Go To Compass"),
@@ -91,18 +148,23 @@ public class LocationInputTest {
         imageView.check(matches(isDisplayed()));
 
         ViewInteraction imageView2 = onView(
-                allOf(withId(R.id.compassImage),
-                        withParent(allOf(withId(R.id.CompassCenter),
-                                withParent(withId(R.id.compassActivityParentConstraints)))),
+                allOf(withParent(allOf(withId(R.id.compassActivityParentConstraints),
+                                withParent(withId(android.R.id.content)))),
                         isDisplayed()));
         imageView2.check(matches(isDisplayed()));
 
         ViewInteraction imageView3 = onView(
+                allOf(withParent(allOf(withId(R.id.compassActivityParentConstraints),
+                                withParent(withId(android.R.id.content)))),
+                        isDisplayed()));
+        imageView3.check(matches(isDisplayed()));
+
+        ViewInteraction imageView4 = onView(
                 allOf(withId(R.id.labelNorth),
                         withParent(allOf(withId(R.id.CompassCenter),
                                 withParent(withId(R.id.compassActivityParentConstraints)))),
                         isDisplayed()));
-        imageView3.check(matches(isDisplayed()));
+        imageView4.check(matches(isDisplayed()));
     }
 
     private static Matcher<View> childAtPosition(
