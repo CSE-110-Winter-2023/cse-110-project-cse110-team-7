@@ -68,22 +68,22 @@ public class CompassActivity extends AppCompatActivity {
             }
         }
         OrientationService.getInstance().setSensorManager((SensorManager) getSystemService(Context.SENSOR_SERVICE));
-        OrientationService.getInstance().registerSensorEventListener();
 
         LocationService.getInstance().getUserLocation().observe(this, (currentLocation) -> {
             compass.updateBearingForAll(currentLocation);
             compass.updateRotationForAll();
         });
 
+        OrientationService.getInstance().getAzimuth().observe(this, (currentAzimuth) -> {
+            compass.updateAzimuth(currentAzimuth);
+            compass.updateRotationForAll();
+        });
+
         // override with mock orientation
         if (mockOrientation > 0) {
-            compass.updateAzimuth(mockOrientation);
-            compass.updateRotationForAll();
+            OrientationService.getInstance().setAzimuth(mockOrientation);
         } else {
-            OrientationService.getInstance().getAzimuth().observe(this, (currentAzimuth) -> {
-                compass.updateAzimuth(currentAzimuth);
-                compass.updateRotationForAll();
-            });
+            OrientationService.getInstance().registerSensorEventListener();
         }
 
     }
