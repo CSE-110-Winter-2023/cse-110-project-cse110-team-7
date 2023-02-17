@@ -8,6 +8,10 @@ import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.cse110.team7.socialcompass.utils.ShowAlert;
+
+import org.w3c.dom.Text;
+
 public class MainActivity extends AppCompatActivity {
 
     @Override
@@ -22,15 +26,30 @@ public class MainActivity extends AppCompatActivity {
         String latStr = latView.getText().toString();
         TextView longView = findViewById(R.id.longTextView);
         String longStr = longView.getText().toString();
+        TextView mockOrientation = findViewById(R.id.mockOrientationView);
+        String mockOrientationStr = mockOrientation.getText().toString();
+        float orientation;
+        try {
+            orientation = Float.parseFloat(mockOrientationStr);
+            if(orientation < 0 || orientation > 359) {
+                ShowAlert.alert(this, "Please enter a number between 0-359");
+                return;
+            }
+        } catch (NumberFormatException ignored) {
+            orientation = -1;
+        }
+
 
         try {
             float latitude = Float.parseFloat(latStr);
             float longitude = Float.parseFloat(longStr);
 
+
             Intent intent = new Intent(this, CompassActivity.class);
 
             intent.putExtra("lat", latitude);
             intent.putExtra("long", longitude);
+            intent.putExtra("orientation", orientation);
 
             startActivity(intent);
         } catch (NumberFormatException ignored) {

@@ -41,6 +41,7 @@ public class CompassActivity extends AppCompatActivity {
         Intent intent = getIntent();
         float inputLat = intent.getFloatExtra("lat", 0);
         float inputLong = intent.getFloatExtra("long", 0);
+        float mockOrientation = intent.getFloatExtra("orientation", -1);
 
         savedHouses.add(new House("Parents", new LatLong(inputLat, inputLong)));
 
@@ -67,7 +68,6 @@ public class CompassActivity extends AppCompatActivity {
             }
         }
         OrientationService.getInstance().setSensorManager((SensorManager) getSystemService(Context.SENSOR_SERVICE));
-        OrientationService.getInstance().registerSensorEventListener();
 
         LocationService.getInstance().getUserLocation().observe(this, (currentLocation) -> {
             compass.updateBearingForAll(currentLocation);
@@ -79,6 +79,12 @@ public class CompassActivity extends AppCompatActivity {
             compass.updateRotationForAll();
         });
 
+        // override with mock orientation
+        if (mockOrientation >=  0) {
+            OrientationService.getInstance().setAzimuth(mockOrientation);
+        } else {
+            OrientationService.getInstance().registerSensorEventListener();
+        }
 
     }
 
@@ -125,5 +131,10 @@ public class CompassActivity extends AppCompatActivity {
 
     public Compass getCompass() {
         return compass;
+    }
+
+    public void onGoToCompass(View view) {
+        Intent intent = new Intent(this, MainActivity.class);
+        startActivity(intent);
     }
 }
