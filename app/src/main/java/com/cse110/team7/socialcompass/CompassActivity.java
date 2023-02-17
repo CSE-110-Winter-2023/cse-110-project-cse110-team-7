@@ -75,15 +75,15 @@ public class CompassActivity extends AppCompatActivity {
             compass.updateRotationForAll();
         });
 
-        OrientationService.getInstance().getAzimuth().observe(this, (currentAzimuth) -> {
-            compass.updateAzimuth(currentAzimuth);
-            compass.updateRotationForAll();
-        });
-
         // override with mock orientation
         if (mockOrientation > 0) {
             compass.updateAzimuth(mockOrientation);
             compass.updateRotationForAll();
+        } else {
+            OrientationService.getInstance().getAzimuth().observe(this, (currentAzimuth) -> {
+                compass.updateAzimuth(currentAzimuth);
+                compass.updateRotationForAll();
+            });
         }
 
     }
