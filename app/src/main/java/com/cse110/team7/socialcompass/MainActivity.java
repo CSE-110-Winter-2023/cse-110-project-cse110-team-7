@@ -18,6 +18,9 @@ import com.cse110.team7.socialcompass.ui.inputDislayViewModel;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * First page of our application; we should probably move all of this over to another activity.
+ */
 public class MainActivity extends AppCompatActivity {
     public RecyclerView recyclerView;
     inputDisplayAdapter adapter;
@@ -28,9 +31,11 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        //Tracks interactions between the UI and the database, allowing us to update values as they
+        //get changed.
         viewModel = new ViewModelProvider(this).get(inputDislayViewModel.class);
 
-        //Creates new adapter
+        //Creates new adapter, which does the actual updating of values.
         adapter = new inputDisplayAdapter();
         adapter.setHasStableIds(true);
 
@@ -49,11 +54,16 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        //Sets up the recycler view, so that each empty/stored label gets displayed on the UI, in the
+        //format given by label_input_format.xml
         recyclerView = findViewById(R.id.houseInputItems);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         recyclerView.setAdapter(adapter);
     }
 
+    /**
+     * On button click, only goes to CompassActivity if at least one location has been inputted.
+     */
     public void onGoToCompass(View view) {
         for(House i : adapter.houseList){
             if(i.getLocation() != null){
@@ -68,27 +78,4 @@ public class MainActivity extends AppCompatActivity {
         super.onDestroy();
     }
 
-//    public void loadProfile() {
-//        SharedPreferences preferences = getPreferences(MODE_PRIVATE);
-//
-//        String lat = preferences.getString("lat", "");
-//        String longitude = preferences.getString("long", "");
-//        TextView latView = findViewById(R.id.latTextView);
-//        TextView longView = findViewById(R.id.longTextView);
-//
-//        latView.setText(lat);
-//        longView.setText(longitude);
-//    }
-
-//    public void saveProfile() {
-//        SharedPreferences preferences = getPreferences(MODE_PRIVATE);
-//        SharedPreferences.Editor editor = preferences.edit();
-//
-//        TextView latView = findViewById(R.id.latTextView);
-//        TextView longView = findViewById(R.id.longTextView);
-//        editor.putString("lat", latView.getText().toString());
-//        editor.putString("long", longView.getText().toString());
-//
-//        editor.apply();
-//    }
 }

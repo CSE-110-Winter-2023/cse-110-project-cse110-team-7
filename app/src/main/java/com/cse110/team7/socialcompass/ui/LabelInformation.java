@@ -7,6 +7,9 @@ import com.cse110.team7.socialcompass.models.House;
 import com.cse110.team7.socialcompass.models.LatLong;
 import com.cse110.team7.socialcompass.utils.AngleCalculator;
 
+/**
+ * Contains all the information that goes into representing any individual label.
+ */
 public class LabelInformation {
 
     private final House house;

@@ -15,9 +15,13 @@ import com.cse110.team7.socialcompass.models.LatLong;
 
 import java.util.List;
 
+/**
+ * This ties the display for Main Activity to the database, allowing us to access it and
+ * update it, while also updating the Recycle Adapter in inputDisplayAdapter.
+ */
 public class inputDislayViewModel extends AndroidViewModel {
-    private LiveData<List<House>> allHouses;
-    private final HouseDao houseDao;
+    private LiveData<List<House>> allHouses; //Parallel list of houses.
+    private final HouseDao houseDao; //The database
 
     public void addHouse(House newHouse){
         houseDao.insertHouse(newHouse);

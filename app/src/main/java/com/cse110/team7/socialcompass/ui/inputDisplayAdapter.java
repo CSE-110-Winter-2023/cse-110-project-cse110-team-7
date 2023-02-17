@@ -16,10 +16,14 @@ import java.util.Collections;
 import java.util.List;
 import java.util.function.BiConsumer;
 
+/**
+ * This class implements the RecyclerView used in activity_main.xml; its ViewHolder is used
+ * to represent the single element of the RecyclerView, which can be found in label_input_format.xml
+ */
 public class inputDisplayAdapter extends RecyclerView.Adapter<inputDisplayAdapter.ViewHolder> {
     public List<House> houseList = Collections.emptyList();
-    private BiConsumer<House, String> onParentLabelChanged;
-    private BiConsumer<House, String> onCoordinatesChanged;
+    private BiConsumer<House, String> onParentLabelChanged; //Used for updating the parentLabel
+    private BiConsumer<House, String> onCoordinatesChanged; //Used for updating the coordinateLabel
 
     public void setParentLabelChanged(BiConsumer<House, String> onTextEdited) {
         this.onParentLabelChanged = onTextEdited;
@@ -37,6 +41,7 @@ public class inputDisplayAdapter extends RecyclerView.Adapter<inputDisplayAdapte
         notifyDataSetChanged();
     }
 
+    //Not really used, but may be useful for testing.
     public ArrayList<House> getHouseList() {
         return (ArrayList<House>)(houseList);
     }
