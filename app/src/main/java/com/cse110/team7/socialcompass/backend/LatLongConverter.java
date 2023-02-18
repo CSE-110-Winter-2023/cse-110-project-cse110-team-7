@@ -16,6 +16,10 @@ public class LatLongConverter {
     public static LatLong stringToLatLong(String value) {
         if (value == null) return null;
 
+        if(value.charAt(0) == '(' && value.charAt(value.length() - 1) == ')'){
+            value = value.substring(1, value.length() - 1);
+        }
+
         String[] latitudeAndLongitude = value.split(",");
 
         if (latitudeAndLongitude.length != 2) return null;
