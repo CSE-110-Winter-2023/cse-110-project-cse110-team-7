@@ -38,6 +38,6 @@ public class LatLong {
     @NonNull
     @Override
     public String toString() {
-        return latitude + "," + longitude;
+        return latitude + ", " + longitude;
     }
 }
