@@ -162,10 +162,10 @@ public class US3StoryTest {
 
          LatLong newParentLocation = activity.getCompass().getElements().get(1).getHouse().getLocation();
          LatLong newFriendLocation = activity.getCompass().getElements().get(0).getHouse().getLocation();
-         assertEquals(Double.compare(newParentLocation.getLatitude(), 32), 0);
-         assertEquals(Double.compare(newParentLocation.getLongitude(), -117), 0);
          assertEquals(Double.compare(newFriendLocation.getLatitude(), 50), 0);
          assertEquals(Double.compare(newFriendLocation.getLongitude(), -120), 0);
+         assertEquals(Double.compare(newParentLocation.getLatitude(), 32), 0);
+         assertEquals(Double.compare(newParentLocation.getLongitude(), -117), 0);
       });
    }
 
