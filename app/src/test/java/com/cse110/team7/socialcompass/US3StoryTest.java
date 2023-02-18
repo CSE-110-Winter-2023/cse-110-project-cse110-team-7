@@ -145,7 +145,7 @@ public class US3StoryTest {
    }
 
    @Test
-   public void dataPersistence(){
+   public void testDataPersistence(){
       var scenario = ActivityScenario.launch(CompassActivity.class);
       scenario.moveToState(Lifecycle.State.CREATED);
       scenario.moveToState(Lifecycle.State.STARTED);
