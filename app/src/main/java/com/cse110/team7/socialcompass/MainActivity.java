@@ -72,14 +72,9 @@ public class MainActivity extends AppCompatActivity {
         String mockOrientationStr = mockOrientation.getText().toString();
 
         float orientation;
-
+        Intent intent = new Intent(this, CompassActivity.class);
         try {
-            for(House i : adapter.houseList){
-                if(i.getLocation() != null){
-                    Intent intent = new Intent(this, CompassActivity.class);
-                    startActivity(intent);
-                }
-            }
+
 
             orientation = Float.parseFloat(mockOrientationStr);
             if(orientation < 0 || orientation > 359) {
@@ -87,16 +82,14 @@ public class MainActivity extends AppCompatActivity {
                 return;
             }
 
-            Intent intent = new Intent(this, CompassActivity.class);
 
             intent.putExtra("orientation", orientation);
         } catch (NumberFormatException ignored) {
             orientation = -1;
         }
-
+        // check that at least one house in inputted
         for(House i : adapter.houseList){
             if(i.getLocation() != null){
-                Intent intent = new Intent(this, CompassActivity.class);
                 startActivity(intent);
             }
         }
