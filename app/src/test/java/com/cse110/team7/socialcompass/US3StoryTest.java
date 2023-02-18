@@ -143,4 +143,30 @@ public class US3StoryTest {
 
    }
 
+   @Test
+   public void dataPersistence(){
+      var scenario = ActivityScenario.launch(CompassActivity.class);
+      scenario.moveToState(Lifecycle.State.CREATED);
+      scenario.moveToState(Lifecycle.State.STARTED);
+
+      scenario.onActivity(activity -> {
+         LocationService.getInstance().unregisterLocationUpdateListener();
+         OrientationService.getInstance().unregisterSensorEventListener();
+
+         LatLong fakeFriendLocation = new LatLong(50, -120);
+         LatLong fakeParentLocation = new LatLong(32, -117);
+
+         activity.getCompass().getElements().get(1).getHouse().setLocation(fakeParentLocation);
+         activity.getCompass().getElements().get(0).getHouse().setLocation(fakeFriendLocation);
+         activity.recreate();
+
+         LatLong newParentLocation = activity.getCompass().getElements().get(1).getHouse().getLocation();
+         LatLong newFriendLocation = activity.getCompass().getElements().get(0).getHouse().getLocation();
+         assertEquals(Double.compare(newParentLocation.getLatitude(), 32), 0);
+         assertEquals(Double.compare(newParentLocation.getLongitude(), -117), 0);
+         assertEquals(Double.compare(newFriendLocation.getLatitude(), 50), 0);
+         assertEquals(Double.compare(newFriendLocation.getLongitude(), -120), 0);
+      });
+   }
+
 }
