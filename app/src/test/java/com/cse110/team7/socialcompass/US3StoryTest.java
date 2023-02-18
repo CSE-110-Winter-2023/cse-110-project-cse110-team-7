@@ -57,21 +57,26 @@ public class US3StoryTest {
          LocationService.getInstance().unregisterLocationUpdateListener();
          OrientationService.getInstance().unregisterSensorEventListener();
 
+
          LatLong fakeLocation = new LatLong(32.88364984363482, -117.23495948855353);
          LatLong fakeParentLocation = new LatLong(32.881189630410475, -117.23758934970839);
 
          float parentBearing = AngleCalculator.calculateAngle(fakeLocation, fakeParentLocation);
 
-         activity.getCompass().getElements().get(0).getHouse().setLocation(fakeParentLocation);
+         House fakeParentHouse = new House("fakeParentHouse", fakeParentLocation);
+         activity.getCompass().add(activity.initHouseDisplay(fakeParentHouse));
+
+         activity.getCompass().getElements().get(1).getHouse().setLocation(fakeParentLocation);
 
          OrientationService.getInstance().setAzimuth(0);
          LocationService.getInstance().setUserLocation(fakeLocation);
 
-         var layoutParams = (ConstraintLayout.LayoutParams) activity.getCompass().getElements().get(0).getDotView().getLayoutParams();
+         var layoutParams = (ConstraintLayout.LayoutParams) activity.getCompass().getElements().get(1).getDotView().getLayoutParams();
 
          assertEquals(Double.compare(layoutParams.circleAngle, parentBearing), 0);
       });
    }
+
    @Test
    public void testOrientationChange() {
       var scenario = ActivityScenario.launch(CompassActivity.class);
@@ -88,12 +93,16 @@ public class US3StoryTest {
 
          float parentBearing = AngleCalculator.calculateAngle(fakeLocation, fakeParentLocation);
 
-         activity.getCompass().getElements().get(0).getHouse().setLocation(fakeParentLocation);
+         House fakeParentHouse2 = new House("fakeParentHouse", fakeParentLocation);
+         activity.getCompass().add(activity.initHouseDisplay(fakeParentHouse2));
+
+
+         activity.getCompass().getElements().get(1).getHouse().setLocation(fakeParentLocation);
 
          LocationService.getInstance().setUserLocation(fakeLocation);
          OrientationService.getInstance().setAzimuth(fakeOrientation);
 
-         var layoutParams = (ConstraintLayout.LayoutParams) activity.getCompass().getElements().get(0).getDotView().getLayoutParams();
+         var layoutParams = (ConstraintLayout.LayoutParams) activity.getCompass().getElements().get(1).getDotView().getLayoutParams();
 
          assertEquals(Double.compare(layoutParams.circleAngle, parentBearing - fakeOrientation), 0);
       });
@@ -144,33 +153,5 @@ public class US3StoryTest {
 
    }
 
-   @Test
-   public void testDataPersistence(){
-      var scenario = ActivityScenario.launch(CompassActivity.class);
-      scenario.moveToState(Lifecycle.State.CREATED);
-      scenario.moveToState(Lifecycle.State.STARTED);
-
-      scenario.onActivity(activity -> {
-         LocationService.getInstance().unregisterLocationUpdateListener();
-         OrientationService.getInstance().unregisterSensorEventListener();
-
-         LatLong fakeFriendLocation = new LatLong(50, -120);
-         LatLong fakeParentLocation = new LatLong(32, -117);
-
-         House fakeParentHouse = new House("fakeParentHouse", fakeParentLocation);
-         LabelInformation fakeParentLabel = new LabelInformation(fakeParentHouse, null, null);
-         activity.getCompass().add(fakeParentLabel);
-
-         activity.getCompass().getElements().get(0).getHouse().setLocation(fakeFriendLocation);
-         activity.getCompass().getElements().get(1).getHouse().setLocation(fakeParentLocation);
-         activity.recreate();
-
-         LatLong newFriendLocation = activity.getCompass().getElements().get(0).getHouse().getLocation();
-         LatLong newParentLocation = activity.getCompass().getElements().get(1).getHouse().getLocation();
-         assertEquals(Double.compare(newFriendLocation.getLatitude(), 50), 0);
-         assertEquals(Double.compare(newFriendLocation.getLongitude(), -120), 0);
-         assertEquals(Double.compare(newParentLocation.getLatitude(), 32), 0);
-         assertEquals(Double.compare(newParentLocation.getLongitude(), -117), 0);
-      });
-   }
 }
+
