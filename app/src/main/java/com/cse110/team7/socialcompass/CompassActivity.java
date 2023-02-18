@@ -161,4 +161,22 @@ public class CompassActivity extends AppCompatActivity {
     public static int getScreenHeight() {
         return Resources.getSystem().getDisplayMetrics().heightPixels;
     }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+
+        HouseDatabase houseDao = HouseDatabase.getInstance(getApplicationContext());
+        final HouseDao db = houseDao.getHouseDao();
+
+        List<House> houses = new ArrayList<>();
+
+        for(LabelInformation label : compass.getElements()) {
+            houses.add(new House(label.getHouse().getName(), label.getHouse().getLocation()));
+        }
+
+        for(House house : houses) {
+            db.updateHouse(house);
+        }
+    }
 }
