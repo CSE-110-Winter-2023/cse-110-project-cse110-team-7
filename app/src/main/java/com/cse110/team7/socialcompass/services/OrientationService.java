@@ -4,6 +4,8 @@ import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
+import android.view.Surface;
+import android.view.WindowManager;
 
 import androidx.annotation.NonNull;
 import androidx.lifecycle.LiveData;
@@ -30,6 +32,7 @@ public class OrientationService {
      * which will be obtained by an active activity elsewhere
      */
     private SensorManager sensorManager;
+    private WindowManager windowManager;
     /**
      * this field stores the current readings from the
      * accelerometer sensor of the phone
@@ -130,7 +133,24 @@ public class OrientationService {
 
         // update the azimuth value, note that orientation is -π to π, so we add 2π to it and mod
         // 2π to get the value from 0 to 2π, it is also transformed from radians into degrees
-        azimuth.postValue((float) Math.toDegrees((orientation[0] + 2 * Math.PI) % (2 * Math.PI)));
+        if (windowManager != null) {
+            switch (windowManager.getDefaultDisplay().getRotation()) {
+                case Surface.ROTATION_0:
+                    azimuth.postValue((float) Math.toDegrees((orientation[0] + 2 * Math.PI) % (2 * Math.PI)));
+                    break;
+                case Surface.ROTATION_90:
+                    azimuth.postValue((float) Math.toDegrees((orientation[0] + 5.0 / 2 * Math.PI) % (2 * Math.PI)));
+                    break;
+                case Surface.ROTATION_180:
+                    azimuth.postValue((float) Math.toDegrees((orientation[0] + 3 * Math.PI) % (2 * Math.PI)));
+                    break;
+                case Surface.ROTATION_270:
+                    azimuth.postValue((float) Math.toDegrees((orientation[0] + 7.0 / 2 * Math.PI) % (2 * Math.PI)));
+                    break;
+            }
+        } else {
+            azimuth.postValue((float) Math.toDegrees((orientation[0] + 2 * Math.PI) % (2 * Math.PI)));
+        }
     }
 
     /**
@@ -140,6 +160,10 @@ public class OrientationService {
      */
     public void setSensorManager(@NonNull SensorManager sensorManager) {
         this.sensorManager = sensorManager;
+    }
+
+    public void setWindowManager(@NonNull WindowManager windowManager) {
+        this.windowManager = windowManager;
     }
 
     /**

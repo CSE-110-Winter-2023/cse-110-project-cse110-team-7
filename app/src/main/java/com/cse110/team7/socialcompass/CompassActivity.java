@@ -14,7 +14,6 @@ import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.constraintlayout.widget.ConstraintLayout;
-import androidx.lifecycle.ViewModelProvider;
 
 import com.cse110.team7.socialcompass.backend.HouseDao;
 import com.cse110.team7.socialcompass.backend.HouseDatabase;
@@ -22,8 +21,6 @@ import com.cse110.team7.socialcompass.models.House;
 import com.cse110.team7.socialcompass.services.LocationService;
 import com.cse110.team7.socialcompass.services.OrientationService;
 import com.cse110.team7.socialcompass.ui.Compass;
-import com.cse110.team7.socialcompass.ui.inputDislayViewModel;
-import com.cse110.team7.socialcompass.ui.inputDisplayAdapter;
 import com.cse110.team7.socialcompass.ui.LabelInformation;
 
 import java.util.ArrayList;
@@ -47,11 +44,16 @@ public class CompassActivity extends AppCompatActivity {
         //Instantiates the Compass and adds the northLabel to it.
         compass = new Compass(northLabel);
 
+
         //These three lines open up the Room database, giving us access to the values stored from
         //the main activity, with HouseDao being an instance of the HouseDatabase class.
         Context context = getApplication().getApplicationContext();
         HouseDatabase houseDao = HouseDatabase.getInstance(context);
         final HouseDao db = houseDao.getHouseDao();
+
+        // Accessing data from input screen
+        Intent intent = getIntent();
+        float mockOrientation = intent.getFloatExtra("orientation", -1);
 
         //We read all of the houses stored in the database, which gives us a live observer variable
         //And from there, if the location is not null (e.g. was not inputted), it adds it as a label
@@ -92,7 +94,6 @@ public class CompassActivity extends AppCompatActivity {
         //Maybe Refactor this into it's own method.
         // Sets up sensors to read values.
         OrientationService.getInstance().setSensorManager((SensorManager) getSystemService(Context.SENSOR_SERVICE));
-        OrientationService.getInstance().registerSensorEventListener();
 
         //Updates compass based on changing location values.
         LocationService.getInstance().getUserLocation().observe(this, (currentLocation) -> {
@@ -104,6 +105,14 @@ public class CompassActivity extends AppCompatActivity {
             compass.updateAzimuth(currentAzimuth);
             compass.updateRotationForAll();
         });
+
+        // override with mock orientation
+        if (mockOrientation >=  0) {
+            OrientationService.getInstance().setAzimuth(mockOrientation);
+        } else {
+            OrientationService.getInstance().registerSensorEventListener();
+        }
+
     }
 
     //Creates a label for each house contained in the database.
@@ -154,6 +163,7 @@ public class CompassActivity extends AppCompatActivity {
         return compass;
     }
 
+
     public static int getScreenWidth() {
         return Resources.getSystem().getDisplayMetrics().widthPixels;
     }
@@ -171,12 +181,18 @@ public class CompassActivity extends AppCompatActivity {
 
         List<House> houses = new ArrayList<>();
 
-        for(LabelInformation label : compass.getElements()) {
+        for (LabelInformation label : compass.getElements()) {
             houses.add(new House(label.getHouse().getName(), label.getHouse().getLocation()));
         }
 
-        for(House house : houses) {
+        for (House house : houses) {
             db.updateHouse(house);
         }
+    }
+
+    public void onGoToInput(View view) {
+        Intent intent = new Intent(this, MainActivity.class);
+        startActivity(intent);
+
     }
 }

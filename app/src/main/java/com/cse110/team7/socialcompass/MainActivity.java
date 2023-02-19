@@ -3,24 +3,24 @@ package com.cse110.team7.socialcompass;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.lifecycle.LiveData;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.cse110.team7.socialcompass.backend.HouseDatabase;
 import com.cse110.team7.socialcompass.models.House;
 import com.cse110.team7.socialcompass.ui.inputDisplayAdapter;
 import com.cse110.team7.socialcompass.ui.inputDislayViewModel;
 
-import java.util.ArrayList;
-import java.util.List;
 
-/**
+/*
  * First page of our application; we should probably move all of this over to another activity.
  */
+import com.cse110.team7.socialcompass.utils.ShowAlert;
+
+
 public class MainActivity extends AppCompatActivity {
     public RecyclerView recyclerView;
     inputDisplayAdapter adapter;
@@ -65,12 +65,28 @@ public class MainActivity extends AppCompatActivity {
      * On button click, only goes to CompassActivity if at least one location has been inputted.
      */
     public void onGoToCompass(View view) {
-        for(House i : adapter.houseList){
-            if(i.getLocation() != null){
-                Intent intent = new Intent(this, CompassActivity.class);
-                startActivity(intent);
+
+        TextView mockOrientation = findViewById(R.id.mockOrientationView);
+        String mockOrientationStr = mockOrientation.getText().toString();
+        float orientation;
+        try {
+            orientation = Float.parseFloat(mockOrientationStr);
+            if(orientation < 0 || orientation > 359) {
+                ShowAlert.alert(this, "Please enter a number between 0-359");
+                return;
             }
+        } catch (NumberFormatException ignored) {
+            orientation = -1;
         }
+        Intent intent = new Intent(this, CompassActivity.class);
+        intent.putExtra("orientation", orientation);
+
+        for(House i : adapter.houseList) {
+            if (i.getLocation() != null) {
+                startActivity(intent);
+                 }
+        }
+
     }
 
     @Override
