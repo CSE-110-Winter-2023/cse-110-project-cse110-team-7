@@ -4,13 +4,18 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
+import android.content.Context;
 import android.location.Location;
 import android.widget.ImageView;
 
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.lifecycle.Lifecycle;
+import androidx.room.Room;
 import androidx.test.core.app.ActivityScenario;
+import androidx.test.core.app.ApplicationProvider;
 
+import com.cse110.team7.socialcompass.backend.HouseDao;
+import com.cse110.team7.socialcompass.backend.HouseDatabase;
 import com.cse110.team7.socialcompass.models.House;
 import com.cse110.team7.socialcompass.models.LatLong;
 import com.cse110.team7.socialcompass.services.LocationService;
@@ -18,6 +23,8 @@ import com.cse110.team7.socialcompass.services.OrientationService;
 import com.cse110.team7.socialcompass.ui.LabelInformation;
 import com.cse110.team7.socialcompass.utils.AngleCalculator;
 
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
@@ -31,6 +38,26 @@ import java.util.stream.DoubleStream;
 
 @RunWith(RobolectricTestRunner.class)
 public class US3StoryTest {
+   private HouseDao houseDao;
+   private HouseDatabase houseDatabase;
+
+   @Before
+   public void createDatabase() {
+      Context context = ApplicationProvider.getApplicationContext();
+
+      houseDatabase = Room.inMemoryDatabaseBuilder(context, HouseDatabase.class)
+              .allowMainThreadQueries()
+              .build();
+
+      HouseDatabase.injectTestDatabase(houseDatabase);
+
+      houseDao = houseDatabase.getHouseDao();
+   }
+
+   @After
+   public void closeDatabase() {
+      houseDatabase.close();
+   }
 
    @Test
    public void testNorthLabelExist() {
