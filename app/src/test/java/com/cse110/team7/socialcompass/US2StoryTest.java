@@ -39,6 +39,8 @@ public class US2StoryTest {
                 .allowMainThreadQueries()
                 .build();
 
+        HouseDatabase.injectTestDatabase(houseDatabase);
+
         houseDao = houseDatabase.getHouseDao();
     }
 
@@ -66,8 +68,7 @@ public class US2StoryTest {
 
 
         House parentHouse = new House("parents", new LatLong(parentLat, parentLong));
-        long id = houseDao.insertHouse(parentHouse);
-        System.err.println(houseDao.selectHouse(id));
+        houseDao.insertHouse(parentHouse);
 
         mainScenario.onActivity(mainActivity -> {
             Intent intent = new Intent(mainActivity, CompassActivity.class);
@@ -85,7 +86,6 @@ public class US2StoryTest {
                 LocationService.getInstance().setUserLocation(currentLocation);
                 OrientationService.getInstance().setAzimuth(orientation);
 
-                System.err.println(houseDao.selectHouses().getValue());
                 var layoutParams = (ConstraintLayout.LayoutParams) activity.getCompass().getElements().get(1).getDotView().getLayoutParams();
                 float appAngle = layoutParams.circleAngle;
                 float realAngle = AngleCalculator.calculateAngle(currentLocation, parentLocation) - orientation;
@@ -115,8 +115,8 @@ public class US2StoryTest {
 
         mainScenario.onActivity(mainActivity -> {
             Intent intent = new Intent(mainActivity, CompassActivity.class);
-            intent.putExtra("lat", parentLat);
-            intent.putExtra("long", parentLong);
+            House parentHouse = new House("parents", new LatLong(parentLat, parentLong));
+            houseDao.insertHouse(parentHouse);
 
             ActivityScenario<CompassActivity> scenario = ActivityScenario.launch(intent);
             scenario.moveToState(Lifecycle.State.CREATED);
