@@ -2,17 +2,25 @@ package com.cse110.team7.socialcompass;
 
 import static org.junit.Assert.*;
 
+import android.content.Context;
 import android.content.Intent;
 import android.widget.TextView;
 
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.lifecycle.Lifecycle;
+import androidx.room.Room;
 import androidx.test.core.app.ActivityScenario;
+import androidx.test.core.app.ApplicationProvider;
 
+import com.cse110.team7.socialcompass.backend.HouseDao;
+import com.cse110.team7.socialcompass.backend.HouseDatabase;
+import com.cse110.team7.socialcompass.models.House;
 import com.cse110.team7.socialcompass.models.LatLong;
 import com.cse110.team7.socialcompass.services.LocationService;
 import com.cse110.team7.socialcompass.utils.AngleCalculator;
 
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
@@ -22,6 +30,26 @@ import org.robolectric.shadows.ShadowAlertDialog;
 
 
 public class US5StoryTest {
+    private HouseDao houseDao;
+    private HouseDatabase houseDatabase;
+
+    @Before
+    public void createDatabase() {
+        Context context = ApplicationProvider.getApplicationContext();
+
+        houseDatabase = Room.inMemoryDatabaseBuilder(context, HouseDatabase.class)
+                .allowMainThreadQueries()
+                .build();
+
+        HouseDatabase.injectTestDatabase(houseDatabase);
+
+        houseDao = houseDatabase.getHouseDao();
+    }
+
+    @After
+    public void closeDatabase() {
+        houseDatabase.close();
+    }
 
     @Test
     public void orientationInput() {
@@ -39,11 +67,13 @@ public class US5StoryTest {
         mainScenario.moveToState(Lifecycle.State.CREATED);
         mainScenario.moveToState(Lifecycle.State.STARTED);
 
+        House parentHouse = new House("parents", new LatLong(parentLat, parentLong));
+        houseDao.insertHouse(parentHouse);
+
         mainScenario.onActivity(mainActivity -> {
 
             Intent intent = new Intent(mainActivity, CompassActivity.class);
-            intent.putExtra("lat", parentLat);
-            intent.putExtra("long", parentLong);
+
             intent.putExtra("orientation", mockOrientation);
             ActivityScenario<CompassActivity> scenario = ActivityScenario.launch(intent);
             scenario.moveToState(Lifecycle.State.CREATED);
