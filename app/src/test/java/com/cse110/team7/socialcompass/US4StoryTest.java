@@ -88,5 +88,40 @@ public class US4StoryTest {
          assertEquals(Double.compare(newParentLocation.getLongitude(), -117), 0);
       });
    }
+
+   @Test
+   public void testStopPersistence(){
+      var scenario = ActivityScenario.launch(CompassActivity.class);
+
+      scenario.moveToState(Lifecycle.State.RESUMED);
+
+      House house1 = new House("Parents", new LatLong(100, -20));
+      House house2 = new House("Friend", new LatLong(150, -70));
+      House house3 = new House("Me", new LatLong(300, 150));
+
+      long id1 = houseDao.insertHouse(house1);
+      long id2 = houseDao.insertHouse(house2);
+      long id3 = houseDao.insertHouse(house3);
+
+      House insertedHouse1 = houseDao.selectHouse(id1);
+      House insertedHouse2 = houseDao.selectHouse(id2);
+      House insertedHouse3 = houseDao.selectHouse(id3);
+
+      scenario.moveToState(Lifecycle.State.CREATED);
+
+      scenario.moveToState(Lifecycle.State.RESUMED);
+
+      scenario.onActivity(activity -> {
+         assertEquals("Parents", insertedHouse1.getName());
+         assertEquals("Friend", insertedHouse2.getName());
+         assertEquals("Me", insertedHouse3.getName());
+
+         assertEquals(new LatLong(100, -20), insertedHouse1.getLocation());
+         assertEquals(new LatLong(150, -70), insertedHouse2.getLocation());
+         assertEquals(new LatLong(300, 150), insertedHouse3.getLocation());
+      });
+   }
+
+
 }
 

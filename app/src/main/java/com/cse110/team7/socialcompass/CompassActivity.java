@@ -172,6 +172,7 @@ public class CompassActivity extends AppCompatActivity {
         return Resources.getSystem().getDisplayMetrics().heightPixels;
     }
 
+    // Updates the house database when the app is exited.
     @Override
     protected void onStop() {
         super.onStop();
@@ -181,11 +182,14 @@ public class CompassActivity extends AppCompatActivity {
 
         List<House> houses = new ArrayList<>();
 
-        for (LabelInformation label : compass.getElements()) {
-            houses.add(new House(label.getHouse().getName(), label.getHouse().getLocation()));
+        // Uses all house labels excluding north label
+        for(LabelInformation label : compass.getElements()) {
+            if(!label.equals(compass.getNorthElementDisplay())) {
+                houses.add(new House(label.getHouse().getName(), label.getHouse().getLocation()));
+            }
         }
 
-        for (House house : houses) {
+        for(House house : houses) {
             db.updateHouse(house);
         }
     }
