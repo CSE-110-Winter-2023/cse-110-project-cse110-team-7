@@ -1,43 +1,33 @@
 package com.cse110.team7.socialcompass.ui;
 
-import android.media.Image;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.cse110.team7.socialcompass.models.House;
 import com.cse110.team7.socialcompass.models.LatLong;
+import com.cse110.team7.socialcompass.utils.AngleCalculator;
 
-public class ElementDisplay {
-    private String name;
+/**
+ * Contains all the information that goes into representing any individual label.
+ */
+public class LabelInformation {
+
+    private final House house;
     private ImageView dotView;
     private TextView labelView;
-    private LatLong location;
     private float bearing;
 
-
-    public ElementDisplay(ImageView iv, LatLong loc) {
-        dotView = iv;
-        location = loc;
+    public LabelInformation(House house, ImageView dotView, TextView labelView) {
+        this.house = house;
+        this.dotView = dotView;
+        this.labelView = labelView;
+        this.bearing = 0;
     }
 
-    public ElementDisplay(String name, LatLong loc) {
-        this.name = name;
-        this.location = loc;
-        dotView = null;
-        labelView = null;
-
+    public House getHouse() {
+        return house;
     }
 
-    public LatLong getLocation() {
-        return location;
-    }
-
-    public String getLabelName() {
-        return name;
-    }
-
-    public void setLocation(LatLong location) {
-        this.location = location;
-    }
     public ImageView getDotView() {
         return dotView;
     }
@@ -60,6 +50,10 @@ public class ElementDisplay {
 
     public void updateBearing(float currentBearing) {
         bearing = currentBearing;
+    }
+
+    public void updateBearing(LatLong currentLocation) {
+        bearing = AngleCalculator.calculateAngle(currentLocation, house);
     }
 
 }

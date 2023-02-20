@@ -1,69 +1,98 @@
 package com.cse110.team7.socialcompass;
 
-import androidx.appcompat.app.AppCompatActivity;
-
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.TextView;
 
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.lifecycle.ViewModelProvider;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+
+import com.cse110.team7.socialcompass.models.House;
+import com.cse110.team7.socialcompass.ui.inputDisplayAdapter;
+import com.cse110.team7.socialcompass.ui.inputDislayViewModel;
+
+
+/*
+ * First page of our application; we should probably move all of this over to another activity.
+ */
+import com.cse110.team7.socialcompass.utils.ShowAlert;
+
+
 public class MainActivity extends AppCompatActivity {
+    public RecyclerView recyclerView;
+    inputDisplayAdapter adapter;
+    inputDislayViewModel viewModel;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        loadProfile();
+
+        //Tracks interactions between the UI and the database, allowing us to update values as they
+        //get changed.
+        viewModel = new ViewModelProvider(this).get(inputDislayViewModel.class);
+
+        //Creates new adapter, which does the actual updating of values.
+        adapter = new inputDisplayAdapter();
+        adapter.setHasStableIds(true);
+
+        //Binds methods to adapter
+        adapter.setCoordinatesChanged(viewModel::updateCoordinateText);
+        adapter.setParentLabelChanged(viewModel::updateLabelText);
+
+        viewModel.getHouseItems().observe(this, adapter::setHouseList);
+
+        //If no data is already saved, then adds three empty houses to the database.
+        viewModel.getHouseItems().observe(this, houses -> {
+            if (houses.size() == 0) {
+                viewModel.addHouse(new House("Parents", null));
+                viewModel.addHouse(new House("Friends", null));
+                viewModel.addHouse(new House("My Home", null));
+            }
+        });
+
+        //Sets up the recycler view, so that each empty/stored label gets displayed on the UI, in the
+        //format given by label_input_format.xml
+        recyclerView = findViewById(R.id.houseInputItems);
+        recyclerView.setLayoutManager(new LinearLayoutManager(this));
+        recyclerView.setAdapter(adapter);
     }
 
+    /**
+     * On button click, only goes to CompassActivity if at least one location has been inputted.
+     */
     public void onGoToCompass(View view) {
-        TextView latView = findViewById(R.id.latTextView);
-        String latStr = latView.getText().toString();
-        TextView longView = findViewById(R.id.longTextView);
-        String longStr = longView.getText().toString();
 
+        TextView mockOrientation = findViewById(R.id.mockOrientationView);
+        String mockOrientationStr = mockOrientation.getText().toString();
+        float orientation;
         try {
-            float latitude = Float.parseFloat(latStr);
-            float longitude = Float.parseFloat(longStr);
-
-            Intent intent = new Intent(this, CompassActivity.class);
-
-            intent.putExtra("lat", latitude);
-            intent.putExtra("long", longitude);
-
-            startActivity(intent);
+            orientation = Float.parseFloat(mockOrientationStr);
+            if(orientation < 0 || orientation > 359) {
+                ShowAlert.alert(this, "Please enter a number between 0-359");
+                return;
+            }
         } catch (NumberFormatException ignored) {
-
+            orientation = -1;
         }
+        Intent intent = new Intent(this, CompassActivity.class);
+        intent.putExtra("orientation", orientation);
+
+        for(House i : adapter.houseList) {
+            if (i.getLocation() != null) {
+                startActivity(intent);
+                return;
+            }
+        }
+
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        saveProfile();
     }
 
-    public void loadProfile() {
-        SharedPreferences preferences = getPreferences(MODE_PRIVATE);
-        String lat = preferences.getString("lat", "");
-        String longitude = preferences.getString("long", "");
-        TextView latView = findViewById(R.id.latTextView);
-        TextView longView = findViewById(R.id.longTextView);
-        latView.setText(lat);
-        longView.setText(longitude);
-
-    }
-
-    public void saveProfile() {
-        SharedPreferences preferences = getPreferences(MODE_PRIVATE);
-        SharedPreferences.Editor editor = preferences.edit();
-
-        TextView latView = findViewById(R.id.latTextView);
-        TextView longView = findViewById(R.id.longTextView);
-        editor.putString("name", latView.getText().toString());
-        editor.putString("status", longView.getText().toString());
-
-        editor.apply();
-    }
 }

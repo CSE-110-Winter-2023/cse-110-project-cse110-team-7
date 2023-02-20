@@ -15,8 +15,16 @@ public class LatLong {
         return latitude;
     }
 
+    public void setLatitude(double latitude) {
+        this.latitude = latitude;
+    }
+
     public double getLongitude() {
         return longitude;
+    }
+
+    public void setLongitude(double longitude) {
+        this.longitude = longitude;
     }
 
     @Override
@@ -30,9 +38,6 @@ public class LatLong {
     @NonNull
     @Override
     public String toString() {
-        return "LatLong{" +
-                "latitude=" + latitude +
-                ", longitude=" + longitude +
-                '}';
+        return latitude + ", " + longitude;
     }
 }

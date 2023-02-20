@@ -18,7 +18,7 @@ public class LatLongClassUnitTests {
     public void testLatLongString() {
         LatLong testLatLong = new LatLong(11.1, 13.2);
 
-        String expectedLatLongStr = "LatLong{latitude=11.1, longitude=13.2}";
+        String expectedLatLongStr = "11.1, 13.2";
 
         assertEquals(testLatLong.toString(), expectedLatLongStr);
     }
