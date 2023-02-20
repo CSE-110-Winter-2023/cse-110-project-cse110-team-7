@@ -195,8 +195,10 @@ public class CompassActivity extends AppCompatActivity {
     }
 
     public void onGoToInput(View view) {
-        Intent intent = new Intent(this, MainActivity.class);
-        startActivity(intent);
+        LocationService.getInstance().unregisterLocationUpdateListener();
+        OrientationService.getInstance().unregisterSensorEventListener();
 
+        finish();
+        super.onBackPressed();
     }
 }
