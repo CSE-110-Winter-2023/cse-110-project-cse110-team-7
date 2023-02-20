@@ -2,17 +2,25 @@ package com.cse110.team7.socialcompass;
 
 import static org.junit.Assert.assertEquals;
 
+import android.content.Context;
 import android.content.Intent;
 
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.lifecycle.Lifecycle;
+import androidx.room.Room;
 import androidx.test.core.app.ActivityScenario;
+import androidx.test.core.app.ApplicationProvider;
 
+import com.cse110.team7.socialcompass.backend.HouseDao;
+import com.cse110.team7.socialcompass.backend.HouseDatabase;
+import com.cse110.team7.socialcompass.models.House;
 import com.cse110.team7.socialcompass.models.LatLong;
 import com.cse110.team7.socialcompass.services.LocationService;
 import com.cse110.team7.socialcompass.services.OrientationService;
 import com.cse110.team7.socialcompass.utils.AngleCalculator;
 
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
@@ -20,6 +28,26 @@ import org.robolectric.RobolectricTestRunner;
 @RunWith(RobolectricTestRunner.class)
 
 public class US2StoryTest {
+    private HouseDao houseDao;
+    private HouseDatabase houseDatabase;
+
+    @Before
+    public void createDatabase() {
+        Context context = ApplicationProvider.getApplicationContext();
+
+        houseDatabase = Room.inMemoryDatabaseBuilder(context, HouseDatabase.class)
+                .allowMainThreadQueries()
+                .build();
+
+        HouseDatabase.injectTestDatabase(houseDatabase);
+
+        houseDao = houseDatabase.getHouseDao();
+    }
+
+    @After
+    public void closeDatabase() {
+        houseDatabase.close();
+    }
 
     @Test
     public void US2testCase1() {
@@ -38,10 +66,14 @@ public class US2StoryTest {
         mainScenario.moveToState(Lifecycle.State.CREATED);
         mainScenario.moveToState(Lifecycle.State.STARTED);
 
+
+        House parentHouse = new House("parents", new LatLong(parentLat, parentLong));
+        houseDao.insertHouse(parentHouse);
+
         mainScenario.onActivity(mainActivity -> {
             Intent intent = new Intent(mainActivity, CompassActivity.class);
-            intent.putExtra("lat", parentLat);
-            intent.putExtra("long", parentLong);
+
+
 
             ActivityScenario<CompassActivity> scenario = ActivityScenario.launch(intent);
             scenario.moveToState(Lifecycle.State.CREATED);
@@ -58,7 +90,7 @@ public class US2StoryTest {
                 float appAngle = layoutParams.circleAngle;
                 float realAngle = AngleCalculator.calculateAngle(currentLocation, parentLocation) - orientation;
 
-                assertEquals(Double.compare(appAngle, realAngle), 0);
+                assertEquals(0, Double.compare(appAngle, realAngle));
             });
             scenario.close();
         });
@@ -83,8 +115,8 @@ public class US2StoryTest {
 
         mainScenario.onActivity(mainActivity -> {
             Intent intent = new Intent(mainActivity, CompassActivity.class);
-            intent.putExtra("lat", parentLat);
-            intent.putExtra("long", parentLong);
+            House parentHouse = new House("parents", new LatLong(parentLat, parentLong));
+            houseDao.insertHouse(parentHouse);
 
             ActivityScenario<CompassActivity> scenario = ActivityScenario.launch(intent);
             scenario.moveToState(Lifecycle.State.CREATED);

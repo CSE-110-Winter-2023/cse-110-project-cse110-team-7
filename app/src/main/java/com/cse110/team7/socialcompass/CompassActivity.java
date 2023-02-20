@@ -2,6 +2,7 @@ package com.cse110.team7.socialcompass;
 
 import android.content.Context;
 import android.content.Intent;
+import android.content.res.Resources;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.hardware.SensorManager;
@@ -14,14 +15,16 @@ import android.widget.TextView;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.constraintlayout.widget.ConstraintLayout;
 
+import com.cse110.team7.socialcompass.backend.HouseDao;
+import com.cse110.team7.socialcompass.backend.HouseDatabase;
 import com.cse110.team7.socialcompass.models.House;
-import com.cse110.team7.socialcompass.models.LatLong;
 import com.cse110.team7.socialcompass.services.LocationService;
 import com.cse110.team7.socialcompass.services.OrientationService;
 import com.cse110.team7.socialcompass.ui.Compass;
 import com.cse110.team7.socialcompass.ui.LabelInformation;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class CompassActivity extends AppCompatActivity {
 
@@ -32,20 +35,39 @@ public class CompassActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_compass);
 
-        ArrayList<House> savedHouses = new ArrayList<>();
 
+        //Sets North Label to always be the correct radius, regardless of size of the screen.
         ImageView northLabel = findViewById(R.id.labelNorth);
+        ((ConstraintLayout.LayoutParams) northLabel.getLayoutParams()).circleRadius =
+                Math.min((getScreenWidth() * 6) / 14 - 10, (getScreenHeight()  * 5) / 15 - 10);
+
+        //Instantiates the Compass and adds the northLabel to it.
         compass = new Compass(northLabel);
+
+
+        //These three lines open up the Room database, giving us access to the values stored from
+        //the main activity, with HouseDao being an instance of the HouseDatabase class.
+        Context context = getApplication().getApplicationContext();
+        HouseDatabase houseDao = HouseDatabase.getInstance(context);
+        final HouseDao db = houseDao.getHouseDao();
 
         // Accessing data from input screen
         Intent intent = getIntent();
-        float inputLat = intent.getFloatExtra("lat", 0);
-        float inputLong = intent.getFloatExtra("long", 0);
         float mockOrientation = intent.getFloatExtra("orientation", -1);
 
-        savedHouses.add(new House("Parents", new LatLong(inputLat, inputLong)));
+        //We read all of the houses stored in the database, which gives us a live observer variable
+        //And from there, if the location is not null (e.g. was not inputted), it adds it as a label
+        //to the compass.
+        db.selectHouses().observe(this, houses -> {
+            for(House i : houses){
+                if(i.getLocation() != null){
+                    compass.add(initHouseDisplay(i));
+                }
+            }
+        });
 
-        savedHouses.forEach(house -> compass.add(initHouseDisplay(house)));
+
+        //Maybe refactor this into its own method.
 
         // Default location from API is Google HQ in San Francisco
         // You can change the location and the orientation of the emulator in "Extended Controls" (3 dots)
@@ -53,7 +75,8 @@ public class CompassActivity extends AppCompatActivity {
         // Set "X-Rot" to about -60 and slide "Z-Rot" to change the orientation
 
         LocationService.getInstance().setLocationManager((LocationManager) getSystemService(Context.LOCATION_SERVICE));
-        // this is bad, may need to refactor
+
+        // Shijun will fix this, to make it work better.
         while (true) {
             try {
                 LocationService.getInstance().registerLocationUpdateListener(this);
@@ -67,8 +90,12 @@ public class CompassActivity extends AppCompatActivity {
                 }
             }
         }
+
+        //Maybe Refactor this into it's own method.
+        // Sets up sensors to read values.
         OrientationService.getInstance().setSensorManager((SensorManager) getSystemService(Context.SENSOR_SERVICE));
 
+        //Updates compass based on changing location values.
         LocationService.getInstance().getUserLocation().observe(this, (currentLocation) -> {
             compass.updateBearingForAll(currentLocation);
             compass.updateRotationForAll();
@@ -88,6 +115,7 @@ public class CompassActivity extends AppCompatActivity {
 
     }
 
+    //Creates a label for each house contained in the database.
     public LabelInformation initHouseDisplay(House house) {
         ImageView dotView = new ImageView(this);
 
@@ -111,7 +139,9 @@ public class CompassActivity extends AppCompatActivity {
         ConstraintLayout.LayoutParams dotViewParameters = (ConstraintLayout.LayoutParams) labelView.getLayoutParams();
 
         dotViewParameters.circleConstraint = R.id.CompassCenter;
-        dotViewParameters.circleRadius = 380;
+        //Sets all Houses to always be the correct radius, regardless of size of the screen.
+        dotViewParameters.circleRadius = Math.min((getScreenWidth() * 5) / 14, (getScreenHeight()  * 4) / 15);
+
         dotViewParameters.circleAngle = 0; //shouldn't this be the actual initial angle
         dotViewParameters.width = 60;
         dotViewParameters.height = 60;
@@ -133,8 +163,40 @@ public class CompassActivity extends AppCompatActivity {
         return compass;
     }
 
-    public void onGoToCompass(View view) {
+
+    public static int getScreenWidth() {
+        return Resources.getSystem().getDisplayMetrics().widthPixels;
+    }
+
+    public static int getScreenHeight() {
+        return Resources.getSystem().getDisplayMetrics().heightPixels;
+    }
+
+    // Updates the house database when the app is exited.
+    @Override
+    protected void onStop() {
+        super.onStop();
+
+        HouseDatabase houseDao = HouseDatabase.getInstance(getApplicationContext());
+        final HouseDao db = houseDao.getHouseDao();
+
+        List<House> houses = new ArrayList<>();
+
+        // Uses all house labels excluding north label
+        for(LabelInformation label : compass.getElements()) {
+            if(!label.equals(compass.getNorthElementDisplay())) {
+                houses.add(new House(label.getHouse().getName(), label.getHouse().getLocation()));
+            }
+        }
+
+        for(House house : houses) {
+            db.updateHouse(house);
+        }
+    }
+
+    public void onGoToInput(View view) {
         Intent intent = new Intent(this, MainActivity.class);
         startActivity(intent);
+
     }
 }
