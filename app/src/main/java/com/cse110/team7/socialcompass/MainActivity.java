@@ -84,7 +84,8 @@ public class MainActivity extends AppCompatActivity {
         for(House i : adapter.houseList) {
             if (i.getLocation() != null) {
                 startActivity(intent);
-                 }
+                return;
+            }
         }
 
     }
