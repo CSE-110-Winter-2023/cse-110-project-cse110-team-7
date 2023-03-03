@@ -13,8 +13,10 @@ public class House {
 
     @PrimaryKey(autoGenerate = true)
     public long id;
+    @NonNull
     public String publicID;
     public String privateID;
+    @NonNull
     private String name;
     private LatLong location;
 

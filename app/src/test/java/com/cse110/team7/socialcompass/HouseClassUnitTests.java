@@ -25,7 +25,7 @@ public class HouseClassUnitTests {
 
         String testName = "To Test";
 
-        House test = new House(null, null);
+        House test = new House("name", null);
 
         test.setName(testName);
 
@@ -37,7 +37,7 @@ public class HouseClassUnitTests {
 
         LatLong testLocation = new LatLong(1.2, 3.1);
 
-        House test = new House(null, null);
+        House test = new House("test", null);
 
         test.setLocation(testLocation);
 
