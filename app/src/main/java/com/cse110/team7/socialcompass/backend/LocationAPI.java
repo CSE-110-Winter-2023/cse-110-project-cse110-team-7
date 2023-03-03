@@ -56,7 +56,7 @@ public class LocationAPI {
         try (var response = client.newCall(request).execute()) {
             assert response.body() != null;
             var body = response.body().string();
-            System.err.println("GET: " + body);
+            Log.i("GET",  body);
             return ServerHouseAdapter.fromJSON(body);
         } catch (Exception e) {
             e.printStackTrace();
@@ -103,7 +103,6 @@ public class LocationAPI {
     public void putLocation(House house) {
         ServerHouseAdapter severHouse = new ServerHouseAdapter(house);
         String locationJSON = severHouse.toJSON();
-        System.err.println(locationJSON);
         RequestBody reqBody = RequestBody.create(locationJSON, JSON);
         String publicID = house.getPublicID();
         var request = new Request.Builder()
@@ -113,7 +112,7 @@ public class LocationAPI {
         try (var response = client.newCall(request).execute()) {
             assert response.body() != null;
             var body = response.body().string();
-            System.err.println(body);
+            Log.i("PUT",  body);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -130,7 +129,6 @@ public class LocationAPI {
     public void deleteHouse(House house) {
         ServerHouseAdapter severHouse = new ServerHouseAdapter(house);
         String deleteJSON = severHouse.deleteJSON();
-        System.err.println("delete: " + deleteJSON);
         RequestBody reqBody = RequestBody.create(deleteJSON, JSON);
         String publicID = house.getPublicID();
         var request = new Request.Builder()
@@ -140,7 +138,7 @@ public class LocationAPI {
         try (var response = client.newCall(request).execute()) {
             assert response.body() != null;
             var body = response.body().string();
-            System.err.println(body);
+            Log.i("DELETE",  body);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -166,6 +164,7 @@ public class LocationAPI {
         try (var response = client.newCall(request).execute()) {
             assert response.body() != null;
             var body = response.body().string();
+            Log.i("UPDATE LOC", body);
         } catch (Exception e) {
             e.printStackTrace();
         }

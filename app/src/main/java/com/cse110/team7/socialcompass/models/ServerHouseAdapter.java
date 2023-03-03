@@ -16,7 +16,6 @@ import java.util.List;
 import java.util.Map;
 
 public class ServerHouseAdapter {
-    @PrimaryKey(autoGenerate = true)
     @SerializedName("public_code")
     @NonNull
     public String publicID;
@@ -48,15 +47,6 @@ public class ServerHouseAdapter {
     }
 
     @Ignore
-    public ServerHouseAdapter(@NonNull String publicID, @NonNull String privateID, String name,
-                              double latitude, double longitude) {
-        this.publicID = publicID;
-        this.privateID = privateID;
-        this.name = name;
-        this.latitude = latitude;
-        this.longitude = longitude;
-    }
-
     public ServerHouseAdapter(House house) {
         this.publicID = house.getPublicID();
         this.privateID = house.getPrivateID();
@@ -71,8 +61,7 @@ public class ServerHouseAdapter {
 
     public static House fromJSON(String json) {
         var HouseAdapter = new Gson().fromJson(json, ServerHouseAdapter.class);
-        System.err.println(HouseAdapter);
-                return HouseAdapter.toHouse();
+        return HouseAdapter.toHouse();
     }
 
     public static List<House> listFromJSON(String json) {

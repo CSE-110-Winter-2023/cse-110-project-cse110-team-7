@@ -32,6 +32,7 @@ public class LocationAPITests {
     public void setup() {
         locAPI = LocationAPI.provide();
         locAPI.putLocation(testLoc1);
+        // print private IDs- locations must be manually deleted if program crashes
         System.err.println(testLoc1.getPublicID() + " : " + testLoc1.getPrivateID());
         locAPI.putLocation(testLoc2);
         System.err.println(testLoc2.getPublicID() + " : " + testLoc2.getPrivateID());
