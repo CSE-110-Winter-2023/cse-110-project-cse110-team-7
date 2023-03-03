@@ -70,9 +70,9 @@ public class ServerHouseAdapter {
     }
 
     public static House fromJSON(String json) {
-        var hehe = new Gson().fromJson(json, ServerHouseAdapter.class);
-        System.err.println(hehe);
-                return hehe.toHouse();
+        var HouseAdapter = new Gson().fromJson(json, ServerHouseAdapter.class);
+        System.err.println(HouseAdapter);
+                return HouseAdapter.toHouse();
     }
 
     public static List<House> listFromJSON(String json) {
@@ -94,23 +94,23 @@ public class ServerHouseAdapter {
     }
 
     public String patchLocationJSON() {
-        return new Gson().toJson(Map.of("private_id", this.privateID, "latitude", this.latitude,
+        return new Gson().toJson(Map.of("private_code", this.privateID, "latitude", this.latitude,
                 "longitude", this.longitude));
     }
 
     public String patchRenameJSON() {
-        return new Gson().toJson(Map.of("private_id", this.privateID, "label", this.name));
+        return new Gson().toJson(Map.of("private_code", this.privateID, "label", this.name));
     }
 
-    public String patchPublishJSON(boolean published) {
-        return new Gson().toJson(Map.of("private_id", this.privateID, "is_listed_publicly", published));
+    public String patchPublishJSON() {
+        return new Gson().toJson(Map.of("private_code", this.privateID, "is_listed_publicly", true));
     }
 
     public String deleteJSON() {
-        return new Gson().toJson(Map.of("private_id", this.privateID));
+        return new Gson().toJson(Map.of("private_code", this.privateID));
     }
 
     public String toString() {
-        return "privateID: " + privateID + " publicID: " + publicID + " name " + name;
+        return "privateID: " + privateID + "  publicID: " + publicID + "  name: " + name;
     }
 }

@@ -64,9 +64,33 @@ public class House {
     @Override
     public String toString() {
         return "House{" +
-                "id=" + publicID +
+                "publicid=" + publicID +
                 ", name='" + name + '\'' +
                 ", location=" + location +
                 '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+
+        if (o == this) {
+            return true;
+        }
+
+        if (!(o instanceof House)) {
+            return false;
+        }
+        House h = (House) o;
+        // do not check private ID because it will be null if pulled from server
+        if (!h.getPublicID().equals(getPublicID())) {
+            return false;
+        }
+        if (!h.getName().equals(getName())) {
+            return false;
+        }
+        if (!h.getLocation().equals(getLocation())) {
+            return false;
+        }
+        return true;
     }
 }

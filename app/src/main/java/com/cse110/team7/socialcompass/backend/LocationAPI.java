@@ -130,6 +130,7 @@ public class LocationAPI {
     public void deleteHouse(House house) {
         ServerHouseAdapter severHouse = new ServerHouseAdapter(house);
         String deleteJSON = severHouse.deleteJSON();
+        System.err.println("delete: " + deleteJSON);
         RequestBody reqBody = RequestBody.create(deleteJSON, JSON);
         String publicID = house.getPublicID();
         var request = new Request.Builder()
@@ -205,9 +206,9 @@ public class LocationAPI {
     }
 
     @WorkerThread
-    public void publish(House house, boolean publishStatus) {
+    public void publish(House house) {
         ServerHouseAdapter severHouse = new ServerHouseAdapter(house);
-        String locationJSON = severHouse.patchPublishJSON(publishStatus);
+        String locationJSON = severHouse.patchPublishJSON();
         RequestBody reqBody = RequestBody.create(locationJSON, JSON);
         String publicID = house.getPublicID();
         var request = new Request.Builder()
@@ -225,9 +226,9 @@ public class LocationAPI {
     }
 
     @AnyThread
-    public void publishAsync(House house, boolean publishStatus) {
+    public void publishAsync(House house) {
         var executor = Executors.newSingleThreadExecutor();
-        executor.submit(() -> publish(house, publishStatus));
+        executor.submit(() -> publish(house));
 
     }
 }
