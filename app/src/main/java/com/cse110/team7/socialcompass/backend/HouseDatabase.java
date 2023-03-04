@@ -16,7 +16,7 @@ import com.cse110.team7.socialcompass.models.House;
  * exportSchema = true sounds evil, but it fixes the errors professor mentioned
  * in lab 6 that requires us to downgrade our target sdk to 31
  */
-@Database(entities = {House.class}, version = 1, exportSchema = false)
+@Database(entities = {House.class}, version = 2, exportSchema = false)
 @TypeConverters({LatLongConverter.class})
 public abstract class HouseDatabase extends RoomDatabase {
     private static HouseDatabase INSTANCE = null;
@@ -43,6 +43,7 @@ public abstract class HouseDatabase extends RoomDatabase {
     private static HouseDatabase createDatabase(Context context) {
         return Room.databaseBuilder(context, HouseDatabase.class, "compass_app.db")
                 .allowMainThreadQueries()
+                .fallbackToDestructiveMigration()
                 .build();
     }
 

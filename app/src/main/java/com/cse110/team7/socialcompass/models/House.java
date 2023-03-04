@@ -28,6 +28,7 @@ public class House {
         this.location = location;
         this.publicID = name.replace(" ", "-"); // TODO: assign UIDs so that they are unique
         this.privateID = UUID.randomUUID().toString(); // generate new privateID
+        this.id = publicID.hashCode();
     }
 
     // For populating from remote server
@@ -36,6 +37,7 @@ public class House {
         this.name = name;
         this.location = location;
         this.publicID = publicID;
+        this.id = publicID.hashCode();
     }
 
     public String getName() {
