@@ -16,6 +16,7 @@ import com.cse110.team7.socialcompass.models.FriendAccount;
  * exportSchema = true sounds evil, but it fixes the errors professor mentioned
  * in lab 6 that requires us to downgrade our target sdk to 31
  */
+
 @Database(entities = {FriendAccount.class}, version = 1, exportSchema = false)
 @TypeConverters({LatLongConverter.class})
 public abstract class FriendDatabase extends RoomDatabase {
@@ -43,6 +44,7 @@ public abstract class FriendDatabase extends RoomDatabase {
     private static FriendDatabase createDatabase(Context context) {
         return Room.databaseBuilder(context, FriendDatabase.class, "compass_app.db")
                 .allowMainThreadQueries()
+                .fallbackToDestructiveMigration()
                 .build();
     }
 

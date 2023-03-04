@@ -26,7 +26,7 @@ public class FriendAccount {
     public FriendAccount(String name, LatLong location) {
         this.name = name;
         this.location = location;
-        this.publicID = this.publicID = UUID.randomUUID().toString(); // TODO: check that UID doesn't already exist?
+        this.publicID = UUID.randomUUID().toString(); // TODO: check that UID doesn't already exist?
         this.privateID = UUID.randomUUID().toString(); // generate new privateID
         this.id = publicID.hashCode();
     }
@@ -37,6 +37,7 @@ public class FriendAccount {
         this.name = name;
         this.location = location;
         this.publicID = publicID;
+        this.id = publicID.hashCode();
     }
 
     public String getName() {
