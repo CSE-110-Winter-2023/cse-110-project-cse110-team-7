@@ -41,18 +41,18 @@ public class LocationAPITests {
 
     @After
     public void cleanServer() {
-        locAPI.deleteHouse(testLoc1);
-        locAPI.deleteHouse(testLoc2);
-        locAPI.deleteHouse(testLoc3);
+        locAPI.deleteFriend(testLoc1);
+        locAPI.deleteFriend(testLoc2);
+        locAPI.deleteFriend(testLoc3);
     }
 
     @Test
     /* verifies ability to put and get locations */
-    public void testGetHouse() throws ExecutionException, InterruptedException, TimeoutException {
+    public void testGetFriend() throws ExecutionException, InterruptedException, TimeoutException {
 
-        Future<FriendAccount> futureHouse = locAPI.getHouseAsync(testLoc1.getPublicID());
+        Future<FriendAccount> futureFriend = locAPI.getFriendAsync(testLoc1.getPublicID());
 
-        FriendAccount h = futureHouse.get(1, SECONDS);
+        FriendAccount h = futureFriend.get(1, SECONDS);
         assertEquals(testLoc1, h);
     }
 
@@ -61,8 +61,8 @@ public class LocationAPITests {
         testLoc1.setLocation(new LatLong(90, 90));
         locAPI.updateLocation(testLoc1);
 
-        Future<FriendAccount> futureHouse = locAPI.getHouseAsync(testLoc1.getPublicID());
-        FriendAccount h = futureHouse.get(1, SECONDS);
+        Future<FriendAccount> futureFriend = locAPI.getFriendAsync(testLoc1.getPublicID());
+        FriendAccount h = futureFriend.get(1, SECONDS);
         assertEquals(testLoc1, h);
     }
 
@@ -71,14 +71,14 @@ public class LocationAPITests {
         testLoc1.setName("new name");
         locAPI.updateName(testLoc1);
 
-        Future<FriendAccount> futureHouse = locAPI.getHouseAsync(testLoc1.getPublicID());
+        Future<FriendAccount> futureHouse = locAPI.getFriendAsync(testLoc1.getPublicID());
         FriendAccount h = futureHouse.get(1, SECONDS);
         assertEquals(testLoc1, h);
     }
 
     @Test
     public void testGetAllAndPublish() throws ExecutionException, InterruptedException, TimeoutException {
-        List<FriendAccount> serverFriendAccounts = locAPI.getAllHouses();
+        List<FriendAccount> serverFriendAccounts = locAPI.getAllFriends();
         assertFalse(serverFriendAccounts.contains(testLoc1));
         assertFalse(serverFriendAccounts.contains(testLoc2));
         assertFalse(serverFriendAccounts.contains(testLoc3));
@@ -86,7 +86,7 @@ public class LocationAPITests {
         locAPI.publish(testLoc1);
         locAPI.publish(testLoc3);
 
-        serverFriendAccounts = locAPI.getAllHouses();
+        serverFriendAccounts = locAPI.getAllFriends();
 
         assertTrue(serverFriendAccounts.contains(testLoc1));
         assertFalse(serverFriendAccounts.contains(testLoc2));

@@ -62,14 +62,14 @@ public class US4StoryTest {
          LatLong fakeParentLocation = new LatLong(32, -117);
 
          FriendAccount fakeParentFriendAccount = new FriendAccount("fakeParentHouse", fakeParentLocation);
-         activity.getCompass().add(activity.initHouseDisplay(fakeParentFriendAccount));
+         activity.getCompass().add(activity.initFriendDisplay(fakeParentFriendAccount));
 
-         activity.getCompass().getElements().get(0).getHouse().setLocation(fakeFriendLocation);
-         activity.getCompass().getElements().get(1).getHouse().setLocation(fakeParentLocation);
+         activity.getCompass().getElements().get(0).getFriend().setLocation(fakeFriendLocation);
+         activity.getCompass().getElements().get(1).getFriend().setLocation(fakeParentLocation);
          activity.recreate();
 
-         LatLong newFriendLocation = activity.getCompass().getElements().get(0).getHouse().getLocation();
-         LatLong newParentLocation = activity.getCompass().getElements().get(1).getHouse().getLocation();
+         LatLong newFriendLocation = activity.getCompass().getElements().get(0).getFriend().getLocation();
+         LatLong newParentLocation = activity.getCompass().getElements().get(1).getFriend().getLocation();
          assertEquals(Double.compare(newFriendLocation.getLatitude(), 50), 0);
          assertEquals(Double.compare(newFriendLocation.getLongitude(), -120), 0);
          assertEquals(Double.compare(newParentLocation.getLatitude(), 32), 0);

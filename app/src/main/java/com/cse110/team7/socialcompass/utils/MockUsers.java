@@ -67,9 +67,9 @@ public class MockUsers {
         ScheduledExecutorService executorService = Executors.newSingleThreadScheduledExecutor();
 
         executorService.schedule(() -> {
-            locAPI.deleteHouse(mockMom);
-            locAPI.deleteHouse(mockDad);
-            locAPI.deleteHouse(mockFriend);
+            locAPI.deleteFriend(mockMom);
+            locAPI.deleteFriend(mockDad);
+            locAPI.deleteFriend(mockFriend);
             executor.shutdown();
         }, 20, TimeUnit.SECONDS);
 

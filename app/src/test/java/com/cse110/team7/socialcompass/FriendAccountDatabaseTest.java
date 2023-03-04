@@ -44,7 +44,7 @@ public class FriendAccountDatabaseTest {
     }
 
     @Test
-    public void testInsertHouse() {
+    public void testInsertFriend() {
         FriendAccount friendAccount1 = new FriendAccount("Parent's", new LatLong(12, 24));
         FriendAccount friendAccount2 = new FriendAccount("Best friend's", new LatLong(24, -48));
 
@@ -55,7 +55,7 @@ public class FriendAccountDatabaseTest {
     }
 
     @Test
-    public void testSelectHouse() {
+    public void testSelectFriend() {
         FriendAccount friendAccount1 = new FriendAccount("Best friend's", new LatLong(24, -48));
 
         long id1 = friendAccountDao.insertFriend(friendAccount1);
@@ -68,7 +68,7 @@ public class FriendAccountDatabaseTest {
     }
 
     @Test
-    public void testUpdateHouse() {
+    public void testUpdateFriend() {
         FriendAccount friendAccount1 = new FriendAccount("Best friend's", new LatLong(24, -48));
 
         long id1 = friendAccountDao.insertFriend(friendAccount1);
@@ -88,7 +88,7 @@ public class FriendAccountDatabaseTest {
     }
 
     @Test
-    public void testDeleteHouse() {
+    public void testDeleteFriend() {
         FriendAccount friendAccount1 = new FriendAccount("Best friend's", new LatLong(24, -48));
 
         long id1 = friendAccountDao.insertFriend(friendAccount1);

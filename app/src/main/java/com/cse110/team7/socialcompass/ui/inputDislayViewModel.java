@@ -19,10 +19,10 @@ import java.util.List;
  * update it, while also updating the Recycle Adapter in inputDisplayAdapter.
  */
 public class inputDislayViewModel extends AndroidViewModel {
-    private LiveData<List<FriendAccount>> allHouses; //Parallel list of houses.
+    private LiveData<List<FriendAccount>> allFriends; //Parallel list of friends.
     private final FriendAccountDao friendAccountDao; //The database
 
-    public void addHouse(FriendAccount newFriendAccount){
+    public void addFriend(FriendAccount newFriendAccount){
         friendAccountDao.insertFriend(newFriendAccount);
     }
 
@@ -44,19 +44,19 @@ public class inputDislayViewModel extends AndroidViewModel {
     public inputDislayViewModel(@NonNull Application application) {
         super(application);
         Context context = getApplication().getApplicationContext();
-        FriendDatabase houseDao = FriendDatabase.getInstance(context);
-        this.friendAccountDao = houseDao.getFriendDao();
+        FriendDatabase friendDao = FriendDatabase.getInstance(context);
+        this.friendAccountDao = friendDao.getFriendDao();
     }
 
-    public LiveData<List<FriendAccount>> getHouseItems() {
-        if(allHouses == null) {
+    public LiveData<List<FriendAccount>> getFriendItems() {
+        if(allFriends == null) {
             loadUsers();
         }
 
-        return allHouses;
+        return allFriends;
     }
 
     private void loadUsers() {
-        allHouses = friendAccountDao.selectFriends();
+        allFriends = friendAccountDao.selectFriends();
     }
 }

@@ -33,15 +33,15 @@ public class inputDisplayAdapter extends RecyclerView.Adapter<inputDisplayAdapte
     }
 
     //May have issues later with clear; make sure to check.
-    //This method simply sets up the house list with whatever values need to be inputted.
-    public void setHouseList(List<FriendAccount> newFriendAccounts) {
+    //This method simply sets up the friend  list with whatever values need to be inputted.
+    public void setFriendList(List<FriendAccount> newFriendAccounts) {
         this.friendAccountList.clear();
         this.friendAccountList = newFriendAccounts;
         notifyDataSetChanged();
     }
 
     //Not really used, but may be useful for testing.
-    public ArrayList<FriendAccount> getHouseList() {
+    public ArrayList<FriendAccount> getFriendList() {
         return (ArrayList<FriendAccount>)(friendAccountList);
     }
 
@@ -56,7 +56,7 @@ public class inputDisplayAdapter extends RecyclerView.Adapter<inputDisplayAdapte
 
     @Override
     public void onBindViewHolder(@NonNull inputDisplayAdapter.ViewHolder holder, int position) {
-        holder.setHouse(friendAccountList.get(position));
+        holder.setFriend(friendAccountList.get(position));
     }
 
     @Override
@@ -99,13 +99,13 @@ public class inputDisplayAdapter extends RecyclerView.Adapter<inputDisplayAdapte
             });
         }
 
-        public FriendAccount getHouse() {
+        public FriendAccount getFriend() {
             return currFriendAccount;
         }
 
-        //May not be necessary, but it currently sets a house
+        //May not be necessary, but it currently sets a friend account
         //(and its corresponding textViews to certain values):
-        public void setHouse(FriendAccount friendAccountToSet) {
+        public void setFriend(FriendAccount friendAccountToSet) {
             currFriendAccount = friendAccountToSet;
             if(friendAccountToSet.getLocation() != null){
                 String latLongValue = friendAccountToSet.getLocation().toString();

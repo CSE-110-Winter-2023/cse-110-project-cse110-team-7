@@ -22,7 +22,7 @@ public class CompassClassUnitTests {
         Compass testCompass = new Compass(img);
 
         assertEquals(testCompass.getNorthElementDisplay().getDotView(), img);
-        assertEquals(testCompass.getNorthElementDisplay().getHouse().getLocation(), new LatLong(90, 0));
+        assertEquals(testCompass.getNorthElementDisplay().getFriend().getLocation(), new LatLong(90, 0));
         assertEquals(testCompass.getElements().size(), 1);
     }
 

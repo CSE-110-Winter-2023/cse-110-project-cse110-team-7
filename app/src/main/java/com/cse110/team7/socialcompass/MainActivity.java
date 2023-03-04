@@ -43,20 +43,20 @@ public class MainActivity extends AppCompatActivity {
         adapter.setCoordinatesChanged(viewModel::updateCoordinateText);
         adapter.setParentLabelChanged(viewModel::updateLabelText);
 
-        viewModel.getHouseItems().observe(this, adapter::setHouseList);
+        viewModel.getFriendItems().observe(this, adapter::setFriendList);
 
-        //If no data is already saved, then adds three empty houses to the database.
-        viewModel.getHouseItems().observe(this, houses -> {
-            if (houses.size() == 0) {
-                viewModel.addHouse(new FriendAccount("Parents", null));
-                viewModel.addHouse(new FriendAccount("Friends", null));
-                viewModel.addHouse(new FriendAccount("My Home", null));
+        //If no data is already saved, then adds three friends to the database.
+        viewModel.getFriendItems().observe(this, friends -> {
+            if (friends.size() == 0) {
+                viewModel.addFriend(new FriendAccount("Parents", null));
+                viewModel.addFriend(new FriendAccount("Friends", null));
+                viewModel.addFriend(new FriendAccount("My Home", null));
             }
         });
 
         //Sets up the recycler view, so that each empty/stored label gets displayed on the UI, in the
         //format given by label_input_format.xml
-        recyclerView = findViewById(R.id.houseInputItems);
+        recyclerView = findViewById(R.id.friendInputItems);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         recyclerView.setAdapter(adapter);
     }

@@ -87,9 +87,9 @@ public class US3StoryTest {
          float parentBearing = AngleCalculator.calculateAngle(fakeLocation, fakeParentLocation);
 
          FriendAccount fakeParentFriendAccount = new FriendAccount("fakeParentHouse", fakeParentLocation);
-         activity.getCompass().add(activity.initHouseDisplay(fakeParentFriendAccount));
+         activity.getCompass().add(activity.initFriendDisplay(fakeParentFriendAccount));
 
-         activity.getCompass().getElements().get(1).getHouse().setLocation(fakeParentLocation);
+         activity.getCompass().getElements().get(1).getFriend().setLocation(fakeParentLocation);
 
          OrientationService.getInstance().setAzimuth(0);
          LocationService.getInstance().setUserLocation(fakeLocation);
@@ -117,10 +117,10 @@ public class US3StoryTest {
          float parentBearing = AngleCalculator.calculateAngle(fakeLocation, fakeParentLocation);
 
          FriendAccount fakeParentFriendAccount2 = new FriendAccount("fakeParentHouse", fakeParentLocation);
-         activity.getCompass().add(activity.initHouseDisplay(fakeParentFriendAccount2));
+         activity.getCompass().add(activity.initFriendDisplay(fakeParentFriendAccount2));
 
 
-         activity.getCompass().getElements().get(1).getHouse().setLocation(fakeParentLocation);
+         activity.getCompass().getElements().get(1).getFriend().setLocation(fakeParentLocation);
 
          LocationService.getInstance().setUserLocation(fakeLocation);
          OrientationService.getInstance().setAzimuth(fakeOrientation);
@@ -159,7 +159,7 @@ public class US3StoryTest {
          LocationService.getInstance().unregisterLocationUpdateListener();
          OrientationService.getInstance().unregisterSensorEventListener();
 
-         savedFriendAccounts.forEach(house -> activity.getCompass().add(activity.initHouseDisplay(house)));
+         savedFriendAccounts.forEach(house -> activity.getCompass().add(activity.initFriendDisplay(house)));
 
          for (int i = 0; i < randomLocations.size(); i++) {
             LatLong randomLocation = randomLocations.get(i);
@@ -167,7 +167,7 @@ public class US3StoryTest {
             LocationService.getInstance().setUserLocation(randomLocation);
             OrientationService.getInstance().setAzimuth(randomOrientation);
             activity.getCompass().getElements().forEach(houseLabel -> {
-               float bearing = AngleCalculator.calculateAngle(randomLocation, houseLabel.getHouse());
+               float bearing = AngleCalculator.calculateAngle(randomLocation, houseLabel.getFriend());
                var layoutParams = (ConstraintLayout.LayoutParams) houseLabel.getDotView().getLayoutParams();
                assertEquals(Double.compare(layoutParams.circleAngle, bearing - randomOrientation), 0);
             });

@@ -21,7 +21,7 @@ public class FriendAccount {
     private LatLong location;
 
     //May Need This (Page 7, Lab 6):
-    //private int houseNum;
+    //private int friendNum;
 
     public FriendAccount(String name, LatLong location) {
         this.name = name;

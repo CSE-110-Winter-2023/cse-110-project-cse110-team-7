@@ -24,7 +24,7 @@ public class LabelInformationClassUnitTests {
 
         LabelInformation testLabelInformation = new LabelInformation(testFriendAccount, testImageView, testTextView);
 
-        assertEquals(testLabelInformation.getHouse(), testFriendAccount);
+        assertEquals(testLabelInformation.getFriend(), testFriendAccount);
         assertEquals(testLabelInformation.getDotView(), testImageView);
         assertEquals(testLabelInformation.getLabelView(), testTextView);
         assertEquals(Double.compare(testLabelInformation.getBearing(), 0), 0);

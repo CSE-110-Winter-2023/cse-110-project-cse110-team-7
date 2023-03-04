@@ -61,7 +61,7 @@ public class CompassActivity extends AppCompatActivity {
         db.selectFriends().observe(this, houses -> {
             for(FriendAccount i : houses){
                 if(i.getLocation() != null){
-                    compass.add(initHouseDisplay(i));
+                    compass.add(initFriendDisplay(i));
                 }
             }
         });
@@ -115,8 +115,8 @@ public class CompassActivity extends AppCompatActivity {
 
     }
 
-    //Creates a label for each house contained in the database.
-    public LabelInformation initHouseDisplay(FriendAccount friendAccount) {
+    //Creates a label for each friend contained in the database.
+    public LabelInformation initFriendDisplay(FriendAccount friendAccount) {
         ImageView dotView = new ImageView(this);
 
         dotView.setId(View.generateViewId());
@@ -139,7 +139,7 @@ public class CompassActivity extends AppCompatActivity {
         ConstraintLayout.LayoutParams dotViewParameters = (ConstraintLayout.LayoutParams) labelView.getLayoutParams();
 
         dotViewParameters.circleConstraint = R.id.CompassCenter;
-        //Sets all Houses to always be the correct radius, regardless of size of the screen.
+        //Sets all Friends to always be the correct radius, regardless of size of the screen.
         dotViewParameters.circleRadius = Math.min((getScreenWidth() * 5) / 14, (getScreenHeight()  * 4) / 15);
 
         dotViewParameters.circleAngle = 0; //shouldn't this be the actual initial angle
@@ -172,20 +172,20 @@ public class CompassActivity extends AppCompatActivity {
         return Resources.getSystem().getDisplayMetrics().heightPixels;
     }
 
-    // Updates the house database when the app is exited.
+    // Updates the friend database when the app is exited.
     @Override
     protected void onStop() {
         super.onStop();
 
-        FriendDatabase houseDao = FriendDatabase.getInstance(getApplicationContext());
-        final FriendAccountDao db = houseDao.getFriendDao();
+        FriendDatabase friendDao = FriendDatabase.getInstance(getApplicationContext());
+        final FriendAccountDao db = friendDao.getFriendDao();
 
         List<FriendAccount> friendAccounts = new ArrayList<>();
 
-        // Uses all house labels excluding north label
+        // Uses all friend labels excluding north label
         for(LabelInformation label : compass.getElements()) {
             if(!label.equals(compass.getNorthElementDisplay())) {
-                friendAccounts.add(new FriendAccount(label.getHouse().getName(), label.getHouse().getLocation()));
+                friendAccounts.add(new FriendAccount(label.getFriend().getName(), label.getFriend().getLocation()));
             }
         }
 

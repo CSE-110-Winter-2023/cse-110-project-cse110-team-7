@@ -14,7 +14,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-public class ServerHouseAdapter {
+public class ServerFriendAdapter {
     @SerializedName("public_code")
     @NonNull
     public String publicID;
@@ -37,7 +37,7 @@ public class ServerHouseAdapter {
     private double longitude;
 
 
-    public ServerHouseAdapter(@NonNull String title, @NonNull String content) {
+    public ServerFriendAdapter(@NonNull String title, @NonNull String content) {
         this.publicID = title;
         this.privateID = content;
         this.name = "";
@@ -46,7 +46,7 @@ public class ServerHouseAdapter {
     }
 
     @Ignore
-    public ServerHouseAdapter(FriendAccount friendAccount) {
+    public ServerFriendAdapter(FriendAccount friendAccount) {
         this.publicID = friendAccount.getPublicID();
         this.privateID = friendAccount.getPrivateID();
         this.name = friendAccount.getName();
@@ -54,22 +54,22 @@ public class ServerHouseAdapter {
         this.longitude = friendAccount.getLocation().getLongitude();
     }
 
-    public FriendAccount toHouse() {
+    public FriendAccount toFriend() {
         return new FriendAccount(name, new LatLong(latitude, longitude), publicID);
     }
 
     public static FriendAccount fromJSON(String json) {
-        var HouseAdapter = new Gson().fromJson(json, ServerHouseAdapter.class);
-        return HouseAdapter.toHouse();
+        var FriendAdapter = new Gson().fromJson(json, ServerFriendAdapter.class);
+        return FriendAdapter.toFriend();
     }
 
     public static List<FriendAccount> listFromJSON(String json) {
-        Type type = new TypeToken<List<ServerHouseAdapter>>() {
+        Type type = new TypeToken<List<ServerFriendAdapter>>() {
         }.getType();
-        List<ServerHouseAdapter> serverHouses = new Gson().fromJson(json, type);
+        List<ServerFriendAdapter> serverFriends = new Gson().fromJson(json, type);
         List<FriendAccount> friendAccountList = new ArrayList<>();
-        for (ServerHouseAdapter s : serverHouses) {
-            friendAccountList.add(s.toHouse());
+        for (ServerFriendAdapter s : serverFriends) {
+            friendAccountList.add(s.toFriend());
         }
         return friendAccountList;
     }

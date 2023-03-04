@@ -9,7 +9,7 @@ import org.junit.Test;
 
 public class FriendAccountClassUnitTests {
     @Test
-    public void testHouseConstructor() {
+    public void testFriendConstructor() {
 
         String testName = "Test";
         LatLong testLocation = new LatLong(11.1, 13.2);
@@ -22,7 +22,7 @@ public class FriendAccountClassUnitTests {
     }
 
     @Test
-    public void testSecondHouseConstructor() {
+    public void testSecondFriendConstructor() {
 
         String testName = "Test";
         LatLong testLocation = new LatLong(11.1, 13.2);

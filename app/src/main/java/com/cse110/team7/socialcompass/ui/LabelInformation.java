@@ -24,7 +24,7 @@ public class LabelInformation {
         this.bearing = 0;
     }
 
-    public FriendAccount getHouse() {
+    public FriendAccount getFriend() {
         return friendAccount;
     }
 
