@@ -28,7 +28,7 @@ public class FriendAccountClassUnitTests {
         LatLong testLocation = new LatLong(11.1, 13.2);
         String testPublicID = "111-111-111";
 
-        House test = new House(testName, testLocation, testPublicID);
+        FriendAccount test = new FriendAccount(testName, testLocation, testPublicID);
 
         assertEquals(testName, test.getName());
         assertEquals(testLocation, test.getLocation());
