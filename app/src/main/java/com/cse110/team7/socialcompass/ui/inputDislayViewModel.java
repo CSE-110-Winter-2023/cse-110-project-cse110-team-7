@@ -7,11 +7,10 @@ import androidx.annotation.NonNull;
 import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
 
-import com.cse110.team7.socialcompass.backend.HouseDao;
-import com.cse110.team7.socialcompass.backend.HouseDatabase;
+import com.cse110.team7.socialcompass.backend.FriendAccountDao;
+import com.cse110.team7.socialcompass.backend.FriendDatabase;
 import com.cse110.team7.socialcompass.backend.LatLongConverter;
-import com.cse110.team7.socialcompass.models.House;
-import com.cse110.team7.socialcompass.models.LatLong;
+import com.cse110.team7.socialcompass.models.FriendAccount;
 
 import java.util.List;
 
@@ -20,36 +19,36 @@ import java.util.List;
  * update it, while also updating the Recycle Adapter in inputDisplayAdapter.
  */
 public class inputDislayViewModel extends AndroidViewModel {
-    private LiveData<List<House>> allHouses; //Parallel list of houses.
-    private final HouseDao houseDao; //The database
+    private LiveData<List<FriendAccount>> allHouses; //Parallel list of houses.
+    private final FriendAccountDao friendAccountDao; //The database
 
-    public void addHouse(House newHouse){
-        houseDao.insertHouse(newHouse);
+    public void addHouse(FriendAccount newFriendAccount){
+        friendAccountDao.insertFriend(newFriendAccount);
     }
 
-    public void updateLabelText(House currHouse, String labelText) {
-        currHouse.setName(labelText);
-        houseDao.updateHouse(currHouse);
+    public void updateLabelText(FriendAccount currFriendAccount, String labelText) {
+        currFriendAccount.setName(labelText);
+        friendAccountDao.updateFriend(currFriendAccount);
     }
 
-    public void updateCoordinateText(House currHouse, String coordinateText) {
+    public void updateCoordinateText(FriendAccount currFriendAccount, String coordinateText) {
         if(coordinateText == null || coordinateText.equals("")){
-            currHouse.setLocation(null);
-            houseDao.updateHouse(currHouse);
+            currFriendAccount.setLocation(null);
+            friendAccountDao.updateFriend(currFriendAccount);
             return;
         }
-        currHouse.setLocation(LatLongConverter.stringToLatLong(coordinateText));
-        houseDao.updateHouse(currHouse);
+        currFriendAccount.setLocation(LatLongConverter.stringToLatLong(coordinateText));
+        friendAccountDao.updateFriend(currFriendAccount);
     }
 
     public inputDislayViewModel(@NonNull Application application) {
         super(application);
         Context context = getApplication().getApplicationContext();
-        HouseDatabase houseDao = HouseDatabase.getInstance(context);
-        this.houseDao = houseDao.getHouseDao();
+        FriendDatabase houseDao = FriendDatabase.getInstance(context);
+        this.friendAccountDao = houseDao.getFriendDao();
     }
 
-    public LiveData<List<House>> getHouseItems() {
+    public LiveData<List<FriendAccount>> getHouseItems() {
         if(allHouses == null) {
             loadUsers();
         }
@@ -58,6 +57,6 @@ public class inputDislayViewModel extends AndroidViewModel {
     }
 
     private void loadUsers() {
-        allHouses = houseDao.selectHouses();
+        allHouses = friendAccountDao.selectFriends();
     }
 }

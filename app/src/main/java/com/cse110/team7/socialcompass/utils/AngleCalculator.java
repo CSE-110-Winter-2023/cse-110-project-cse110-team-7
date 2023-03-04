@@ -1,6 +1,6 @@
 package com.cse110.team7.socialcompass.utils;
 
-import com.cse110.team7.socialcompass.models.House;
+import com.cse110.team7.socialcompass.models.FriendAccount;
 import com.cse110.team7.socialcompass.models.LatLong;
 
 public class AngleCalculator {
@@ -14,8 +14,8 @@ public class AngleCalculator {
         return (float) ((Math.toDegrees(Math.atan2(x, y)) + 360) % 360);
     }
 
-    public static float calculateAngle(LatLong currentLocation, House house) {
-        return calculateAngle(currentLocation, house.getLocation());
+    public static float calculateAngle(LatLong currentLocation, FriendAccount friendAccount) {
+        return calculateAngle(currentLocation, friendAccount.getLocation());
     }
 
 }

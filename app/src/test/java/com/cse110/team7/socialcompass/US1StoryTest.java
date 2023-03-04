@@ -12,8 +12,8 @@ import androidx.room.Room;
 import androidx.test.core.app.ActivityScenario;
 import androidx.test.core.app.ApplicationProvider;
 
-import com.cse110.team7.socialcompass.backend.HouseDao;
-import com.cse110.team7.socialcompass.backend.HouseDatabase;
+import com.cse110.team7.socialcompass.backend.FriendAccountDao;
+import com.cse110.team7.socialcompass.backend.FriendDatabase;
 
 import org.junit.After;
 import org.junit.Before;
@@ -23,25 +23,25 @@ import org.robolectric.RobolectricTestRunner;
 
 @RunWith(RobolectricTestRunner.class)
 public class US1StoryTest   {
-    private HouseDao houseDao;
-    private HouseDatabase houseDatabase;
+    private FriendAccountDao friendAccountDao;
+    private FriendDatabase friendDatabase;
 
     @Before
     public void createDatabase() {
         Context context = ApplicationProvider.getApplicationContext();
 
-        houseDatabase = Room.inMemoryDatabaseBuilder(context, HouseDatabase.class)
+        friendDatabase = Room.inMemoryDatabaseBuilder(context, FriendDatabase.class)
                 .allowMainThreadQueries()
                 .build();
 
-        HouseDatabase.injectTestDatabase(houseDatabase);
+        FriendDatabase.injectTestDatabase(friendDatabase);
 
-        houseDao = houseDatabase.getHouseDao();
+        friendAccountDao = friendDatabase.getFriendDao();
     }
 
     @After
     public void closeDatabase() {
-        houseDatabase.close();
+        friendDatabase.close();
     }
 
     @Test

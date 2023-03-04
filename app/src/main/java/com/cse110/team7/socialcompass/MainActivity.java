@@ -10,7 +10,7 @@ import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.cse110.team7.socialcompass.models.House;
+import com.cse110.team7.socialcompass.models.FriendAccount;
 import com.cse110.team7.socialcompass.ui.inputDisplayAdapter;
 import com.cse110.team7.socialcompass.ui.inputDislayViewModel;
 
@@ -48,9 +48,9 @@ public class MainActivity extends AppCompatActivity {
         //If no data is already saved, then adds three empty houses to the database.
         viewModel.getHouseItems().observe(this, houses -> {
             if (houses.size() == 0) {
-                viewModel.addHouse(new House("Parents", null));
-                viewModel.addHouse(new House("Friends", null));
-                viewModel.addHouse(new House("My Home", null));
+                viewModel.addHouse(new FriendAccount("Parents", null));
+                viewModel.addHouse(new FriendAccount("Friends", null));
+                viewModel.addHouse(new FriendAccount("My Home", null));
             }
         });
 
@@ -81,7 +81,7 @@ public class MainActivity extends AppCompatActivity {
         Intent intent = new Intent(this, CompassActivity.class);
         intent.putExtra("orientation", orientation);
 
-        for(House i : adapter.houseList) {
+        for(FriendAccount i : adapter.friendAccountList) {
             if (i.getLocation() != null) {
                 startActivity(intent);
                 return;

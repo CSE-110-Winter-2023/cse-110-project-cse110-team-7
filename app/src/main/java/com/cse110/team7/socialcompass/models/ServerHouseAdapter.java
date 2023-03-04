@@ -2,7 +2,6 @@ package com.cse110.team7.socialcompass.models;
 
 import androidx.annotation.NonNull;
 import androidx.room.Ignore;
-import androidx.room.PrimaryKey;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -47,32 +46,32 @@ public class ServerHouseAdapter {
     }
 
     @Ignore
-    public ServerHouseAdapter(House house) {
-        this.publicID = house.getPublicID();
-        this.privateID = house.getPrivateID();
-        this.name = house.getName();
-        this.latitude = house.getLocation().getLatitude();
-        this.longitude = house.getLocation().getLongitude();
+    public ServerHouseAdapter(FriendAccount friendAccount) {
+        this.publicID = friendAccount.getPublicID();
+        this.privateID = friendAccount.getPrivateID();
+        this.name = friendAccount.getName();
+        this.latitude = friendAccount.getLocation().getLatitude();
+        this.longitude = friendAccount.getLocation().getLongitude();
     }
 
-    public House toHouse() {
-        return new House(name, new LatLong(latitude, longitude), publicID);
+    public FriendAccount toHouse() {
+        return new FriendAccount(name, new LatLong(latitude, longitude), publicID);
     }
 
-    public static House fromJSON(String json) {
+    public static FriendAccount fromJSON(String json) {
         var HouseAdapter = new Gson().fromJson(json, ServerHouseAdapter.class);
         return HouseAdapter.toHouse();
     }
 
-    public static List<House> listFromJSON(String json) {
+    public static List<FriendAccount> listFromJSON(String json) {
         Type type = new TypeToken<List<ServerHouseAdapter>>() {
         }.getType();
         List<ServerHouseAdapter> serverHouses = new Gson().fromJson(json, type);
-        List<House> houseList = new ArrayList<>();
+        List<FriendAccount> friendAccountList = new ArrayList<>();
         for (ServerHouseAdapter s : serverHouses) {
-            houseList.add(s.toHouse());
+            friendAccountList.add(s.toHouse());
         }
-        return houseList;
+        return friendAccountList;
     }
 
     public String toJSON() {

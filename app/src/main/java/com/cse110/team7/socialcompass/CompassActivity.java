@@ -15,9 +15,9 @@ import android.widget.TextView;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.constraintlayout.widget.ConstraintLayout;
 
-import com.cse110.team7.socialcompass.backend.HouseDao;
-import com.cse110.team7.socialcompass.backend.HouseDatabase;
-import com.cse110.team7.socialcompass.models.House;
+import com.cse110.team7.socialcompass.backend.FriendAccountDao;
+import com.cse110.team7.socialcompass.backend.FriendDatabase;
+import com.cse110.team7.socialcompass.models.FriendAccount;
 import com.cse110.team7.socialcompass.services.LocationService;
 import com.cse110.team7.socialcompass.services.OrientationService;
 import com.cse110.team7.socialcompass.ui.Compass;
@@ -48,8 +48,8 @@ public class CompassActivity extends AppCompatActivity {
         //These three lines open up the Room database, giving us access to the values stored from
         //the main activity, with HouseDao being an instance of the HouseDatabase class.
         Context context = getApplication().getApplicationContext();
-        HouseDatabase houseDao = HouseDatabase.getInstance(context);
-        final HouseDao db = houseDao.getHouseDao();
+        FriendDatabase houseDao = FriendDatabase.getInstance(context);
+        final FriendAccountDao db = houseDao.getFriendDao();
 
         // Accessing data from input screen
         Intent intent = getIntent();
@@ -58,8 +58,8 @@ public class CompassActivity extends AppCompatActivity {
         //We read all of the houses stored in the database, which gives us a live observer variable
         //And from there, if the location is not null (e.g. was not inputted), it adds it as a label
         //to the compass.
-        db.selectHouses().observe(this, houses -> {
-            for(House i : houses){
+        db.selectFriends().observe(this, houses -> {
+            for(FriendAccount i : houses){
                 if(i.getLocation() != null){
                     compass.add(initHouseDisplay(i));
                 }
@@ -116,7 +116,7 @@ public class CompassActivity extends AppCompatActivity {
     }
 
     //Creates a label for each house contained in the database.
-    public LabelInformation initHouseDisplay(House house) {
+    public LabelInformation initHouseDisplay(FriendAccount friendAccount) {
         ImageView dotView = new ImageView(this);
 
         dotView.setId(View.generateViewId());
@@ -125,7 +125,7 @@ public class CompassActivity extends AppCompatActivity {
         TextView labelView = new TextView(this);
 
         labelView.setId(View.generateViewId());
-        labelView.setText(house.getName());
+        labelView.setText(friendAccount.getName());
         labelView.setTextSize(20); //Change size of text here.
         labelView.setTypeface(null, Typeface.BOLD);
         labelView.setTextColor(Color.WHITE);
@@ -156,7 +156,7 @@ public class CompassActivity extends AppCompatActivity {
         labelParameters.height = ConstraintLayout.LayoutParams.WRAP_CONTENT;
         labelParameters.width = ConstraintLayout.LayoutParams.WRAP_CONTENT;
 
-        return new LabelInformation(house, dotView, labelView);
+        return new LabelInformation(friendAccount, dotView, labelView);
     }
 
     public Compass getCompass() {
@@ -177,20 +177,20 @@ public class CompassActivity extends AppCompatActivity {
     protected void onStop() {
         super.onStop();
 
-        HouseDatabase houseDao = HouseDatabase.getInstance(getApplicationContext());
-        final HouseDao db = houseDao.getHouseDao();
+        FriendDatabase houseDao = FriendDatabase.getInstance(getApplicationContext());
+        final FriendAccountDao db = houseDao.getFriendDao();
 
-        List<House> houses = new ArrayList<>();
+        List<FriendAccount> friendAccounts = new ArrayList<>();
 
         // Uses all house labels excluding north label
         for(LabelInformation label : compass.getElements()) {
             if(!label.equals(compass.getNorthElementDisplay())) {
-                houses.add(new House(label.getHouse().getName(), label.getHouse().getLocation()));
+                friendAccounts.add(new FriendAccount(label.getHouse().getName(), label.getHouse().getLocation()));
             }
         }
 
-        for(House house : houses) {
-            db.updateHouse(house);
+        for(FriendAccount friendAccount : friendAccounts) {
+            db.updateFriend(friendAccount);
         }
     }
 

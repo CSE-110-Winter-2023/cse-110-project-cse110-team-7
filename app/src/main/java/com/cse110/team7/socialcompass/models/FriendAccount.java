@@ -8,10 +8,10 @@ import androidx.room.PrimaryKey;
 
 import java.util.UUID;
 
-@Entity(tableName = "compass_houses")
-public class House {
+@Entity(tableName = "friend_locations")
+public class FriendAccount {
 
-    @PrimaryKey(autoGenerate = true)
+    @PrimaryKey
     public long id;
     @NonNull
     public String publicID;
@@ -23,16 +23,17 @@ public class House {
     //May Need This (Page 7, Lab 6):
     //private int houseNum;
 
-    public House(String name, LatLong location) {
+    public FriendAccount(String name, LatLong location) {
         this.name = name;
         this.location = location;
-        this.publicID = name.replace(" ", "-"); // TODO: assign UIDs so that they are unique
+        this.publicID = this.publicID = UUID.randomUUID().toString(); // TODO: check that UID doesn't already exist?
         this.privateID = UUID.randomUUID().toString(); // generate new privateID
+        this.id = publicID.hashCode();
     }
 
     // For populating from remote server
     @Ignore
-    public House(String name, LatLong location, String publicID) {
+    public FriendAccount(String name, LatLong location, String publicID) {
         this.name = name;
         this.location = location;
         this.publicID = publicID;
@@ -65,7 +66,7 @@ public class House {
     @NonNull
     @Override
     public String toString() {
-        return "House{" +
+        return "Friend {" +
                 "publicid=" + publicID +
                 ", name='" + name + '\'' +
                 ", location=" + location +
@@ -79,10 +80,10 @@ public class House {
             return true;
         }
 
-        if (!(o instanceof House)) {
+        if (!(o instanceof FriendAccount)) {
             return false;
         }
-        House h = (House) o;
+        FriendAccount h = (FriendAccount) o;
         // do not check private ID because it will be null if pulled from server
         if (!h.getPublicID().equals(getPublicID())) {
             return false;

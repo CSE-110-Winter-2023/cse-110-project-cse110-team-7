@@ -5,7 +5,7 @@ import android.util.Log;
 import androidx.annotation.AnyThread;
 import androidx.annotation.WorkerThread;
 
-import com.cse110.team7.socialcompass.models.House;
+import com.cse110.team7.socialcompass.models.FriendAccount;
 import com.cse110.team7.socialcompass.models.ServerHouseAdapter;
 
 import java.util.List;
@@ -40,14 +40,14 @@ public class LocationAPI {
 
     /**
      * An example of sending a GET request to the server.
-     * <p>
+     *
      * The /echo/{msg} endpoint always just returns {"message": msg}.
-     * <p>
+     *
      * This method should can be called on a background thread (Android
      * disallows network requests on the main thread).
      */
     @WorkerThread
-    public House getHouse(String publicID) {
+    public FriendAccount getHouse(String publicID) {
 
         var request = new Request.Builder()
                 .url("https://socialcompass.goto.ucsd.edu/location/" + publicID)
@@ -65,7 +65,7 @@ public class LocationAPI {
     }
 
     @AnyThread
-    public Future<House> getHouseAsync(String msg) {
+    public Future<FriendAccount> getHouseAsync(String msg) {
         var executor = Executors.newSingleThreadExecutor();
         var future = executor.submit(() -> getHouse(msg));
 
@@ -73,8 +73,17 @@ public class LocationAPI {
         return future;
     }
 
+    /**
+     * Calls the API's GET Function @ in order to pull
+     * all of the houses which have been publically published @
+     * https://socialcompass.goto.ucsd.edu/docs#/default/put_location_location__public_code__put
+     *
+     * (This Function Likely Won't Be Used)
+     *
+     * @return List of all Friends
+     */
     @WorkerThread
-    public List<House> getAllHouses() {
+    public List<FriendAccount> getAllHouses() {
 
         var request = new Request.Builder()
                 .url("https://socialcompass.goto.ucsd.edu/locations")
@@ -91,7 +100,7 @@ public class LocationAPI {
     }
 
     @AnyThread
-    public Future<List<House>> getAllAsync() {
+    public Future<List<FriendAccount>> getAllAsync() {
         var executor = Executors.newSingleThreadExecutor();
         var future = executor.submit(() -> getAllHouses());
 
@@ -99,12 +108,22 @@ public class LocationAPI {
         return future;
     }
 
+    /**
+     * Calls the PUT Function of the API @
+     * https://socialcompass.goto.ucsd.edu/docs#/default/put_location_location__public_code__put
+     * and allows the user to add their associated label to the server.
+     *
+     * Uses private code to input the information and authorize the owner of the location to update
+     * their own user information.
+     *
+     * @param friendAccount - The house to be added to the server.
+     */
     @WorkerThread
-    public void putLocation(House house) {
-        ServerHouseAdapter severHouse = new ServerHouseAdapter(house);
+    public void putLocation(FriendAccount friendAccount) {
+        ServerHouseAdapter severHouse = new ServerHouseAdapter(friendAccount);
         String locationJSON = severHouse.toJSON();
         RequestBody reqBody = RequestBody.create(locationJSON, JSON);
-        String publicID = house.getPublicID();
+        String publicID = friendAccount.getPublicID();
         var request = new Request.Builder()
                 .url("https://socialcompass.goto.ucsd.edu/location/" + publicID)
                 .method("PUT", reqBody)
@@ -119,18 +138,29 @@ public class LocationAPI {
     }
 
     @AnyThread
-    public void putLocationAsync(House house) {
+    public void putLocationAsync(FriendAccount friendAccount) {
         var executor = Executors.newSingleThreadExecutor();
-        executor.submit(() -> putLocation(house));
+        executor.submit(() -> putLocation(friendAccount));
 
     }
 
+
+    /**
+     * Calls the DELETE Function of the API @
+     * https://socialcompass.goto.ucsd.edu/docs#/default/put_location_location__public_code__put
+     * and allows for the deletion of a house (this would primarily be used for testing).
+     *
+     * Uses private code to input the information and authorize the owner of the location to update
+     * their own user information.
+     *
+     * @param friendAccount - The house to be deleted.
+     */
     @WorkerThread
-    public void deleteHouse(House house) {
-        ServerHouseAdapter severHouse = new ServerHouseAdapter(house);
+    public void deleteHouse(FriendAccount friendAccount) {
+        ServerHouseAdapter severHouse = new ServerHouseAdapter(friendAccount);
         String deleteJSON = severHouse.deleteJSON();
         RequestBody reqBody = RequestBody.create(deleteJSON, JSON);
-        String publicID = house.getPublicID();
+        String publicID = friendAccount.getPublicID();
         var request = new Request.Builder()
                 .url("https://socialcompass.goto.ucsd.edu/location/" + publicID)
                 .method("DELETE", reqBody)
@@ -145,18 +175,28 @@ public class LocationAPI {
     }
 
     @AnyThread
-    public void deleteAsync(House house) {
+    public void deleteAsync(FriendAccount friendAccount) {
         var executor = Executors.newSingleThreadExecutor();
-        executor.submit(() -> deleteHouse(house));
+        executor.submit(() -> deleteHouse(friendAccount));
 
     }
 
+    /**
+     * Calls the Patch Function of the API @
+     * https://socialcompass.goto.ucsd.edu/docs#/default/put_location_location__public_code__put
+     * and allows the user to update their location to the server.
+     *
+     * Uses private code to input the information and authorize the owner of the location to update
+     * their own user information.
+     *
+     * @param friendAccount - The house to have its location updated.
+     */
     @WorkerThread
-    public void updateLocation(House house) {
-        ServerHouseAdapter severHouse = new ServerHouseAdapter(house);
+    public void updateLocation(FriendAccount friendAccount) {
+        ServerHouseAdapter severHouse = new ServerHouseAdapter(friendAccount);
         String locationJSON = severHouse.patchLocationJSON();
         RequestBody reqBody = RequestBody.create(locationJSON, JSON);
-        String publicID = house.getPublicID();
+        String publicID = friendAccount.getPublicID();
         var request = new Request.Builder()
                 .url("https://socialcompass.goto.ucsd.edu/location/" + publicID)
                 .method("PATCH", reqBody)
@@ -172,18 +212,28 @@ public class LocationAPI {
     }
 
     @AnyThread
-    public void updateLocationAsync(House house) {
+    public void updateLocationAsync(FriendAccount friendAccount) {
         var executor = Executors.newSingleThreadExecutor();
-        executor.submit(() -> updateLocation(house));
+        executor.submit(() -> updateLocation(friendAccount));
 
     }
 
+    /**
+     * Calls the Patch Function on the API @
+     * https://socialcompass.goto.ucsd.edu/docs#/default/put_location_location__public_code__put
+     * and allows the user to rename their label.
+     *
+     * Uses private code to input the information and authorize the owner of the location to update
+     * their own user information.
+     *
+     * @param friendAccount - The house to have its name updated.
+     */
     @WorkerThread
-    public void updateName(House house) {
-        ServerHouseAdapter severHouse = new ServerHouseAdapter(house);
+    public void updateName(FriendAccount friendAccount) {
+        ServerHouseAdapter severHouse = new ServerHouseAdapter(friendAccount);
         String locationJSON = severHouse.patchRenameJSON();
         RequestBody reqBody = RequestBody.create(locationJSON, JSON);
-        String publicID = house.getPublicID();
+        String publicID = friendAccount.getPublicID();
         var request = new Request.Builder()
                 .url("https://socialcompass.goto.ucsd.edu/location/" + publicID)
                 .method("PATCH", reqBody)
@@ -198,18 +248,29 @@ public class LocationAPI {
     }
 
     @AnyThread
-    public void updateNameAsync(House house) {
+    public void updateNameAsync(FriendAccount friendAccount) {
         var executor = Executors.newSingleThreadExecutor();
-        executor.submit(() -> updateName(house));
+        executor.submit(() -> updateName(friendAccount));
 
     }
 
+    /**
+     * Calls the API's Patch Function, as described @
+     * https://socialcompass.goto.ucsd.edu/docs#/default/put_location_location__public_code__put
+     * and allows the user to "publish a location at a public code," so that it is publically
+     * available.
+     *
+     * Uses private code to input the information and authorize the owner of the location to update
+     * their own user information.
+     *
+     * @param friendAccount - The house to be published.
+     */
     @WorkerThread
-    public void publish(House house) {
-        ServerHouseAdapter severHouse = new ServerHouseAdapter(house);
+    public void publish(FriendAccount friendAccount) {
+        ServerHouseAdapter severHouse = new ServerHouseAdapter(friendAccount);
         String locationJSON = severHouse.patchPublishJSON();
         RequestBody reqBody = RequestBody.create(locationJSON, JSON);
-        String publicID = house.getPublicID();
+        String publicID = friendAccount.getPublicID();
         var request = new Request.Builder()
                 .url("https://socialcompass.goto.ucsd.edu/location/" + publicID)
                 .method("PATCH", reqBody)
@@ -225,9 +286,9 @@ public class LocationAPI {
     }
 
     @AnyThread
-    public void publishAsync(House house) {
+    public void publishAsync(FriendAccount friendAccount) {
         var executor = Executors.newSingleThreadExecutor();
-        executor.submit(() -> publish(house));
+        executor.submit(() -> publish(friendAccount));
 
     }
 }

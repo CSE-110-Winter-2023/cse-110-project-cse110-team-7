@@ -1,10 +1,9 @@
 package com.cse110.team7.socialcompass.utils;
 
 import com.cse110.team7.socialcompass.backend.LocationAPI;
-import com.cse110.team7.socialcompass.models.House;
+import com.cse110.team7.socialcompass.models.FriendAccount;
 import com.cse110.team7.socialcompass.models.LatLong;
 
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
@@ -12,9 +11,9 @@ import java.util.concurrent.TimeUnit;
 
 /* simulates moving users for testing */
 public class MockUsers {
-    public House mockMom = new House("Mom", new LatLong(37.556378, -86.321884));
-    public House mockDad = new House("Dad", new LatLong(32.900333, -117.250120));
-    public House mockFriend = new House("Emma", new LatLong(32.782270, -117.075287));
+    public FriendAccount mockMom = new FriendAccount("Mom", new LatLong(37.556378, -86.321884));
+    public FriendAccount mockDad = new FriendAccount("Dad", new LatLong(32.900333, -117.250120));
+    public FriendAccount mockFriend = new FriendAccount("Emma", new LatLong(32.782270, -117.075287));
 
     public int[] latMovements = {1, 0, -1, 0};
     public int[] longMovements = {0, -1, 0, 1};
@@ -55,13 +54,13 @@ public class MockUsers {
         }, 0, 5, TimeUnit.SECONDS);
     }
 
-    public void nextLocation(House house) {
-        LatLong curLoc = house.getLocation();
+    public void nextLocation(FriendAccount friendAccount) {
+        LatLong curLoc = friendAccount.getLocation();
         double newLat = curLoc.getLatitude()+latMovements[movementIndex];
         double newLong = curLoc.getLongitude()+longMovements[movementIndex];
-        house.setLocation(new LatLong(newLat, newLong));
+        friendAccount.setLocation(new LatLong(newLat, newLong));
         movementIndex = (movementIndex + 1) % longMovements.length;
-        locAPI.updateLocation(house);
+        locAPI.updateLocation(friendAccount);
     }
 
     public void close() {

@@ -9,21 +9,21 @@ import androidx.room.Room;
 import androidx.room.RoomDatabase;
 import androidx.room.TypeConverters;
 
-import com.cse110.team7.socialcompass.models.House;
+import com.cse110.team7.socialcompass.models.FriendAccount;
 
 
 /**
  * exportSchema = true sounds evil, but it fixes the errors professor mentioned
  * in lab 6 that requires us to downgrade our target sdk to 31
  */
-@Database(entities = {House.class}, version = 1, exportSchema = false)
+@Database(entities = {FriendAccount.class}, version = 1, exportSchema = false)
 @TypeConverters({LatLongConverter.class})
-public abstract class HouseDatabase extends RoomDatabase {
-    private static HouseDatabase INSTANCE = null;
+public abstract class FriendDatabase extends RoomDatabase {
+    private static FriendDatabase INSTANCE = null;
 
-    public abstract HouseDao getHouseDao();
+    public abstract FriendAccountDao getFriendDao();
 
-    public synchronized static HouseDatabase getInstance(Context context) {
+    public synchronized static FriendDatabase getInstance(Context context) {
         if (INSTANCE == null) {
             INSTANCE = createDatabase(context);
         }
@@ -40,8 +40,8 @@ public abstract class HouseDatabase extends RoomDatabase {
      * @return the generated database instance
      * @see <a href="https://docs.google.com/document/d/1OCCbewWWh3sm53xgaDjvtGxqWgL8nyV5atbJtnaImjY">Lab 6</a>
      */
-    private static HouseDatabase createDatabase(Context context) {
-        return Room.databaseBuilder(context, HouseDatabase.class, "compass_app.db")
+    private static FriendDatabase createDatabase(Context context) {
+        return Room.databaseBuilder(context, FriendDatabase.class, "compass_app.db")
                 .allowMainThreadQueries()
                 .build();
     }
@@ -49,14 +49,14 @@ public abstract class HouseDatabase extends RoomDatabase {
     /**
      * This function should only be used in testing
      *
-     * @param houseDatabase the mock database
+     * @param friendDatabase the mock database
      */
     @VisibleForTesting
-    public static void injectTestDatabase(HouseDatabase houseDatabase) {
+    public static void injectTestDatabase(FriendDatabase friendDatabase) {
         if (INSTANCE != null) {
             INSTANCE.close();
         }
 
-        INSTANCE = houseDatabase;
+        INSTANCE = friendDatabase;
     }
 }

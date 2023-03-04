@@ -5,7 +5,7 @@ import static org.junit.Assert.assertEquals;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.cse110.team7.socialcompass.models.House;
+import com.cse110.team7.socialcompass.models.FriendAccount;
 import com.cse110.team7.socialcompass.models.LatLong;
 import com.cse110.team7.socialcompass.ui.LabelInformation;
 
@@ -18,13 +18,13 @@ public class LabelInformationClassUnitTests {
         String testName = "Test";
         LatLong testLocation = new LatLong(11.1, 13.2);
 
-        House testHouse = new House(testName, testLocation);
+        FriendAccount testFriendAccount = new FriendAccount(testName, testLocation);
         ImageView testImageView = new ImageView(null);
         TextView testTextView = new TextView(null);
 
-        LabelInformation testLabelInformation = new LabelInformation(testHouse, testImageView, testTextView);
+        LabelInformation testLabelInformation = new LabelInformation(testFriendAccount, testImageView, testTextView);
 
-        assertEquals(testLabelInformation.getHouse(), testHouse);
+        assertEquals(testLabelInformation.getHouse(), testFriendAccount);
         assertEquals(testLabelInformation.getDotView(), testImageView);
         assertEquals(testLabelInformation.getLabelView(), testTextView);
         assertEquals(Double.compare(testLabelInformation.getBearing(), 0), 0);
@@ -36,11 +36,11 @@ public class LabelInformationClassUnitTests {
         String testName = "Test";
         LatLong testLocation = new LatLong(11.1, 13.2);
 
-        House testHouse = new House(testName, testLocation);
+        FriendAccount testFriendAccount = new FriendAccount(testName, testLocation);
         ImageView testImageView = new ImageView(null);
         TextView testTextView = new TextView(null);
 
-        LabelInformation testLabelInformation = new LabelInformation(testHouse, testImageView, testTextView);
+        LabelInformation testLabelInformation = new LabelInformation(testFriendAccount, testImageView, testTextView);
 
         ImageView newImageView = new ImageView(null);
         newImageView.setVisibility(ImageView.INVISIBLE);
@@ -56,11 +56,11 @@ public class LabelInformationClassUnitTests {
         String testName = "Test";
         LatLong testLocation = new LatLong(11.1, 13.2);
 
-        House testHouse = new House(testName, testLocation);
+        FriendAccount testFriendAccount = new FriendAccount(testName, testLocation);
         ImageView testImageView = new ImageView(null);
         TextView testTextView = new TextView(null);
 
-        LabelInformation testLabelInformation = new LabelInformation(testHouse, testImageView, testTextView);
+        LabelInformation testLabelInformation = new LabelInformation(testFriendAccount, testImageView, testTextView);
 
         TextView newTextView = new TextView(null);
         newTextView.setVisibility(TextView.INVISIBLE);
@@ -76,11 +76,11 @@ public class LabelInformationClassUnitTests {
         String testName = "Test";
         LatLong testLocation = new LatLong(11.1, 13.2);
 
-        House testHouse = new House(testName, testLocation);
+        FriendAccount testFriendAccount = new FriendAccount(testName, testLocation);
         ImageView testImageView = new ImageView(null);
         TextView testTextView = new TextView(null);
 
-        LabelInformation testLabelInformation = new LabelInformation(testHouse, testImageView, testTextView);
+        LabelInformation testLabelInformation = new LabelInformation(testFriendAccount, testImageView, testTextView);
 
         float newBearing = 45.7f;
 

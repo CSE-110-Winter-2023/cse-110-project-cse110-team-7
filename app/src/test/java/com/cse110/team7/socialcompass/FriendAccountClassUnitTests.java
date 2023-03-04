@@ -2,19 +2,19 @@ package com.cse110.team7.socialcompass;
 
 import static org.junit.Assert.assertEquals;
 
-import com.cse110.team7.socialcompass.models.House;
+import com.cse110.team7.socialcompass.models.FriendAccount;
 import com.cse110.team7.socialcompass.models.LatLong;
 
 import org.junit.Test;
 
-public class HouseClassUnitTests {
+public class FriendAccountClassUnitTests {
     @Test
     public void testHouseConstructor() {
 
         String testName = "Test";
         LatLong testLocation = new LatLong(11.1, 13.2);
 
-        House test = new House(testName, testLocation);
+        FriendAccount test = new FriendAccount(testName, testLocation);
 
         assertEquals(test.getName(), testName);
         assertEquals(test.getLocation(), testLocation);
@@ -25,7 +25,7 @@ public class HouseClassUnitTests {
 
         String testName = "To Test";
 
-        House test = new House("name", null);
+        FriendAccount test = new FriendAccount("name", null);
 
         test.setName(testName);
 
@@ -37,7 +37,7 @@ public class HouseClassUnitTests {
 
         LatLong testLocation = new LatLong(1.2, 3.1);
 
-        House test = new House("test", null);
+        FriendAccount test = new FriendAccount("test", null);
 
         test.setLocation(testLocation);
 

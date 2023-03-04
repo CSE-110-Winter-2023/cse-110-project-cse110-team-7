@@ -8,9 +8,8 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.cse110.team7.socialcompass.R;
-import com.cse110.team7.socialcompass.models.House;
+import com.cse110.team7.socialcompass.models.FriendAccount;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -21,29 +20,29 @@ import java.util.function.BiConsumer;
  * to represent the single element of the RecyclerView, which can be found in label_input_format.xml
  */
 public class inputDisplayAdapter extends RecyclerView.Adapter<inputDisplayAdapter.ViewHolder> {
-    public List<House> houseList = Collections.emptyList();
-    private BiConsumer<House, String> onParentLabelChanged; //Used for updating the parentLabel
-    private BiConsumer<House, String> onCoordinatesChanged; //Used for updating the coordinateLabel
+    public List<FriendAccount> friendAccountList = Collections.emptyList();
+    private BiConsumer<FriendAccount, String> onParentLabelChanged; //Used for updating the parentLabel
+    private BiConsumer<FriendAccount, String> onCoordinatesChanged; //Used for updating the coordinateLabel
 
-    public void setParentLabelChanged(BiConsumer<House, String> onTextEdited) {
+    public void setParentLabelChanged(BiConsumer<FriendAccount, String> onTextEdited) {
         this.onParentLabelChanged = onTextEdited;
     }
 
-    public void setCoordinatesChanged(BiConsumer<House, String> onTextEdited){
+    public void setCoordinatesChanged(BiConsumer<FriendAccount, String> onTextEdited){
         this.onCoordinatesChanged = onTextEdited;
     }
 
     //May have issues later with clear; make sure to check.
     //This method simply sets up the house list with whatever values need to be inputted.
-    public void setHouseList(List<House> newHouses) {
-        this.houseList.clear();
-        this.houseList = newHouses;
+    public void setHouseList(List<FriendAccount> newFriendAccounts) {
+        this.friendAccountList.clear();
+        this.friendAccountList = newFriendAccounts;
         notifyDataSetChanged();
     }
 
     //Not really used, but may be useful for testing.
-    public ArrayList<House> getHouseList() {
-        return (ArrayList<House>)(houseList);
+    public ArrayList<FriendAccount> getHouseList() {
+        return (ArrayList<FriendAccount>)(friendAccountList);
     }
 
     @NonNull
@@ -57,17 +56,17 @@ public class inputDisplayAdapter extends RecyclerView.Adapter<inputDisplayAdapte
 
     @Override
     public void onBindViewHolder(@NonNull inputDisplayAdapter.ViewHolder holder, int position) {
-        holder.setHouse(houseList.get(position));
+        holder.setHouse(friendAccountList.get(position));
     }
 
     @Override
     public int getItemCount() {
-        return houseList.size();
+        return friendAccountList.size();
     }
 
     @Override
     public long getItemId(int position) {
-        return houseList.get(position).id;
+        return friendAccountList.get(position).id;
     }
 
     /**
@@ -80,7 +79,7 @@ public class inputDisplayAdapter extends RecyclerView.Adapter<inputDisplayAdapte
         private final TextView coordinates;
         private final TextView labelName;
 
-        private House currHouse;
+        private FriendAccount currFriendAccount;
 
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -89,30 +88,30 @@ public class inputDisplayAdapter extends RecyclerView.Adapter<inputDisplayAdapte
 
             this.coordinates.setOnFocusChangeListener((view, hasFocus) -> {
                 if(!hasFocus) {
-                    onCoordinatesChanged.accept(currHouse, coordinates.getText().toString());
+                    onCoordinatesChanged.accept(currFriendAccount, coordinates.getText().toString());
                 }
             });
 
             this.labelName.setOnFocusChangeListener((view, hasFocus) -> {
                 if(!hasFocus) {
-                    onParentLabelChanged.accept(currHouse, labelName.getText().toString());
+                    onParentLabelChanged.accept(currFriendAccount, labelName.getText().toString());
                 }
             });
         }
 
-        public House getHouse() {
-            return currHouse;
+        public FriendAccount getHouse() {
+            return currFriendAccount;
         }
 
         //May not be necessary, but it currently sets a house
         //(and its corresponding textViews to certain values):
-        public void setHouse(House houseToSet) {
-            currHouse = houseToSet;
-            if(houseToSet.getLocation() != null){
-                String latLongValue = houseToSet.getLocation().toString();
+        public void setHouse(FriendAccount friendAccountToSet) {
+            currFriendAccount = friendAccountToSet;
+            if(friendAccountToSet.getLocation() != null){
+                String latLongValue = friendAccountToSet.getLocation().toString();
                 this.coordinates.setText(latLongValue);
             }
-            this.labelName.setText(houseToSet.getName());
+            this.labelName.setText(friendAccountToSet.getName());
         }
     }
 }

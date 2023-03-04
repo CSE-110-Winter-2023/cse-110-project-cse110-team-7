@@ -5,7 +5,6 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import android.content.Context;
-import android.location.Location;
 import android.widget.ImageView;
 
 import androidx.constraintlayout.widget.ConstraintLayout;
@@ -14,13 +13,12 @@ import androidx.room.Room;
 import androidx.test.core.app.ActivityScenario;
 import androidx.test.core.app.ApplicationProvider;
 
-import com.cse110.team7.socialcompass.backend.HouseDao;
-import com.cse110.team7.socialcompass.backend.HouseDatabase;
-import com.cse110.team7.socialcompass.models.House;
+import com.cse110.team7.socialcompass.backend.FriendAccountDao;
+import com.cse110.team7.socialcompass.backend.FriendDatabase;
+import com.cse110.team7.socialcompass.models.FriendAccount;
 import com.cse110.team7.socialcompass.models.LatLong;
 import com.cse110.team7.socialcompass.services.LocationService;
 import com.cse110.team7.socialcompass.services.OrientationService;
-import com.cse110.team7.socialcompass.ui.LabelInformation;
 import com.cse110.team7.socialcompass.utils.AngleCalculator;
 
 import org.junit.After;
@@ -32,31 +30,29 @@ import org.robolectric.RobolectricTestRunner;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Random;
-import java.util.stream.Collector;
 import java.util.stream.Collectors;
-import java.util.stream.DoubleStream;
 
 @RunWith(RobolectricTestRunner.class)
 public class US3StoryTest {
-   private HouseDao houseDao;
-   private HouseDatabase houseDatabase;
+   private FriendAccountDao friendAccountDao;
+   private FriendDatabase friendDatabase;
 
    @Before
    public void createDatabase() {
       Context context = ApplicationProvider.getApplicationContext();
 
-      houseDatabase = Room.inMemoryDatabaseBuilder(context, HouseDatabase.class)
+      friendDatabase = Room.inMemoryDatabaseBuilder(context, FriendDatabase.class)
               .allowMainThreadQueries()
               .build();
 
-      HouseDatabase.injectTestDatabase(houseDatabase);
+      FriendDatabase.injectTestDatabase(friendDatabase);
 
-      houseDao = houseDatabase.getHouseDao();
+      friendAccountDao = friendDatabase.getFriendDao();
    }
 
    @After
    public void closeDatabase() {
-      houseDatabase.close();
+      friendDatabase.close();
    }
 
    @Test
@@ -90,8 +86,8 @@ public class US3StoryTest {
 
          float parentBearing = AngleCalculator.calculateAngle(fakeLocation, fakeParentLocation);
 
-         House fakeParentHouse = new House("fakeParentHouse", fakeParentLocation);
-         activity.getCompass().add(activity.initHouseDisplay(fakeParentHouse));
+         FriendAccount fakeParentFriendAccount = new FriendAccount("fakeParentHouse", fakeParentLocation);
+         activity.getCompass().add(activity.initHouseDisplay(fakeParentFriendAccount));
 
          activity.getCompass().getElements().get(1).getHouse().setLocation(fakeParentLocation);
 
@@ -120,8 +116,8 @@ public class US3StoryTest {
 
          float parentBearing = AngleCalculator.calculateAngle(fakeLocation, fakeParentLocation);
 
-         House fakeParentHouse2 = new House("fakeParentHouse", fakeParentLocation);
-         activity.getCompass().add(activity.initHouseDisplay(fakeParentHouse2));
+         FriendAccount fakeParentFriendAccount2 = new FriendAccount("fakeParentHouse", fakeParentLocation);
+         activity.getCompass().add(activity.initHouseDisplay(fakeParentFriendAccount2));
 
 
          activity.getCompass().getElements().get(1).getHouse().setLocation(fakeParentLocation);
@@ -144,9 +140,9 @@ public class US3StoryTest {
       ArrayList<Double> randomLongs = (ArrayList<Double>) (new Random().doubles(10, -180.0, 180.0)).boxed().collect(Collectors.toList());
       ArrayList<Double> randomOrientations = (ArrayList<Double>) (new Random().doubles(10, 0, 2 * Math.PI)).boxed().collect(Collectors.toList());
 
-      ArrayList<House> savedHouses = new ArrayList<>();
+      ArrayList<FriendAccount> savedFriendAccounts = new ArrayList<>();
       for (int i = 0; i < houseNames.size(); i++) {
-         savedHouses.add(new House(houseNames.get(i), new LatLong(randomHouseLats.get(i), randomHouseLongs.get(i))));
+         savedFriendAccounts.add(new FriendAccount(houseNames.get(i), new LatLong(randomHouseLats.get(i), randomHouseLongs.get(i))));
       }
 
       ArrayList<LatLong> randomLocations = new ArrayList<>();
@@ -163,7 +159,7 @@ public class US3StoryTest {
          LocationService.getInstance().unregisterLocationUpdateListener();
          OrientationService.getInstance().unregisterSensorEventListener();
 
-         savedHouses.forEach(house -> activity.getCompass().add(activity.initHouseDisplay(house)));
+         savedFriendAccounts.forEach(house -> activity.getCompass().add(activity.initHouseDisplay(house)));
 
          for (int i = 0; i < randomLocations.size(); i++) {
             LatLong randomLocation = randomLocations.get(i);

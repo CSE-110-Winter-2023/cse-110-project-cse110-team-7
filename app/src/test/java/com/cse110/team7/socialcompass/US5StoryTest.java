@@ -12,9 +12,9 @@ import androidx.room.Room;
 import androidx.test.core.app.ActivityScenario;
 import androidx.test.core.app.ApplicationProvider;
 
-import com.cse110.team7.socialcompass.backend.HouseDao;
-import com.cse110.team7.socialcompass.backend.HouseDatabase;
-import com.cse110.team7.socialcompass.models.House;
+import com.cse110.team7.socialcompass.backend.FriendAccountDao;
+import com.cse110.team7.socialcompass.backend.FriendDatabase;
+import com.cse110.team7.socialcompass.models.FriendAccount;
 import com.cse110.team7.socialcompass.models.LatLong;
 import com.cse110.team7.socialcompass.services.LocationService;
 import com.cse110.team7.socialcompass.services.OrientationService;
@@ -30,8 +30,8 @@ import org.robolectric.RobolectricTestRunner;
 
 
 public class US5StoryTest {
-    private HouseDao houseDao;
-    private HouseDatabase houseDatabase;
+    private FriendAccountDao friendAccountDao;
+    private FriendDatabase friendDatabase;
     float currentLat = 32.88190048420199f;
     float currentLong = -117.23782850478656f;
 
@@ -46,18 +46,18 @@ public class US5StoryTest {
     public void createDatabase() {
         Context context = ApplicationProvider.getApplicationContext();
 
-        houseDatabase = Room.inMemoryDatabaseBuilder(context, HouseDatabase.class)
+        friendDatabase = Room.inMemoryDatabaseBuilder(context, FriendDatabase.class)
                 .allowMainThreadQueries()
                 .build();
 
-        HouseDatabase.injectTestDatabase(houseDatabase);
+        FriendDatabase.injectTestDatabase(friendDatabase);
 
-        houseDao = houseDatabase.getHouseDao();
+        friendAccountDao = friendDatabase.getFriendDao();
     }
 
     @After
     public void closeDatabase() {
-        houseDatabase.close();
+        friendDatabase.close();
     }
 
     @Test
@@ -69,8 +69,8 @@ public class US5StoryTest {
         mainScenario.moveToState(Lifecycle.State.CREATED);
         mainScenario.moveToState(Lifecycle.State.STARTED);
 
-        House parentHouse = new House("parents", new LatLong(parentLat, parentLong));
-        houseDao.insertHouse(parentHouse);
+        FriendAccount parentFriendAccount = new FriendAccount("parents", new LatLong(parentLat, parentLong));
+        friendAccountDao.insertFriend(parentFriendAccount);
 
         mainScenario.onActivity(mainActivity -> {
             for(float orientation : mockOrientations) {
