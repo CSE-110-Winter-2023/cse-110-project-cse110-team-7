@@ -35,6 +35,7 @@ public class HouseDatabaseTest {
 
         houseDatabase = Room.inMemoryDatabaseBuilder(context, HouseDatabase.class)
                 .allowMainThreadQueries()
+                .fallbackToDestructiveMigration()
                 .build();
 
         houseDao = houseDatabase.getHouseDao();
@@ -54,6 +55,8 @@ public class HouseDatabaseTest {
         long id2 = houseDao.insertHouse(house2);
 
         assertNotEquals(id1, id2);
+        assertEquals(house1.getPublicID().hashCode(), id1);
+        assertEquals(house2.getPublicID().hashCode(), id2);
     }
 
     @Test

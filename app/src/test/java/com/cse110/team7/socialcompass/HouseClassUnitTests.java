@@ -16,8 +16,24 @@ public class HouseClassUnitTests {
 
         House test = new House(testName, testLocation);
 
-        assertEquals(test.getName(), testName);
-        assertEquals(test.getLocation(), testLocation);
+        assertEquals(testName, test.getName());
+        assertEquals(testLocation, test.getLocation());
+        assertEquals(test.getPublicID().hashCode(), test.getId());
+    }
+
+    @Test
+    public void testSecondHouseConstructor() {
+
+        String testName = "Test";
+        LatLong testLocation = new LatLong(11.1, 13.2);
+        String testPublicID = "111-111-111";
+
+        House test = new House(testName, testLocation, testPublicID);
+
+        assertEquals(testName, test.getName());
+        assertEquals(testLocation, test.getLocation());
+        assertEquals(testPublicID.hashCode(), test.getId());
+        assertEquals(testPublicID, test.getPublicID());
     }
 
     @Test

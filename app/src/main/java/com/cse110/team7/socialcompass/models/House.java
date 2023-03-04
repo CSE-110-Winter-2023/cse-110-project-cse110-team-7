@@ -11,7 +11,7 @@ import java.util.UUID;
 @Entity(tableName = "compass_houses")
 public class House {
 
-    @PrimaryKey(autoGenerate = true)
+    @PrimaryKey
     public long id;
     @NonNull
     public String publicID;
@@ -26,7 +26,7 @@ public class House {
     public House(String name, LatLong location) {
         this.name = name;
         this.location = location;
-        this.publicID = name.replace(" ", "-"); // TODO: assign UIDs so that they are unique
+        this.publicID = UUID.randomUUID().toString(); // TODO: check that UID doesn't already exist?
         this.privateID = UUID.randomUUID().toString(); // generate new privateID
         this.id = publicID.hashCode();
     }
