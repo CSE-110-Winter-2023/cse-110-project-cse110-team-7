@@ -2,6 +2,7 @@ package com.cse110.team7.socialcompass;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
 
@@ -10,6 +11,7 @@ import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.cse110.team7.socialcompass.backend.LocationAPI;
 import com.cse110.team7.socialcompass.models.FriendAccount;
 import com.cse110.team7.socialcompass.ui.inputDisplayAdapter;
 import com.cse110.team7.socialcompass.ui.inputDislayViewModel;
@@ -20,11 +22,22 @@ import com.cse110.team7.socialcompass.ui.inputDislayViewModel;
  */
 import com.cse110.team7.socialcompass.utils.ShowAlert;
 
+import java.util.ArrayList;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledFuture;
 
-public class MainActivity extends AppCompatActivity {
+
+public class MainActivity extends AppCompatActivity  {
     public RecyclerView recyclerView;
     inputDisplayAdapter adapter;
     inputDislayViewModel viewModel;
+
+    LocationAPI serverAPI;
+
+    private ScheduledFuture<?> future;
+
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -54,11 +67,67 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+
+
+        /*
+         * TODO:: This will need to be adjusted to work with the database and to sync properly
+         * once we add the 'add friend button' and it may need to be moved as necessary.
+         */
+
+        serverAPI =  LocationAPI.provide();
+        ArrayList<String> allFriends = getNeededPubIDs(); //W
+        ArrayList<FriendAccount> listOfFriendsFromServer = new ArrayList<>();
+
+        var executor = Executors.newSingleThreadExecutor();
+        for(String pubID : allFriends){
+
+            var future = executor.submit(() -> serverAPI.getFriend(pubID));
+            FriendAccount toAdd = null;
+
+            try {
+                toAdd = future.get();
+            } catch (ExecutionException e) {
+                throw new RuntimeException(e);
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+
+            if(toAdd == null){
+                Log.i("toADD is ", "null");
+            } else {
+                Log.i("toADD is ", "valid?");
+            }
+
+            listOfFriendsFromServer.add(toAdd);
+        }
+
+        //Example way of adding friend to UI, shown below.
+        //TODO: Make sure same friend UIDs are not added to server several times.
+//        for(var i : listOfFriendsFromServer)
+//            viewModel.addFriend(i);
+
+
+
+
         //Sets up the recycler view, so that each empty/stored label gets displayed on the UI, in the
         //format given by label_input_format.xml
         recyclerView = findViewById(R.id.friendInputItems);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         recyclerView.setAdapter(adapter);
+    }
+
+
+    /**
+     * Currently only takes in hard coded values. TODO:: When Add Friend Button is Added, Adjust This
+     *
+     * @return all friends which are needed from the server.
+     */
+    public ArrayList<String> getNeededPubIDs(){
+        ArrayList<String> tempArrayList = new ArrayList<String>();
+        tempArrayList.add("Group-7-Test-1");
+        tempArrayList.add("Group-7-Test-2");
+
+        return tempArrayList;
     }
 
     /**

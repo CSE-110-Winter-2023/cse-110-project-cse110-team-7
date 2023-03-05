@@ -23,7 +23,11 @@ public class inputDislayViewModel extends AndroidViewModel {
     private final FriendAccountDao friendAccountDao; //The database
 
     public void addFriend(FriendAccount newFriendAccount){
-        friendAccountDao.insertFriend(newFriendAccount);
+        friendAccountDao.insertFriend(newFriendAccount); //Only adds if not already in database for now.
+    }
+
+    public FriendAccountDao getDb(){
+        return friendAccountDao;
     }
 
     public void updateLabelText(FriendAccount currFriendAccount, String labelText) {
