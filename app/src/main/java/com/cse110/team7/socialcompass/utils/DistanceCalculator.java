@@ -16,11 +16,10 @@ public class DistanceCalculator {
       double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
       double distance = R * c * 1000; // convert to meters
 
-      return (float)distance;
+      return (float) distance;
    }
 
-   public static float calculateAngle(LatLong currentLocation, FriendAccount friendAccount) {
+   public static float calculateDistance(LatLong currentLocation, FriendAccount friendAccount) {
       return calculateDistance(currentLocation, friendAccount.getLocation());
    }
-
 }
