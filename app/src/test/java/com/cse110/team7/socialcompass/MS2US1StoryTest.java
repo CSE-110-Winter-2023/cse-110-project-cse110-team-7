@@ -4,6 +4,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
 import android.content.Context;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 
@@ -80,9 +81,10 @@ public class MS2US1StoryTest {
         scenario.onActivity(activity -> {
             EditText addUID = activity.findViewById(R.id.promptUID);
             addUID.setText(testLoc1.getPublicID());
-            addUID.performClick();
+            Button addButton = activity.findViewById(R.id.addButton);
+            addButton.performClick();
         });
 
-        //assertNotNull(friendAccountDao.selectFriend(testLoc1.id));
+        assertNotNull(friendAccountDao.selectFriend(testLoc1.getId()));
     }
 }
