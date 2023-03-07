@@ -13,6 +13,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.cse110.team7.socialcompass.backend.LocationAPI;
 import com.cse110.team7.socialcompass.models.FriendAccount;
+import com.cse110.team7.socialcompass.models.LatLong;
 import com.cse110.team7.socialcompass.ui.InputDisplayAdapter;
 import com.cse110.team7.socialcompass.ui.InputDisplayViewModel;
 
@@ -61,9 +62,9 @@ public class MainActivity extends AppCompatActivity  {
         //If no data is already saved, then adds three friends to the database.
         viewModel.getFriendItems().observe(this, friends -> {
             if (friends.size() == 0) {
-                viewModel.addFriend(new FriendAccount("Parents", null));
-                viewModel.addFriend(new FriendAccount("Friends", null));
-                viewModel.addFriend(new FriendAccount("My Home", null));
+                viewModel.addFriend(new FriendAccount("Parents", new LatLong(10, 10)));
+                viewModel.addFriend(new FriendAccount("Friends", new LatLong(10, 10)));
+                viewModel.addFriend(new FriendAccount("My Home", new LatLong(10, 10)));
             }
         });
 
