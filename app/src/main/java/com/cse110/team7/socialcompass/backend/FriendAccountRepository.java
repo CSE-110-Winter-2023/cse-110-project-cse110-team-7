@@ -93,7 +93,7 @@ public class FriendAccountRepository {
         return friendAccountLiveData;
     }
 
-    public void putRemoteFriendAccount(@NonNull FriendAccount friendAccount) {
+    public void upsertRemoteFriendAccount(@NonNull FriendAccount friendAccount) {
         LocationAPI.provide().updateLocation(friendAccount);
     }
 
@@ -122,7 +122,7 @@ public class FriendAccountRepository {
 
     public void syncedUpsert(@NonNull FriendAccount friendAccount) {
         upsertLocalFriendAccount(friendAccount);
-        putRemoteFriendAccount(friendAccount);
+        upsertRemoteFriendAccount(friendAccount);
     }
 
     public void syncedDelete(@NonNull FriendAccount friendAccount) {

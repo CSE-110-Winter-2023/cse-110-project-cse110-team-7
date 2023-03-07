@@ -13,8 +13,8 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.cse110.team7.socialcompass.backend.LocationAPI;
 import com.cse110.team7.socialcompass.models.FriendAccount;
-import com.cse110.team7.socialcompass.ui.inputDisplayAdapter;
-import com.cse110.team7.socialcompass.ui.inputDislayViewModel;
+import com.cse110.team7.socialcompass.ui.InputDisplayAdapter;
+import com.cse110.team7.socialcompass.ui.InputDisplayViewModel;
 
 
 /*
@@ -30,8 +30,8 @@ import java.util.concurrent.ScheduledFuture;
 
 public class MainActivity extends AppCompatActivity  {
     public RecyclerView recyclerView;
-    inputDisplayAdapter adapter;
-    inputDislayViewModel viewModel;
+    InputDisplayAdapter adapter;
+    InputDisplayViewModel viewModel;
 
     LocationAPI serverAPI;
 
@@ -46,10 +46,10 @@ public class MainActivity extends AppCompatActivity  {
 
         //Tracks interactions between the UI and the database, allowing us to update values as they
         //get changed.
-        viewModel = new ViewModelProvider(this).get(inputDislayViewModel.class);
+        viewModel = new ViewModelProvider(this).get(InputDisplayViewModel.class);
 
         //Creates new adapter, which does the actual updating of values.
-        adapter = new inputDisplayAdapter();
+        adapter = new InputDisplayAdapter();
         adapter.setHasStableIds(true);
 
         //Binds methods to adapter
