@@ -22,7 +22,7 @@ public class AddFriendActivity extends AppCompatActivity {
     private LocationAPI locationAPI;
     private Future<FriendAccount> future;
     private FriendAccount friendAccount;
-    EditText addUID;
+    private EditText addUID;
     private String publicID;
 
     @Override
