@@ -101,9 +101,9 @@ public class FriendAccount {
         if (!h.getName().equals(getName())) {
             return false;
         }
-        if (!h.getLocation().equals(getLocation())) {
-            return false;
-        }
+//        if (!h.getLocation().equals(getLocation())) {
+//            return false;
+//        }
         return true;
     }
 }

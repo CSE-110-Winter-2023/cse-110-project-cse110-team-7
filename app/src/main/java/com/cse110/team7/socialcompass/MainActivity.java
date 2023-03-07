@@ -59,17 +59,6 @@ public class MainActivity extends AppCompatActivity  {
 
         viewModel.getFriendItems().observe(this, adapter::setFriendList);
 
-        //If no data is already saved, then adds three friends to the database.
-        viewModel.getFriendItems().observe(this, friends -> {
-            if (friends.size() == 0) {
-                viewModel.addFriend(new FriendAccount("Parents", new LatLong(10, 10)));
-                viewModel.addFriend(new FriendAccount("Friends", new LatLong(10, 10)));
-                viewModel.addFriend(new FriendAccount("My Home", new LatLong(10, 10)));
-            }
-        });
-
-
-
         /*
          * TODO:: This will need to be adjusted to work with the database and to sync properly
          * once we add the 'add friend button' and it may need to be moved as necessary.
@@ -104,9 +93,38 @@ public class MainActivity extends AppCompatActivity  {
 
         //Example way of adding friend to UI, shown below.
         //TODO: Make sure same friend UIDs are not added to server several times.
-//        for(var i : listOfFriendsFromServer)
-//            viewModel.addFriend(i);
+//        for(var i : listOfFriendsFromServer) {
+//            if(i.getPublicID())
+//                viewModel.addFriend(i);
+//
+//        }
 
+        //If no data is already saved, then adds needed friends to the database.
+        viewModel.getFriendItems().observe(this, friends -> {
+            for(FriendAccount i : listOfFriendsFromServer) {
+                if (i != null && friends != null) {
+                    if (friends.size() == 0) {
+                        viewModel.addFriend(i);
+                        continue;
+                    }
+                    if (friends.contains(i) == false) {
+                        viewModel.addFriend(i);
+                    }
+
+                }
+                System.out.println(i.toString());
+            }
+        });
+
+
+//        //If no data is already saved, then adds three friends to the database.
+//        viewModel.getFriendItems().observe(this, friends -> {
+//            if (friends.size() == 0) {
+//                viewModel.addFriend(new FriendAccount("Parents", new LatLong(10, 10)));
+//                viewModel.addFriend(new FriendAccount("Friends", new LatLong(10, 10)));
+//                viewModel.addFriend(new FriendAccount("My Home", new LatLong(10, 10)));
+//            }
+//        });
 
 
 
