@@ -3,6 +3,7 @@ package com.cse110.team7.socialcompass;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.view.View;
@@ -58,5 +59,8 @@ public class AddFriendActivity extends AppCompatActivity {
         addUID = findViewById(R.id.promptUID);
         publicID = addUID.getText().toString();
         addFriend(publicID);
+
+        Intent intent = new Intent(this, CompassActivity.class);
+        startActivity(intent);
     }
 }
