@@ -19,7 +19,7 @@ import java.util.function.BiConsumer;
  * This class implements the RecyclerView used in activity_main.xml; its ViewHolder is used
  * to represent the single element of the RecyclerView, which can be found in label_input_format.xml
  */
-public class inputDisplayAdapter extends RecyclerView.Adapter<inputDisplayAdapter.ViewHolder> {
+public class InputDisplayAdapter extends RecyclerView.Adapter<InputDisplayAdapter.ViewHolder> {
     public List<FriendAccount> friendAccountList = Collections.emptyList();
     private BiConsumer<FriendAccount, String> onParentLabelChanged; //Used for updating the parentLabel
     private BiConsumer<FriendAccount, String> onCoordinatesChanged; //Used for updating the coordinateLabel
@@ -55,7 +55,7 @@ public class inputDisplayAdapter extends RecyclerView.Adapter<inputDisplayAdapte
     }
 
     @Override
-    public void onBindViewHolder(@NonNull inputDisplayAdapter.ViewHolder holder, int position) {
+    public void onBindViewHolder(@NonNull InputDisplayAdapter.ViewHolder holder, int position) {
         holder.setFriend(friendAccountList.get(position));
     }
 

@@ -17,7 +17,7 @@ import com.cse110.team7.socialcompass.models.FriendAccount;
  * in lab 6 that requires us to downgrade our target sdk to 31
  */
 
-@Database(entities = {FriendAccount.class}, version = 1, exportSchema = false)
+@Database(entities = {FriendAccount.class}, version = 3, exportSchema = false)
 @TypeConverters({LatLongConverter.class})
 public abstract class FriendDatabase extends RoomDatabase {
     private static FriendDatabase INSTANCE = null;

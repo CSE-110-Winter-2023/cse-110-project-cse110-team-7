@@ -7,7 +7,10 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.view.View;
+import android.view.WindowManager;
+import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 
 import com.cse110.team7.socialcompass.backend.FriendAccountDao;
 import com.cse110.team7.socialcompass.backend.FriendDatabase;
@@ -59,7 +62,9 @@ public class AddFriendActivity extends AppCompatActivity {
         addUID = findViewById(R.id.promptUID);
         publicID = addUID.getText().toString();
         addFriend(publicID);
+    }
 
+    public void onBackBtnClicked(View view) {
         Intent intent = new Intent(this, CompassActivity.class);
         startActivity(intent);
     }
