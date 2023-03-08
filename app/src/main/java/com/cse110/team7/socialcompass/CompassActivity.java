@@ -2,6 +2,7 @@ package com.cse110.team7.socialcompass;
 
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.res.Resources;
 import android.graphics.Color;
 import android.graphics.Typeface;
@@ -16,8 +17,10 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.constraintlayout.widget.ConstraintLayout;
 
 import com.cse110.team7.socialcompass.backend.FriendAccountDao;
+import com.cse110.team7.socialcompass.backend.FriendAccountRepository;
 import com.cse110.team7.socialcompass.backend.FriendDatabase;
 import com.cse110.team7.socialcompass.models.FriendAccount;
+import com.cse110.team7.socialcompass.models.LatLong;
 import com.cse110.team7.socialcompass.services.LocationService;
 import com.cse110.team7.socialcompass.services.OrientationService;
 import com.cse110.team7.socialcompass.ui.Compass;
@@ -29,6 +32,7 @@ import java.util.List;
 public class CompassActivity extends AppCompatActivity {
 
     private Compass compass;
+    private FriendAccount myAccount;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -76,6 +80,17 @@ public class CompassActivity extends AppCompatActivity {
 
         LocationService.getInstance().setLocationManager((LocationManager) getSystemService(Context.LOCATION_SERVICE));
 
+        SharedPreferences preferences = getPreferences(MODE_PRIVATE);
+        String myPublicID = preferences.getString("public_id", null);
+        String myName = preferences.getString("name", myPublicID); // default name to id
+        LatLong myLocation = LocationService.getInstance().getUserLocation().getValue();
+        if (myPublicID == null) {
+            myAccount = new FriendAccount(myName, myLocation);
+            SharedPreferences.Editor editor = preferences.edit();
+            editor.putString("public_id", myAccount.getPublicID());
+        }
+        FriendAccountRepository friendRepo = new FriendAccountRepository(db);
+
         // Shijun will fix this, to make it work better.
         while (true) {
             try {
@@ -99,6 +114,8 @@ public class CompassActivity extends AppCompatActivity {
         LocationService.getInstance().getUserLocation().observe(this, (currentLocation) -> {
             compass.updateBearingForAll(currentLocation);
             compass.updateRotationForAll();
+            myAccount.setLocation(currentLocation);
+            friendRepo.upsertRemoteFriendAccount(myAccount);
         });
 
         OrientationService.getInstance().getAzimuth().observe(this, (currentAzimuth) -> {
