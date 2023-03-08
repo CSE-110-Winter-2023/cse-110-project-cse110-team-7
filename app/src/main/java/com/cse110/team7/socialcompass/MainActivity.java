@@ -112,7 +112,7 @@ public class MainActivity extends AppCompatActivity  {
                     }
 
                 }
-                System.out.println(i.toString());
+//                System.out.println(i.toString());
             }
         });
 
