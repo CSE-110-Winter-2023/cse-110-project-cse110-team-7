@@ -1,9 +1,12 @@
 package com.cse110.team7.socialcompass;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.View;
+import android.widget.EditText;
 import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -11,9 +14,13 @@ import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.cse110.team7.socialcompass.backend.FriendAccountDao;
+import com.cse110.team7.socialcompass.backend.FriendAccountRepository;
+import com.cse110.team7.socialcompass.backend.FriendDatabase;
 import com.cse110.team7.socialcompass.backend.LocationAPI;
 import com.cse110.team7.socialcompass.models.FriendAccount;
 import com.cse110.team7.socialcompass.models.LatLong;
+import com.cse110.team7.socialcompass.services.LocationService;
 import com.cse110.team7.socialcompass.ui.InputDisplayAdapter;
 import com.cse110.team7.socialcompass.ui.InputDisplayViewModel;
 
@@ -24,8 +31,10 @@ import com.cse110.team7.socialcompass.ui.InputDisplayViewModel;
 import com.cse110.team7.socialcompass.utils.ShowAlert;
 
 import java.util.ArrayList;
+import java.util.Random;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledFuture;
 
 
@@ -36,15 +45,12 @@ public class MainActivity extends AppCompatActivity  {
 
     LocationAPI serverAPI;
 
-    private ScheduledFuture<?> future;
-
-
+    Random random = new Random();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
         //Tracks interactions between the UI and the database, allowing us to update values as they
         //get changed.
         viewModel = new ViewModelProvider(this).get(InputDisplayViewModel.class);
@@ -130,44 +136,56 @@ public class MainActivity extends AppCompatActivity  {
 
         //Sets up the recycler view, so that each empty/stored label gets displayed on the UI, in the
         //format given by label_input_format.xml
-        recyclerView = findViewById(R.id.friendInputItems);
+        /*recyclerView = findViewById(R.id.friendInputItems);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
-        recyclerView.setAdapter(adapter);
+        recyclerView.setAdapter(adapter);*/
+        loadProfile();
     }
 
+    public void saveProfile(){
+        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+        SharedPreferences.Editor editor = preferences.edit();
+        TextView nameView = findViewById(R.id.nameTextView);
+        editor.putString("name", nameView.getText().toString());
+        TextView UIDView = findViewById(R.id.UIDtextView);
+        if(UIDView.getText().toString().equals("N/A")){
+            UIDView.setText(String.format("%04d", random.nextInt(10000)));
+            editor.putString("UID", UIDView.getText().toString());
+        }
+        editor.apply();
+    }
 
-    /**
-     * Currently only takes in hard coded values. TODO:: When Add Friend Button is Added, Adjust This
-     *
-     * @return all friends which are needed from the server.
-     */
-    public ArrayList<String> getNeededPubIDs(){
-        ArrayList<String> tempArrayList = new ArrayList<String>();
-        tempArrayList.add("Group-7-Test-1");
-        tempArrayList.add("Group-7-Test-2");
-
-        return tempArrayList;
+    public void loadProfile(){
+        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+        String n = preferences.getString("name", "");
+        String s = preferences.getString("UID", "N/A");
+        TextView nameView = findViewById(R.id.nameTextView);
+        TextView UIDView = findViewById(R.id.UIDtextView);
+        nameView.setText(n);
+        UIDView.setText(s);
     }
 
     /**
      * On button click, only goes to CompassActivity if at least one location has been inputted.
      */
     public void onGoToCompass(View view) {
+        saveProfile();
 
-        TextView mockOrientation = findViewById(R.id.mockOrientationView);
-        String mockOrientationStr = mockOrientation.getText().toString();
-        float orientation;
+        TextView name = findViewById(R.id.nameTextView);
+        String nameStr = "";
+        //float orientation;
         try {
-            orientation = Float.parseFloat(mockOrientationStr);
-            if(orientation < 0 || orientation > 359) {
-                ShowAlert.alert(this, "Please enter a number between 0-359");
+            //orientation = Float.parseFloat(nameStr);
+            nameStr = name.getText().toString();
+            if(nameStr.equals("")) {
+                ShowAlert.alert(this, "Please enter your name!");
                 return;
             }
-        } catch (NumberFormatException ignored) {
-            orientation = -1;
+        } catch (NullPointerException e) {
+            System.out.println("Error " + e.getMessage());
         }
         Intent intent = new Intent(this, CompassActivity.class);
-        intent.putExtra("orientation", orientation);
+        //intent.putExtra("orientation", orientation);
 
         for(FriendAccount i : adapter.friendAccountList) {
             if (i.getLocation() != null) {
@@ -178,8 +196,29 @@ public class MainActivity extends AppCompatActivity  {
 
     }
 
+    /**
+     * Currently only takes in hard coded values. TODO:: When Add Friend Button is Added, Adjust This
+     *
+     * @return all friends which are needed from the server.
+     */
+    public ArrayList<String> getNeededPubIDs(){
+        ArrayList<String> friendArrayList = new ArrayList<String>();
+        FriendDatabase friendDao = FriendDatabase.getInstance(getApplicationContext());
+        final FriendAccountDao db = friendDao.getFriendDao();
+        db.selectFriends().observe(this, houses -> {
+            for(FriendAccount i : houses){
+                if(i.getLocation() != null){
+                    friendArrayList.add(i.getPublicID());
+                }
+            }
+        });
+
+        return friendArrayList;
+    }
+
     @Override
     protected void onDestroy() {
+        saveProfile();
         super.onDestroy();
     }
 

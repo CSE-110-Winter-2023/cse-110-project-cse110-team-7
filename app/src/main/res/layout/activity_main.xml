@@ -14,32 +14,63 @@
         android:layout_marginEnd="16dp"
         android:layout_marginBottom="24dp"
         android:onClick="onGoToCompass"
-        android:text="Go To Compass"
+        android:text="Ok"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent" />
 
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/friendInputItems"
-        android:layout_width="468dp"
-        android:layout_height="722dp"
-        tools:layout_editor_absoluteX="1dp"
-        tools:layout_editor_absoluteY="1dp"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
-
-    <EditText
-        android:id="@+id/mockOrientationView"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="33dp"
-        android:ems="10"
-        android:hint="Mock Orientation"
-        android:inputType="textPersonName"
+    <TextView
+        android:id="@+id/yourName"
+        android:layout_width="108dp"
+        android:layout_height="30dp"
+        android:text="Your Name:"
+        android:textSize="20sp"
         app:layout_constraintBottom_toTopOf="@+id/goToCompass"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.5"
-        app:layout_constraintStart_toStartOf="parent" />
+        app:layout_constraintHorizontal_bias="0.138"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.184" />
+
+    <TextView
+        android:id="@+id/yourUID"
+        android:layout_width="108dp"
+        android:layout_height="30dp"
+        android:text="Your UID:"
+        android:textSize="20sp"
+        app:layout_constraintBottom_toTopOf="@+id/goToCompass"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.138"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.282" />
+
+    <TextView
+        android:id="@+id/UIDtextView"
+        android:layout_width="108dp"
+        android:layout_height="30dp"
+        android:text="N/A"
+        android:textSize="20sp"
+        app:layout_constraintBottom_toTopOf="@+id/goToCompass"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.013"
+        app:layout_constraintStart_toEndOf="@+id/yourUID"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.281" />
+
+    <EditText
+        android:id="@+id/nameTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:ems="10"
+        android:inputType="textPersonName"
+        android:text=""
+        app:layout_constraintBottom_toTopOf="@+id/goToCompass"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.019"
+        app:layout_constraintStart_toEndOf="@+id/yourName"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.175" />
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>

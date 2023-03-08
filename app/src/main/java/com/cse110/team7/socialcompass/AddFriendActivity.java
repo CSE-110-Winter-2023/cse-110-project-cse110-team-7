@@ -4,13 +4,16 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.text.TextUtils;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.TextView;
 
 import com.cse110.team7.socialcompass.backend.FriendAccountDao;
 import com.cse110.team7.socialcompass.backend.FriendDatabase;
@@ -34,6 +37,14 @@ public class AddFriendActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_add_friend);
         this.locationAPI = LocationAPI.provide();
+        loadMyUID();
+    }
+
+    private void loadMyUID(){
+        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+        TextView myUIDView = findViewById(R.id.displayUID);
+        String data = preferences.getString("UID", "N/A");
+        myUIDView.setText("Your UID: " + data);
     }
 
     public void addFriend(String publicID) throws ExecutionException, InterruptedException {
