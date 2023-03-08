@@ -19,6 +19,7 @@ public class FriendAccount {
     @NonNull
     private String name;
     private LatLong location;
+    private long updatedAt;
 
     //May Need This (Page 7, Lab 6):
     //private int friendNum;
@@ -64,11 +65,19 @@ public class FriendAccount {
 
     public String getPrivateID() { return privateID; }
 
+    public long getUpdatedAt() {
+        return updatedAt;
+    }
+
+    public void setUpdatedAt(long updatedAt) {
+        this.updatedAt = updatedAt;
+    }
+
     @NonNull
     @Override
     public String toString() {
         return "Friend {" +
-                "publicid=" + publicID +
+                "publicID=" + publicID +
                 ", name='" + name + '\'' +
                 ", location=" + location +
                 '}';
@@ -92,9 +101,9 @@ public class FriendAccount {
         if (!h.getName().equals(getName())) {
             return false;
         }
-        if (!h.getLocation().equals(getLocation())) {
-            return false;
-        }
+//        if (!h.getLocation().equals(getLocation())) {
+//            return false;
+//        }
         return true;
     }
 }
