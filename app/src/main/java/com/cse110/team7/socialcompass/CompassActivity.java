@@ -207,7 +207,6 @@ public class CompassActivity extends AppCompatActivity {
 
     public void onGoToAddFriend(View view) {
         Intent intent = new Intent(this, AddFriendActivity.class);
-
         startActivity(intent);
     }
 }
