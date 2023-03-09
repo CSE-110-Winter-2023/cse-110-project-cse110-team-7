@@ -7,6 +7,8 @@ import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.View;
+import android.view.inputmethod.EditorInfo;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 
@@ -33,6 +35,7 @@ import com.cse110.team7.socialcompass.utils.ShowAlert;
 
 import java.util.ArrayList;
 import java.util.Random;
+import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -41,6 +44,9 @@ import java.util.concurrent.ScheduledFuture;
 
 public class MainActivity extends AppCompatActivity  {
     public RecyclerView recyclerView;
+    EditText nameView;
+    TextView uidView;
+    Button okButton;
     InputDisplayAdapter adapter;
     InputDisplayViewModel viewModel;
 
@@ -54,6 +60,25 @@ public class MainActivity extends AppCompatActivity  {
         //Tracks interactions between the UI and the database, allowing us to update values as they
         //get changed.
         viewModel = new ViewModelProvider(this).get(InputDisplayViewModel.class);
+        nameView = findViewById(R.id.nameTextView);
+        uidView = findViewById(R.id.UIDtextView);
+        okButton = findViewById(R.id.goToCompass);
+
+        nameView.setOnEditorActionListener((view, actionId, event) -> {
+            if (actionId != EditorInfo.IME_ACTION_DONE) {
+                return false;
+            }
+
+            String name = nameView.getText().toString();
+
+            if (name.isBlank()) {
+                ShowAlert.alert(this, "name cannot be empty");
+                return false;
+            }
+
+            saveProfile();
+            return true;
+        });
 
         //Creates new adapter, which does the actual updating of values.
         adapter = new InputDisplayAdapter();
@@ -145,42 +170,32 @@ public class MainActivity extends AppCompatActivity  {
     public void saveProfile(){
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
         SharedPreferences.Editor editor = preferences.edit();
-        TextView nameView = findViewById(R.id.nameTextView);
+        uidView.setText(UUID.randomUUID().toString());
         editor.putString("myName", nameView.getText().toString());
+        editor.putString("myPublicID", uidView.getText().toString());
         editor.apply();
     }
 
     public void loadProfile(){
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
         String n = preferences.getString("myName", "");
-        String s = preferences.getString("myUID", "N/A");
-        TextView nameView = findViewById(R.id.nameTextView);
-        TextView UIDView = findViewById(R.id.UIDtextView);
+        String s = preferences.getString("myPublicID", "N/A");
         nameView.setText(n);
-        UIDView.setText(s);
+        uidView.setText(s);
     }
 
     /**
      * On button click, only goes to CompassActivity if at least one location has been inputted.
      */
     public void onGoToCompass(View view) {
-        saveProfile();
-
-        TextView name = findViewById(R.id.nameTextView);
-        String nameStr = "";
         //float orientation;
-        try {
-            //orientation = Float.parseFloat(nameStr);
-            nameStr = name.getText().toString();
-            if(nameStr.equals("")) {
-                ShowAlert.alert(this, "Please enter your name!");
-                return;
-            }
-            Intent intent = new Intent(this, CompassActivity.class);
-            startActivity(intent);
-        } catch (NullPointerException e) {
-            System.out.println("Error " + e.getMessage());
+        if (nameView.getText().toString().isBlank()) {
+            ShowAlert.alert(this, "name cannot be empty");
+            return;
         }
+
+        Intent intent = new Intent(this, CompassActivity.class);
+        startActivity(intent);
         /*Intent intent = new Intent(this, CompassActivity.class);
         //intent.putExtra("orientation", orientation);
 
@@ -218,4 +233,15 @@ public class MainActivity extends AppCompatActivity  {
         super.onDestroy();
     }
 
+    public EditText getNameView() {
+        return nameView;
+    }
+
+    public TextView getUidView() {
+        return uidView;
+    }
+
+    public Button getOkButton() {
+        return okButton;
+    }
 }
