@@ -38,6 +38,7 @@ public class FriendAccount {
         this.name = name;
         this.location = location;
         this.publicID = publicID;
+        this.privateID = UUID.randomUUID().toString(); // generate new privateID
         this.id = publicID.hashCode();
     }
 

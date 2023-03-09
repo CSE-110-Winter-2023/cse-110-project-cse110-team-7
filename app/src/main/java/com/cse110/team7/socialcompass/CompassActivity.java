@@ -22,6 +22,7 @@ import androidx.constraintlayout.widget.ConstraintLayout;
 import com.cse110.team7.socialcompass.backend.FriendAccountDao;
 import com.cse110.team7.socialcompass.backend.FriendAccountRepository;
 import com.cse110.team7.socialcompass.backend.FriendDatabase;
+import com.cse110.team7.socialcompass.backend.LocationAPI;
 import com.cse110.team7.socialcompass.models.FriendAccount;
 import com.cse110.team7.socialcompass.models.LatLong;
 import com.cse110.team7.socialcompass.services.LocationService;
@@ -87,15 +88,20 @@ public class CompassActivity extends AppCompatActivity {
 
         //SharedPreferences preferences = getPreferences(MODE_PRIVATE);
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
-        String myPublicID = preferences.getString("myUID", "N/A");
+
+        String myPublicID = preferences.getString("myPublicID", "???");
         String myName = preferences.getString("myName", myPublicID); // default name to id
         LatLong myLocation = LocationService.getInstance().getUserLocation().getValue();
-        myAccount = new FriendAccount(myName, myLocation);
-        if (myPublicID.equals("N/A")) {
-            SharedPreferences.Editor editor = preferences.edit();
-            editor.putString("myUID", myAccount.getPublicID());
-            editor.apply();
+        try {
+            myAccount = LocationAPI.provide().getFriendAsync(myPublicID).get();
+            if (myAccount == null) {
+                myAccount = new FriendAccount(myName, myLocation, myPublicID);
+                LocationAPI.provide().putLocationAsync(myAccount);
+            }
+        } catch (Exception exception) {
+            exception.printStackTrace();
         }
+
         FriendAccountRepository friendRepo = new FriendAccountRepository(db);
 
 
