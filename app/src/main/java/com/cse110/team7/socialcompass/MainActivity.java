@@ -13,7 +13,6 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.cse110.team7.socialcompass.backend.LocationAPI;
 import com.cse110.team7.socialcompass.models.FriendAccount;
-import com.cse110.team7.socialcompass.models.LatLong;
 import com.cse110.team7.socialcompass.ui.InputDisplayAdapter;
 import com.cse110.team7.socialcompass.ui.InputDisplayViewModel;
 
@@ -24,6 +23,7 @@ import com.cse110.team7.socialcompass.ui.InputDisplayViewModel;
 import com.cse110.team7.socialcompass.utils.ShowAlert;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledFuture;
@@ -65,8 +65,8 @@ public class MainActivity extends AppCompatActivity  {
          */
 
         serverAPI =  LocationAPI.provide();
-        ArrayList<String> allFriends = getNeededPubIDs(); //W
-        ArrayList<FriendAccount> listOfFriendsFromServer = new ArrayList<>();
+        List<String> allFriends = getNeededPublicIDs();
+        List<FriendAccount> listOfFriendsFromServer = new ArrayList<>();
 
         var executor = Executors.newSingleThreadExecutor();
         for(String pubID : allFriends){
@@ -103,16 +103,12 @@ public class MainActivity extends AppCompatActivity  {
         viewModel.getFriendItems().observe(this, friends -> {
             for(FriendAccount i : listOfFriendsFromServer) {
                 if (i != null && friends != null) {
-                    if (friends.size() == 0) {
-                        viewModel.addFriend(i);
-                        continue;
-                    }
+                    // Adds friend if its not in view.
                     if (friends.contains(i) == false) {
                         viewModel.addFriend(i);
                     }
 
                 }
-//                System.out.println(i.toString());
             }
         });
 
@@ -141,8 +137,8 @@ public class MainActivity extends AppCompatActivity  {
      *
      * @return all friends which are needed from the server.
      */
-    public ArrayList<String> getNeededPubIDs(){
-        ArrayList<String> tempArrayList = new ArrayList<String>();
+    public List<String> getNeededPublicIDs(){
+        List<String> tempArrayList = new ArrayList<String>();
         tempArrayList.add("Group-7-Test-1");
         tempArrayList.add("Group-7-Test-2");
 
