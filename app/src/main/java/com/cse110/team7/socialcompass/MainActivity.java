@@ -29,10 +29,13 @@ import com.cse110.team7.socialcompass.services.LocationService;
 /*
  * First page of our application; we should probably move all of this over to another activity.
  */
+import com.cse110.team7.socialcompass.ui.InputDisplayAdapter;
+import com.cse110.team7.socialcompass.ui.InputDisplayViewModel;
 import com.cse110.team7.socialcompass.utils.ShowAlert;
 
 import java.util.ArrayList;
 
+import java.util.List;
 import java.util.Random;
 import java.util.UUID;
 import java.util.concurrent.ExecutionException;
@@ -95,7 +98,7 @@ public class MainActivity extends AppCompatActivity  {
          */
 
         serverAPI =  LocationAPI.provide();
-        List<String> allFriends = getNeededPublicIDs();
+        List<String> allFriends = getNeededPubIDs();
         List<FriendAccount> listOfFriendsFromServer = new ArrayList<>();
 
         var executor = Executors.newSingleThreadExecutor();
