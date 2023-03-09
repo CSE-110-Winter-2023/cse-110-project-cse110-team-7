@@ -140,6 +140,8 @@ public class Compass {
      * @param labeledLocationLiveData the labeled location to be displayed
      */
     public void displayLabeledLocation(LiveData<LabeledLocation> labeledLocationLiveData) {
+        Log.i(Compass.class.getName(), getCompassTag() + ": displayed element count " + labeledLocationDisplayMap.size());
+
         labeledLocationLiveData.observe(lifecycleOwner, labeledLocation -> {
             Log.i(Compass.class.getName(), getCompassTag() + ": received update from labeled location " + labeledLocation.getLabel());
 
