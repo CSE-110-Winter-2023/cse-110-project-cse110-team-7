@@ -1,5 +1,6 @@
 package com.cse110.team7.socialcompass;
 
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
@@ -45,7 +46,6 @@ public class MainActivity extends AppCompatActivity  {
 
     LocationAPI serverAPI;
 
-    Random random = new Random();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -146,19 +146,14 @@ public class MainActivity extends AppCompatActivity  {
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
         SharedPreferences.Editor editor = preferences.edit();
         TextView nameView = findViewById(R.id.nameTextView);
-        editor.putString("name", nameView.getText().toString());
-        TextView UIDView = findViewById(R.id.UIDtextView);
-        if(UIDView.getText().toString().equals("N/A")){
-            UIDView.setText(String.format("%04d", random.nextInt(10000)));
-            editor.putString("UID", UIDView.getText().toString());
-        }
+        editor.putString("myName", nameView.getText().toString());
         editor.apply();
     }
 
     public void loadProfile(){
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
-        String n = preferences.getString("name", "");
-        String s = preferences.getString("UID", "N/A");
+        String n = preferences.getString("myName", "");
+        String s = preferences.getString("myUID", "N/A");
         TextView nameView = findViewById(R.id.nameTextView);
         TextView UIDView = findViewById(R.id.UIDtextView);
         nameView.setText(n);
@@ -181,10 +176,12 @@ public class MainActivity extends AppCompatActivity  {
                 ShowAlert.alert(this, "Please enter your name!");
                 return;
             }
+            Intent intent = new Intent(this, CompassActivity.class);
+            startActivity(intent);
         } catch (NullPointerException e) {
             System.out.println("Error " + e.getMessage());
         }
-        Intent intent = new Intent(this, CompassActivity.class);
+        /*Intent intent = new Intent(this, CompassActivity.class);
         //intent.putExtra("orientation", orientation);
 
         for(FriendAccount i : adapter.friendAccountList) {
@@ -192,8 +189,7 @@ public class MainActivity extends AppCompatActivity  {
                 startActivity(intent);
                 return;
             }
-        }
-
+        }*/
     }
 
     /**

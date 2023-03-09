@@ -43,7 +43,7 @@ public class AddFriendActivity extends AppCompatActivity {
     private void loadMyUID(){
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
         TextView myUIDView = findViewById(R.id.displayUID);
-        String data = preferences.getString("UID", "N/A");
+        String data = preferences.getString("myUID", "N/A");
         myUIDView.setText("Your UID: " + data);
     }
 
