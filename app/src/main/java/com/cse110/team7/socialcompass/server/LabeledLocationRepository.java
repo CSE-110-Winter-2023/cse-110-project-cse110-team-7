@@ -38,6 +38,16 @@ public class LabeledLocationRepository {
      * Select the labeled location corresponding to the given public code from local database
      *
      * @param publicCode the public code of the labeled location
+     * @return labeled location
+     */
+    public LabeledLocation selectLocalLabeledLocationWithoutLiveData(String publicCode) {
+        return dao.selectLabeledLocationWithoutLiveData(publicCode);
+    }
+
+    /**
+     * Select the labeled location corresponding to the given public code from local database
+     *
+     * @param publicCode the public code of the labeled location
      * @return labeled location subject
      */
     public LiveData<LabeledLocation> selectLocalLabeledLocation(String publicCode) {
