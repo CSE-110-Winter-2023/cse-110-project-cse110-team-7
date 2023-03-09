@@ -248,4 +248,19 @@ public class LabeledLocation {
     public void setUpdatedAt(long updatedAt) {
         this.updatedAt = updatedAt;
     }
+
+    @NonNull
+    @Override
+    public String toString() {
+        return "LabeledLocation{" +
+                "publicCode='" + publicCode + '\'' +
+                ", privateCode='" + privateCode + '\'' +
+                ", label='" + label + '\'' +
+                ", latitude=" + latitude +
+                ", longitude=" + longitude +
+                ", isListedPublicly=" + isListedPublicly +
+                ", createdAt=" + createdAt +
+                ", updatedAt=" + updatedAt +
+                '}';
+    }
 }
