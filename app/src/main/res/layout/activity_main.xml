@@ -20,7 +20,7 @@
         app:layout_constraintStart_toStartOf="parent" />
 
     <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/houseInputItems"
+        android:id="@+id/friendInputItems"
         android:layout_width="468dp"
         android:layout_height="722dp"
         tools:layout_editor_absoluteX="1dp"

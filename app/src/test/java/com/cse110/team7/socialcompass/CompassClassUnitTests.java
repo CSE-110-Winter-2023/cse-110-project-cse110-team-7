@@ -4,7 +4,7 @@ import static org.junit.Assert.assertEquals;
 
 import android.widget.ImageView;
 
-import com.cse110.team7.socialcompass.models.House;
+import com.cse110.team7.socialcompass.models.FriendAccount;
 import com.cse110.team7.socialcompass.ui.Compass;
 import com.cse110.team7.socialcompass.models.LatLong;
 import com.cse110.team7.socialcompass.ui.LabelInformation;
@@ -22,7 +22,7 @@ public class CompassClassUnitTests {
         Compass testCompass = new Compass(img);
 
         assertEquals(testCompass.getNorthElementDisplay().getDotView(), img);
-        assertEquals(testCompass.getNorthElementDisplay().getHouse().getLocation(), new LatLong(90, 0));
+        assertEquals(testCompass.getNorthElementDisplay().getFriend().getLocation(), new LatLong(90, 0));
         assertEquals(testCompass.getElements().size(), 1);
     }
 
@@ -31,7 +31,7 @@ public class CompassClassUnitTests {
         String testName = "Test";
         LatLong testLocation = new LatLong(11.1, 13.2);
 
-        House test = new House(testName, testLocation);
+        FriendAccount test = new FriendAccount(testName, testLocation);
         LabelInformation testElement = new LabelInformation(test, null, null);
 
         Compass testCompass = new Compass(null);

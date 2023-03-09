@@ -2,6 +2,7 @@ package com.cse110.team7.socialcompass;
 
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.res.Resources;
 import android.graphics.Color;
 import android.graphics.Typeface;
@@ -15,9 +16,11 @@ import android.widget.TextView;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.constraintlayout.widget.ConstraintLayout;
 
-import com.cse110.team7.socialcompass.backend.HouseDao;
-import com.cse110.team7.socialcompass.backend.HouseDatabase;
-import com.cse110.team7.socialcompass.models.House;
+import com.cse110.team7.socialcompass.backend.FriendAccountDao;
+import com.cse110.team7.socialcompass.backend.FriendAccountRepository;
+import com.cse110.team7.socialcompass.backend.FriendDatabase;
+import com.cse110.team7.socialcompass.models.FriendAccount;
+import com.cse110.team7.socialcompass.models.LatLong;
 import com.cse110.team7.socialcompass.services.LocationService;
 import com.cse110.team7.socialcompass.services.OrientationService;
 import com.cse110.team7.socialcompass.ui.Compass;
@@ -29,6 +32,7 @@ import java.util.List;
 public class CompassActivity extends AppCompatActivity {
 
     private Compass compass;
+    private FriendAccount myAccount;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -48,8 +52,8 @@ public class CompassActivity extends AppCompatActivity {
         //These three lines open up the Room database, giving us access to the values stored from
         //the main activity, with HouseDao being an instance of the HouseDatabase class.
         Context context = getApplication().getApplicationContext();
-        HouseDatabase houseDao = HouseDatabase.getInstance(context);
-        final HouseDao db = houseDao.getHouseDao();
+        FriendDatabase houseDao = FriendDatabase.getInstance(context);
+        final FriendAccountDao db = houseDao.getFriendDao();
 
         // Accessing data from input screen
         Intent intent = getIntent();
@@ -58,10 +62,10 @@ public class CompassActivity extends AppCompatActivity {
         //We read all of the houses stored in the database, which gives us a live observer variable
         //And from there, if the location is not null (e.g. was not inputted), it adds it as a label
         //to the compass.
-        db.selectHouses().observe(this, houses -> {
-            for(House i : houses){
+        db.selectFriends().observe(this, houses -> {
+            for(FriendAccount i : houses){
                 if(i.getLocation() != null){
-                    compass.add(initHouseDisplay(i));
+                    compass.add(initFriendDisplay(i));
                 }
             }
         });
@@ -75,6 +79,17 @@ public class CompassActivity extends AppCompatActivity {
         // Set "X-Rot" to about -60 and slide "Z-Rot" to change the orientation
 
         LocationService.getInstance().setLocationManager((LocationManager) getSystemService(Context.LOCATION_SERVICE));
+
+        SharedPreferences preferences = getPreferences(MODE_PRIVATE);
+        String myPublicID = preferences.getString("public_id", null);
+        String myName = preferences.getString("name", myPublicID); // default name to id
+        LatLong myLocation = LocationService.getInstance().getUserLocation().getValue();
+        if (myPublicID == null) {
+            myAccount = new FriendAccount(myName, myLocation);
+            SharedPreferences.Editor editor = preferences.edit();
+            editor.putString("public_id", myAccount.getPublicID());
+        }
+        FriendAccountRepository friendRepo = new FriendAccountRepository(db);
 
         // Shijun will fix this, to make it work better.
         while (true) {
@@ -99,6 +114,8 @@ public class CompassActivity extends AppCompatActivity {
         LocationService.getInstance().getUserLocation().observe(this, (currentLocation) -> {
             compass.updateBearingForAll(currentLocation);
             compass.updateRotationForAll();
+            myAccount.setLocation(currentLocation);
+            friendRepo.upsertRemoteFriendAccount(myAccount);
         });
 
         OrientationService.getInstance().getAzimuth().observe(this, (currentAzimuth) -> {
@@ -115,8 +132,8 @@ public class CompassActivity extends AppCompatActivity {
 
     }
 
-    //Creates a label for each house contained in the database.
-    public LabelInformation initHouseDisplay(House house) {
+    //Creates a label for each friend contained in the database.
+    public LabelInformation initFriendDisplay(FriendAccount friendAccount) {
         ImageView dotView = new ImageView(this);
 
         dotView.setId(View.generateViewId());
@@ -125,7 +142,7 @@ public class CompassActivity extends AppCompatActivity {
         TextView labelView = new TextView(this);
 
         labelView.setId(View.generateViewId());
-        labelView.setText(house.getName());
+        labelView.setText(friendAccount.getName());
         labelView.setTextSize(20); //Change size of text here.
         labelView.setTypeface(null, Typeface.BOLD);
         labelView.setTextColor(Color.WHITE);
@@ -139,7 +156,7 @@ public class CompassActivity extends AppCompatActivity {
         ConstraintLayout.LayoutParams dotViewParameters = (ConstraintLayout.LayoutParams) labelView.getLayoutParams();
 
         dotViewParameters.circleConstraint = R.id.CompassCenter;
-        //Sets all Houses to always be the correct radius, regardless of size of the screen.
+        //Sets all Friends to always be the correct radius, regardless of size of the screen.
         dotViewParameters.circleRadius = Math.min((getScreenWidth() * 5) / 14, (getScreenHeight()  * 4) / 15);
 
         dotViewParameters.circleAngle = 0; //shouldn't this be the actual initial angle
@@ -156,7 +173,7 @@ public class CompassActivity extends AppCompatActivity {
         labelParameters.height = ConstraintLayout.LayoutParams.WRAP_CONTENT;
         labelParameters.width = ConstraintLayout.LayoutParams.WRAP_CONTENT;
 
-        return new LabelInformation(house, dotView, labelView);
+        return new LabelInformation(friendAccount, dotView, labelView);
     }
 
     public Compass getCompass() {
@@ -172,25 +189,25 @@ public class CompassActivity extends AppCompatActivity {
         return Resources.getSystem().getDisplayMetrics().heightPixels;
     }
 
-    // Updates the house database when the app is exited.
+    // Updates the friend database when the app is exited.
     @Override
     protected void onStop() {
         super.onStop();
 
-        HouseDatabase houseDao = HouseDatabase.getInstance(getApplicationContext());
-        final HouseDao db = houseDao.getHouseDao();
+        FriendDatabase friendDao = FriendDatabase.getInstance(getApplicationContext());
+        final FriendAccountDao db = friendDao.getFriendDao();
 
-        List<House> houses = new ArrayList<>();
+        List<FriendAccount> friendAccounts = new ArrayList<>();
 
-        // Uses all house labels excluding north label
+        // Uses all friend labels excluding north label
         for(LabelInformation label : compass.getElements()) {
             if(!label.equals(compass.getNorthElementDisplay())) {
-                houses.add(new House(label.getHouse().getName(), label.getHouse().getLocation()));
+                friendAccounts.add(new FriendAccount(label.getFriend().getName(), label.getFriend().getLocation()));
             }
         }
 
-        for(House house : houses) {
-            db.updateHouse(house);
+        for(FriendAccount friendAccount : friendAccounts) {
+            db.updateFriend(friendAccount);
         }
     }
 
@@ -199,6 +216,14 @@ public class CompassActivity extends AppCompatActivity {
         OrientationService.getInstance().unregisterSensorEventListener();
 
         finish();
-        super.onBackPressed();
+//        super.onBackPressed();
+        Intent intent = new Intent(this, MainActivity.class);
+
+        startActivity(intent);
+    }
+
+    public void onGoToAddFriend(View view) {
+        Intent intent = new Intent(this, AddFriendActivity.class);
+        startActivity(intent);
     }
 }

@@ -2,6 +2,7 @@ package com.cse110.team7.socialcompass;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
 
@@ -10,9 +11,10 @@ import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.cse110.team7.socialcompass.models.House;
-import com.cse110.team7.socialcompass.ui.inputDisplayAdapter;
-import com.cse110.team7.socialcompass.ui.inputDislayViewModel;
+import com.cse110.team7.socialcompass.backend.LocationAPI;
+import com.cse110.team7.socialcompass.models.FriendAccount;
+import com.cse110.team7.socialcompass.ui.InputDisplayAdapter;
+import com.cse110.team7.socialcompass.ui.InputDisplayViewModel;
 
 
 /*
@@ -20,11 +22,23 @@ import com.cse110.team7.socialcompass.ui.inputDislayViewModel;
  */
 import com.cse110.team7.socialcompass.utils.ShowAlert;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledFuture;
 
-public class MainActivity extends AppCompatActivity {
+
+public class MainActivity extends AppCompatActivity  {
     public RecyclerView recyclerView;
-    inputDisplayAdapter adapter;
-    inputDislayViewModel viewModel;
+    InputDisplayAdapter adapter;
+    InputDisplayViewModel viewModel;
+
+    LocationAPI serverAPI;
+
+    private ScheduledFuture<?> future;
+
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -33,32 +47,102 @@ public class MainActivity extends AppCompatActivity {
 
         //Tracks interactions between the UI and the database, allowing us to update values as they
         //get changed.
-        viewModel = new ViewModelProvider(this).get(inputDislayViewModel.class);
+        viewModel = new ViewModelProvider(this).get(InputDisplayViewModel.class);
 
         //Creates new adapter, which does the actual updating of values.
-        adapter = new inputDisplayAdapter();
+        adapter = new InputDisplayAdapter();
         adapter.setHasStableIds(true);
 
         //Binds methods to adapter
         adapter.setCoordinatesChanged(viewModel::updateCoordinateText);
         adapter.setParentLabelChanged(viewModel::updateLabelText);
 
-        viewModel.getHouseItems().observe(this, adapter::setHouseList);
+        viewModel.getFriendItems().observe(this, adapter::setFriendList);
 
-        //If no data is already saved, then adds three empty houses to the database.
-        viewModel.getHouseItems().observe(this, houses -> {
-            if (houses.size() == 0) {
-                viewModel.addHouse(new House("Parents", null));
-                viewModel.addHouse(new House("Friends", null));
-                viewModel.addHouse(new House("My Home", null));
+        /*
+         * TODO:: This will need to be adjusted to work with the database and to sync properly
+         * once we add the 'add friend button' and it may need to be moved as necessary.
+         */
+
+        serverAPI =  LocationAPI.provide();
+        List<String> allFriends = getNeededPublicIDs();
+        List<FriendAccount> listOfFriendsFromServer = new ArrayList<>();
+
+        var executor = Executors.newSingleThreadExecutor();
+        for(String pubID : allFriends){
+
+            var future = executor.submit(() -> serverAPI.getFriend(pubID));
+            FriendAccount toAdd = null;
+
+            try {
+                toAdd = future.get();
+            } catch (ExecutionException e) {
+                throw new RuntimeException(e);
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+
+            if(toAdd == null){
+                Log.i("toADD is ", "null");
+            } else {
+                Log.i("toADD is ", "valid?");
+            }
+
+            listOfFriendsFromServer.add(toAdd);
+        }
+
+        //Example way of adding friend to UI, shown below.
+        //TODO: Make sure same friend UIDs are not added to server several times.
+//        for(var i : listOfFriendsFromServer) {
+//            if(i.getPublicID())
+//                viewModel.addFriend(i);
+//
+//        }
+
+        //If no data is already saved, then adds needed friends to the database.
+        viewModel.getFriendItems().observe(this, friends -> {
+            for(FriendAccount i : listOfFriendsFromServer) {
+                if (i != null && friends != null) {
+                    // Adds friend if its not in view.
+                    if (friends.contains(i) == false) {
+                        viewModel.addFriend(i);
+                    }
+
+                }
             }
         });
 
+
+//        //If no data is already saved, then adds three friends to the database.
+//        viewModel.getFriendItems().observe(this, friends -> {
+//            if (friends.size() == 0) {
+//                viewModel.addFriend(new FriendAccount("Parents", new LatLong(10, 10)));
+//                viewModel.addFriend(new FriendAccount("Friends", new LatLong(10, 10)));
+//                viewModel.addFriend(new FriendAccount("My Home", new LatLong(10, 10)));
+//            }
+//        });
+
+
+
         //Sets up the recycler view, so that each empty/stored label gets displayed on the UI, in the
         //format given by label_input_format.xml
-        recyclerView = findViewById(R.id.houseInputItems);
+        recyclerView = findViewById(R.id.friendInputItems);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         recyclerView.setAdapter(adapter);
+    }
+
+
+    /**
+     * Currently only takes in hard coded values. TODO:: When Add Friend Button is Added, Adjust This
+     *
+     * @return all friends which are needed from the server.
+     */
+    public List<String> getNeededPublicIDs(){
+        List<String> tempArrayList = new ArrayList<String>();
+        tempArrayList.add("Group-7-Test-1");
+        tempArrayList.add("Group-7-Test-2");
+
+        return tempArrayList;
     }
 
     /**
@@ -81,7 +165,7 @@ public class MainActivity extends AppCompatActivity {
         Intent intent = new Intent(this, CompassActivity.class);
         intent.putExtra("orientation", orientation);
 
-        for(House i : adapter.houseList) {
+        for(FriendAccount i : adapter.friendAccountList) {
             if (i.getLocation() != null) {
                 startActivity(intent);
                 return;

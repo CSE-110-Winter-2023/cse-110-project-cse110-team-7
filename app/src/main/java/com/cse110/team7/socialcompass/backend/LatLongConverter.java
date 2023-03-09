@@ -8,7 +8,7 @@ import com.cse110.team7.socialcompass.utils.StringToDoubleConverter;
 
 /**
  * Apparently it would be much easier to just have two doubles stored in
- * House instead of this, but this would work too, LatLong will be stored
+ * FriendAccount instead of this, but this would work too, LatLong will be stored
  * as latitude,longitude in database
  */
 public class LatLongConverter {

@@ -4,7 +4,7 @@ import android.widget.ImageView;
 
 import androidx.constraintlayout.widget.ConstraintLayout;
 
-import com.cse110.team7.socialcompass.models.House;
+import com.cse110.team7.socialcompass.models.FriendAccount;
 import com.cse110.team7.socialcompass.models.LatLong;
 
 import java.util.ArrayList;
@@ -15,7 +15,7 @@ public class Compass {
     private float azimuth;
 
     public Compass(ImageView northView) {
-        House north = new House("North", new LatLong(90, 0));
+        FriendAccount north = new FriendAccount("North", new LatLong(90, 0));
         this.elements = new ArrayList<>();
         this.elements.add(new LabelInformation(north, northView, null));
         this.azimuth = 0;
