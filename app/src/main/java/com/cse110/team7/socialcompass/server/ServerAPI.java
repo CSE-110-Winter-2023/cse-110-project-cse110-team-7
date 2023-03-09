@@ -44,6 +44,11 @@ public class ServerAPI {
         this.client = new OkHttpClient();
     }
 
+    /**
+     * Get a server api instance with synchronization
+     *
+     * @return a server api instance
+     */
     public synchronized static ServerAPI getInstance() {
         if (INSTANCE == null) INSTANCE = new ServerAPI();
         return INSTANCE;
