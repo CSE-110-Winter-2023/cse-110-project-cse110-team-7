@@ -1,29 +1,172 @@
 package com.cse110.team7.socialcompass;
 
-import android.content.Context;
+import android.Manifest;
 import android.content.Intent;
-import android.content.SharedPreferences;
-import android.content.res.Resources;
-import android.graphics.Color;
-import android.graphics.Typeface;
+import android.content.pm.PackageManager;
 import android.hardware.SensorManager;
 import android.location.LocationManager;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.util.Log;
 import android.view.View;
-import android.widget.ImageView;
-import android.widget.TextView;
+import android.view.WindowManager;
 
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.Nullable;
+import androidx.annotation.VisibleForTesting;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.constraintlayout.widget.ConstraintLayout;
+import androidx.core.app.ActivityCompat;
+import androidx.lifecycle.LiveData;
+import androidx.lifecycle.MutableLiveData;
+import androidx.lifecycle.Observer;
 
-import java.util.ArrayList;
+import com.cse110.team7.socialcompass.database.SocialCompassDatabase;
+import com.cse110.team7.socialcompass.models.LabeledLocation;
+import com.cse110.team7.socialcompass.server.LabeledLocationRepository;
+import com.cse110.team7.socialcompass.services.LocationService;
+import com.cse110.team7.socialcompass.services.OrientationService;
+import com.cse110.team7.socialcompass.ui.Compass;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
+
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class CompassActivity extends AppCompatActivity {
+    private ConstraintLayout compassConstraintLayout;
+    private FloatingActionButton addFriendFloatingActionButton;
+    private String userPublicCode;
+    private LabeledLocationRepository repo;
+    private MutableLiveData<List<LiveData<LabeledLocation>>> syncedLabeledLocations;
+    private Compass compass;
+    private LabeledLocation userLabeledLocation;
+    private boolean localUpdateRequired;
+
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_compass);
+
+        compassConstraintLayout = findViewById(R.id.compassConstraintLayout);
+        addFriendFloatingActionButton = findViewById(R.id.addFriendFloatingActionButton);
+
+        var database = SocialCompassDatabase.getInstance(this);
+        var labeledLocationDao = database.getLabeledLocationDao();
+        repo = new LabeledLocationRepository(labeledLocationDao);
+
+        var preferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+        userPublicCode = preferences.getString("userPublicCode", null);
+
+        userLabeledLocation = repo.selectLocalLabeledLocationWithoutLiveData(userPublicCode);
+        var localLabeledLocations = repo.selectLocalLabeledLocations();
+
+        localUpdateRequired = true;
+        syncedLabeledLocations = new MutableLiveData<>();
+
+        localLabeledLocations.observe(this, labeledLocations -> {
+            // we only observe once for local locations (the first time data is retrieved)
+            // if we continue to observe, there might be recursive update issues
+            if (!localUpdateRequired) return;
+
+            Log.i(
+                    CompassActivity.class.getName(),
+                    "local labeled location update received, current local labeled locations are " + labeledLocations.stream()
+                            .map(LabeledLocation::getLabel)
+                            .collect(Collectors.joining(", "))
+            );
+
+            syncedLabeledLocations.postValue(
+                    labeledLocations.stream()
+                            .filter(labeledLocation -> !labeledLocation.getPublicCode().equals(userPublicCode))
+                            .map(labeledLocation -> repo.syncedSelectLabeledLocation(labeledLocation.getPublicCode()))
+                            .collect(Collectors.toList())
+            );
+
+            localUpdateRequired = false;
+        });
+
+        compass = new Compass(this, compassConstraintLayout, 0, 65536_000);
+
+        syncedLabeledLocations.observe(this, labeledLocations -> {
+            Log.i(CompassActivity.class.getName(), "synced labeled location update received");
+            labeledLocations.forEach(compass::displayLabeledLocation);
+        });
+
+        compassConstraintLayout.post(() -> {
+            int radius = compassConstraintLayout.getWidth() / 2;
+            Log.i(CompassActivity.class.getName(), "radius update received, current radius is " + radius);
+            compass.setRadius(radius);
+        });
+
+        LocationService.getInstance().setLocationManager((LocationManager) getSystemService(LOCATION_SERVICE));
+        OrientationService.getInstance().setSensorManager((SensorManager) getSystemService(SENSOR_SERVICE));
+        OrientationService.getInstance().setWindowManager((WindowManager) getSystemService(WINDOW_SERVICE));
+
+        askForPermissionAndRegisterLocationUpdateListener();
+
+        OrientationService.getInstance().registerSensorEventUpdateListener();
+        Log.i(CompassActivity.class.getName(), "orientation update listener registered");
+
+        LocationService.getInstance().getCurrentCoordinate().observe(this, currentCoordinate -> {
+            if (userLabeledLocation != null) {
+                userLabeledLocation.setCoordinate(currentCoordinate);
+                repo.syncedUpsert(userLabeledLocation);
+            }
+            compass.updateBearingForAll(currentCoordinate);
+        });
+
+        OrientationService.getInstance().getCurrentOrientation().observe(this, currentOrientation -> {
+            compass.updateOrientationForAll(currentOrientation);
+        });
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        localUpdateRequired = true;
+    }
+
+    public void askForPermissionAndRegisterLocationUpdateListener() {
+        if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
+                && ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            registerForActivityResult(new ActivityResultContracts.RequestPermission(), isGranted -> {
+                if (isGranted) {
+                    LocationService.getInstance().registerLocationUpdateListener();
+                    Log.i(CompassActivity.class.getName(), "location update listener registered");
+                }
+            }).launch(Manifest.permission.ACCESS_FINE_LOCATION);
+        } else {
+            LocationService.getInstance().registerLocationUpdateListener();
+            Log.i(CompassActivity.class.getName(), "location update listener registered");
+        }
+    }
+
+    public void onAddFriendFloatingActionButtonClicked(View view) {
+        Log.i(CompassActivity.class.getName(), "add friend floating action button clicked");
+
+        Intent intent = new Intent(this, AddFriendActivity.class);
+        intent.putExtra("userUID", userLabeledLocation.getPublicCode());
+
+        startActivity(intent);
+    }
+
+    @VisibleForTesting
+    public ConstraintLayout getCompassConstraintLayout() {
+        return compassConstraintLayout;
+    }
+
+    @VisibleForTesting
+    public FloatingActionButton getAddFriendFloatingActionButton() {
+        return addFriendFloatingActionButton;
+    }
+
+    @VisibleForTesting
+    public Compass getCompass() {
+        return compass;
+    }
+
+    @VisibleForTesting
+    public LabeledLocation getUserLabeledLocation() {
+        return userLabeledLocation;
     }
 }
