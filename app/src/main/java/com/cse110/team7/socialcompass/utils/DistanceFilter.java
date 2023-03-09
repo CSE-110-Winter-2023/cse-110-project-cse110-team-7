@@ -7,6 +7,25 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 public class DistanceFilter {
+    public static boolean isFriendInRange(
+            FriendAccount friendAccount,
+            LatLong currentLocation,
+            double minDistance,
+            double maxDistance
+    ) {
+        double friendDistance = DistanceCalculator.calculateDistance(currentLocation, friendAccount.getLocation());
+        return Double.compare(maxDistance, friendDistance) > 0 && Double.compare(minDistance, friendDistance) <= 0;
+    }
+
+    public static boolean isFriendFurtherThanMaxDistance(
+            FriendAccount friendAccount,
+            LatLong currentLocation,
+            double maxDistance
+    ) {
+        double friendDistance = DistanceCalculator.calculateDistance(currentLocation, friendAccount.getLocation());
+        return Double.compare(maxDistance, friendDistance) <= 0;
+    }
+
     /**
      * Filter friends by distance range, the result friends are within the range [minDistance, maxDistance)
      * @param friendAccounts all friends to be filtered

@@ -103,8 +103,7 @@ public class CompassActivity extends AppCompatActivity {
         }
 
         FriendAccountRepository friendRepo = new FriendAccountRepository(db);
-
-
+        
         // Shijun will fix this, to make it work better.
         while (true) {
             try {

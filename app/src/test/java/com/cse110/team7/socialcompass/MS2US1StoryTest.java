@@ -2,6 +2,7 @@ package com.cse110.team7.socialcompass;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 
 import android.content.Context;
 import android.widget.Button;
@@ -41,7 +42,8 @@ public class MS2US1StoryTest {
     private FriendDatabase friendDatabase;
 
 
-    public void setupFriends() {
+    @Before
+    public void setupFriends() { //Create friends
         locAPI = LocationAPI.provide();
         locAPI.putLocation(testLoc1);
 
@@ -70,21 +72,26 @@ public class MS2US1StoryTest {
 
     @Test
     public void testAddingFriendUsingPremadePubID() {
-        //Create Friends:
-        setupFriends();
 
-
+        //Start the AddFriend Scenario
         var scenario = ActivityScenario.launch(AddFriendActivity.class);
         scenario.moveToState(Lifecycle.State.CREATED);
         scenario.moveToState(Lifecycle.State.STARTED);
 
         scenario.onActivity(activity -> {
             EditText addUID = activity.findViewById(R.id.promptUID);
-            addUID.setText(testLoc1.getPublicID());
             Button addButton = activity.findViewById(R.id.addButton);
-            addButton.performClick();
-        });
 
-        assertNotNull(friendAccountDao.selectFriend(testLoc1.getId()));
+            //Insert Invalid Friend PubID to Textbox.
+            addUID.setText("This is an invalid PUBID");
+            addButton.performClick();
+            assertNull(locAPI.getFriend("This is an invalid PUBID"));
+            assertNull(friendAccountDao.selectFriends().getValue());
+
+            //Insert Valid Friend PubID
+            addUID.setText(testLoc1.getPublicID());
+            addButton.performClick();
+            assertNotNull(friendAccountDao.selectFriend(testLoc1.getId()));
+        });
     }
 }

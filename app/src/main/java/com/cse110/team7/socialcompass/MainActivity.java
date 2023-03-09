@@ -24,8 +24,6 @@ import com.cse110.team7.socialcompass.backend.LocationAPI;
 import com.cse110.team7.socialcompass.models.FriendAccount;
 import com.cse110.team7.socialcompass.models.LatLong;
 import com.cse110.team7.socialcompass.services.LocationService;
-import com.cse110.team7.socialcompass.ui.InputDisplayAdapter;
-import com.cse110.team7.socialcompass.ui.InputDisplayViewModel;
 
 
 /*
@@ -34,6 +32,7 @@ import com.cse110.team7.socialcompass.ui.InputDisplayViewModel;
 import com.cse110.team7.socialcompass.utils.ShowAlert;
 
 import java.util.ArrayList;
+
 import java.util.Random;
 import java.util.UUID;
 import java.util.concurrent.ExecutionException;
@@ -96,8 +95,8 @@ public class MainActivity extends AppCompatActivity  {
          */
 
         serverAPI =  LocationAPI.provide();
-        ArrayList<String> allFriends = getNeededPubIDs(); //W
-        ArrayList<FriendAccount> listOfFriendsFromServer = new ArrayList<>();
+        List<String> allFriends = getNeededPublicIDs();
+        List<FriendAccount> listOfFriendsFromServer = new ArrayList<>();
 
         var executor = Executors.newSingleThreadExecutor();
         for(String pubID : allFriends){
@@ -134,16 +133,12 @@ public class MainActivity extends AppCompatActivity  {
         viewModel.getFriendItems().observe(this, friends -> {
             for(FriendAccount i : listOfFriendsFromServer) {
                 if (i != null && friends != null) {
-                    if (friends.size() == 0) {
-                        viewModel.addFriend(i);
-                        continue;
-                    }
+                    // Adds friend if its not in view.
                     if (friends.contains(i) == false) {
                         viewModel.addFriend(i);
                     }
 
                 }
-                System.out.println(i.toString());
             }
         });
 
