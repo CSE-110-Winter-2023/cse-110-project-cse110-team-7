@@ -1,6 +1,7 @@
 package com.cse110.team7.socialcompass.models;
 
 import androidx.annotation.NonNull;
+import androidx.room.Entity;
 import androidx.room.PrimaryKey;
 
 import com.cse110.team7.socialcompass.utils.TimestampAdapter;
@@ -12,6 +13,7 @@ import java.time.Instant;
 /**
  * Represents a user, which is just a labeled location on server
  */
+@Entity(tableName = "labeled_locations")
 public class LabeledLocation {
     /**
      * the unique public code of the user
