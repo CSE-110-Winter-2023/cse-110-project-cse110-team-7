@@ -16,21 +16,21 @@ import com.cse110.team7.socialcompass.models.Coordinate;
 public class LocationService {
     private static LocationService INSTANCE = null;
 
-    private final MutableLiveData<Coordinate> currentLocation;
+    private final MutableLiveData<Coordinate> currentCoordinate;
     private final LocationListener locationUpdateListener;
     private LocationManager locationManager;
     private boolean isListenerRegistered;
 
     private LocationService() {
-        this.currentLocation = new MutableLiveData<>();
+        this.currentCoordinate = new MutableLiveData<>();
         this.locationUpdateListener = location -> {
-            var currentCoordinate = currentLocation.getValue();
+            var currentCoordinate = this.currentCoordinate.getValue();
             var nextCoordinate = new Coordinate(location.getLatitude(), location.getLongitude());
 
             if (currentCoordinate == null || !nextCoordinate.equals(currentCoordinate)) {
                 Log.d(LocationService.class.getName(), "update current coordinate to " + nextCoordinate);
 
-                currentLocation.postValue(nextCoordinate);
+                this.currentCoordinate.postValue(nextCoordinate);
             }
         };
         this.isListenerRegistered = false;
@@ -92,10 +92,10 @@ public class LocationService {
     /**
      * Broadcast the given location immediately
      *
-     * @param currentLocation the location to be sent to all observers
+     * @param coordinate the location to be sent to all observers
      */
-    public void setCurrentLocation(@NonNull Coordinate currentLocation) {
-        this.currentLocation.setValue(currentLocation);
+    public void setCurrentCoordinate(@NonNull Coordinate coordinate) {
+        this.currentCoordinate.setValue(coordinate);
     }
 
     /**
@@ -103,8 +103,8 @@ public class LocationService {
      *
      * @return the location subject
      */
-    public MutableLiveData<Coordinate> getCurrentLocation() {
-        return currentLocation;
+    public MutableLiveData<Coordinate> getCurrentCoordinate() {
+        return currentCoordinate;
     }
 
     public void setLocationManager(@NonNull LocationManager locationManager) {
