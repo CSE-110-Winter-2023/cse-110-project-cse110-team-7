@@ -42,7 +42,8 @@ public class MS2US1StoryTest {
     private FriendDatabase friendDatabase;
 
 
-    public void setupFriends() {
+    @Before
+    public void setupFriends() { //Create friends
         locAPI = LocationAPI.provide();
         locAPI.putLocation(testLoc1);
 
@@ -71,8 +72,6 @@ public class MS2US1StoryTest {
 
     @Test
     public void testAddingFriendUsingPremadePubID() {
-        //Create Friends:
-        setupFriends();
 
         //Start the AddFriend Scenario
         var scenario = ActivityScenario.launch(AddFriendActivity.class);
