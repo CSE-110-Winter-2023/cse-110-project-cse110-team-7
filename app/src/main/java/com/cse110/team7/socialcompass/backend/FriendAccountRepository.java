@@ -94,7 +94,7 @@ public class FriendAccountRepository {
     }
 
     public void upsertRemoteFriendAccount(@NonNull FriendAccount friendAccount) {
-        LocationAPI.provide().updateLocation(friendAccount);
+        LocationAPI.provide().putLocationAsync(friendAccount);
     }
 
     public void deleteRemoteFriendAccount(@NonNull FriendAccount friendAccount) {

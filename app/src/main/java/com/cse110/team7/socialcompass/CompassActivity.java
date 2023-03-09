@@ -9,6 +9,9 @@ import android.graphics.Typeface;
 import android.hardware.SensorManager;
 import android.location.LocationManager;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
+import android.preference.PreferenceManager;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -19,6 +22,7 @@ import androidx.constraintlayout.widget.ConstraintLayout;
 import com.cse110.team7.socialcompass.backend.FriendAccountDao;
 import com.cse110.team7.socialcompass.backend.FriendAccountRepository;
 import com.cse110.team7.socialcompass.backend.FriendDatabase;
+import com.cse110.team7.socialcompass.backend.LocationAPI;
 import com.cse110.team7.socialcompass.models.FriendAccount;
 import com.cse110.team7.socialcompass.models.LatLong;
 import com.cse110.team7.socialcompass.services.LocationService;
@@ -28,6 +32,8 @@ import com.cse110.team7.socialcompass.ui.LabelInformation;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
 
 public class CompassActivity extends AppCompatActivity {
 
@@ -80,17 +86,24 @@ public class CompassActivity extends AppCompatActivity {
 
         LocationService.getInstance().setLocationManager((LocationManager) getSystemService(Context.LOCATION_SERVICE));
 
-        SharedPreferences preferences = getPreferences(MODE_PRIVATE);
-        String myPublicID = preferences.getString("public_id", null);
-        String myName = preferences.getString("name", myPublicID); // default name to id
-        LatLong myLocation = LocationService.getInstance().getUserLocation().getValue();
-        if (myPublicID == null) {
-            myAccount = new FriendAccount(myName, myLocation);
-            SharedPreferences.Editor editor = preferences.edit();
-            editor.putString("public_id", myAccount.getPublicID());
-        }
-        FriendAccountRepository friendRepo = new FriendAccountRepository(db);
+        //SharedPreferences preferences = getPreferences(MODE_PRIVATE);
+        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
 
+        String myPublicID = preferences.getString("myPublicID", "???");
+        String myName = preferences.getString("myName", myPublicID); // default name to id
+        LatLong myLocation = LocationService.getInstance().getUserLocation().getValue();
+        try {
+            myAccount = LocationAPI.provide().getFriendAsync(myPublicID).get();
+            if (myAccount == null) {
+                myAccount = new FriendAccount(myName, myLocation, myPublicID);
+                LocationAPI.provide().putLocationAsync(myAccount);
+            }
+        } catch (Exception exception) {
+            exception.printStackTrace();
+        }
+
+        FriendAccountRepository friendRepo = new FriendAccountRepository(db);
+        
         // Shijun will fix this, to make it work better.
         while (true) {
             try {
