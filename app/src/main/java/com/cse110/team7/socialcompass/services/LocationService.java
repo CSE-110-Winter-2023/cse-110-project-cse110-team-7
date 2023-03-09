@@ -9,6 +9,10 @@ import androidx.lifecycle.MutableLiveData;
 
 import com.cse110.team7.socialcompass.models.Coordinate;
 
+
+/**
+ * Observes location updates from user and broadcast to all observers
+ */
 public class LocationService {
     private static LocationService INSTANCE = null;
 
