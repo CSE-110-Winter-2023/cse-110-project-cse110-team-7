@@ -1,3 +1,13 @@
 <resources>
     <string name="app_name">SocialCompass</string>
+    <string name="input_user_name_prompt">Your Name:</string>
+    <string name="input_user_name_hint">Input Name here:</string>
+    <string name="user_uid_prompt">Your UID:</string>
+    <string name="user_uid_placeholder">N/A</string>
+    <string name="button_text_ok">OK</string>
+    <string name="add_friend_floating_button_description">Add Friend</string>
+    <string name="button_text_back">Back</string>
+    <string name="add_friend_input_uid_hint">Input Friend UID…</string>
+    <string name="add_friend_input_uid_prompt">UID:</string>
+    <string name="button_text_add">Add</string>
 </resources>
