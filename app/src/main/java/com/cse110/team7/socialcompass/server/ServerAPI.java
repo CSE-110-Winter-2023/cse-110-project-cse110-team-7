@@ -177,18 +177,18 @@ public class ServerAPI {
     }
 
     /**
-     * Delete the location corresponding to the public code from the server
+     * Delete the labeled location from the server
      *
-     * @param publicCode the public code of the location
+     * @param labeledLocation the labeled location to be deleted
      * @return the delete succeeded or not
      */
     @WorkerThread
-    public boolean deleteLabeledLocation(@NonNull String publicCode) {
-        String endpoint = SERVER_ENDPOINT_LOCATION + "/" + publicCode;
+    public boolean deleteLabeledLocation(@NonNull LabeledLocation labeledLocation) {
+        String endpoint = SERVER_ENDPOINT_LOCATION + "/" + labeledLocation.getPublicCode();
 
         var request = new Request.Builder()
                 .url(endpoint)
-                .delete()
+                .delete(RequestBody.create(GSON.toJson(labeledLocation, LabeledLocation.class), JSON))
                 .build();
 
         try (var response = client.newCall(request).execute()) {
@@ -271,8 +271,8 @@ public class ServerAPI {
     }
 
     @AnyThread
-    public Future<Boolean> asyncDeleteLabeledLocation(@NonNull String publicCode) {
-        return EXECUTOR_SERVICE.submit(() -> deleteLabeledLocation(publicCode));
+    public Future<Boolean> asyncDeleteLabeledLocation(@NonNull LabeledLocation labeledLocation) {
+        return EXECUTOR_SERVICE.submit(() -> deleteLabeledLocation(labeledLocation));
     }
 
     @AnyThread
