@@ -1,25 +1,32 @@
 package com.cse110.team7.socialcompass.utils;
 
-import com.cse110.team7.socialcompass.models.FriendAccount;
-import com.cse110.team7.socialcompass.models.LatLong;
+import androidx.annotation.NonNull;
 
+import com.cse110.team7.socialcompass.models.Coordinate;
+
+
+/**
+ * Calculate the distance between two coordinates on map
+ */
 public class DistanceCalculator {
+    private static final int EARTH_RADIUS = 6371;
 
-   public static float calculateDistance(LatLong currentLocation, LatLong friendLocation) {
-      final int R = 6371; // Radius of the earth
+    /**
+     * Calculate the distance between two coordinates on map
+     *
+     * @param coordinate the first coordinate
+     * @param otherCoordinate the second coordinate
+     * @return the distance between the given coordinates on map
+     */
+    public static double calculateDistance(@NonNull Coordinate coordinate, @NonNull Coordinate otherCoordinate) {
+        double latitudeDifference = Math.toRadians(otherCoordinate.latitude - coordinate.latitude);
+        double longitudeDifference = Math.toRadians(otherCoordinate.longitude - coordinate.longitude);
 
-      double dLa = Math.toRadians(friendLocation.getLatitude() - currentLocation.getLatitude());
-      double dLo = Math.toRadians(friendLocation.getLongitude() - currentLocation.getLongitude());
-      double a = Math.sin(dLa / 2) * Math.sin(dLa / 2)
-              + Math.cos(Math.toRadians(friendLocation.getLatitude())) * Math.cos(Math.toRadians(currentLocation.getLatitude()))
-              * Math.sin(dLo / 2) * Math.sin(dLo / 2);
-      double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-      double distance = R * c * 1000; // convert to meters
+        double a = Math.sin(latitudeDifference / 2) * Math.sin(latitudeDifference / 2)
+                + Math.cos(Math.toRadians(otherCoordinate.latitude)) * Math.cos(Math.toRadians(coordinate.latitude))
+                * Math.sin(longitudeDifference / 2) * Math.sin(longitudeDifference / 2);
+        double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 
-      return (float) distance;
-   }
-
-   public static float calculateDistance(LatLong currentLocation, FriendAccount friendAccount) {
-      return calculateDistance(currentLocation, friendAccount.getLocation());
-   }
+        return EARTH_RADIUS * c * 1000;
+    }
 }

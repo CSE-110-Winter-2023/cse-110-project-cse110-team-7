@@ -1,21 +1,27 @@
 package com.cse110.team7.socialcompass.utils;
 
-import com.cse110.team7.socialcompass.models.FriendAccount;
-import com.cse110.team7.socialcompass.models.LatLong;
+import androidx.annotation.NonNull;
 
+import com.cse110.team7.socialcompass.models.Coordinate;
+
+
+/**
+ * Calculate angle between two coordinates on map
+ */
 public class AngleCalculator {
-
-    public static float calculateAngle(LatLong currentLocation, LatLong friendLocation) {
-        double latC = Math.toRadians(currentLocation.getLatitude());
-        double latH = Math.toRadians(friendLocation.getLatitude());
-        double dL = Math.toRadians(friendLocation.getLongitude() - currentLocation.getLongitude());
-        double x = Math.cos(latH) * Math.sin(dL);
-        double y = Math.cos(latC) * Math.sin(latH) - Math.sin(latC) * Math.cos(latH) * Math.cos(dL);
-        return (float) ((Math.toDegrees(Math.atan2(x, y)) + 360) % 360);
+    /**
+     * Calculate the angle between two coordinates on map
+     *
+     * @param coordinate the first coordinate
+     * @param otherCoordinate the second coordinate
+     * @return the angle between the given coordinates on map
+     */
+    public static double calculateAngle(@NonNull Coordinate coordinate, @NonNull Coordinate otherCoordinate) {
+        double currentLatitude = Math.toRadians(coordinate.latitude);
+        double otherLatitude = Math.toRadians(otherCoordinate.latitude);
+        double longitudeDifference = Math.toRadians(otherCoordinate.longitude - coordinate.longitude);
+        double x = Math.cos(otherLatitude) * Math.sin(longitudeDifference);
+        double y = Math.cos(currentLatitude) * Math.sin(otherLatitude) - Math.sin(currentLatitude) * Math.cos(otherLatitude) * Math.cos(longitudeDifference);
+        return Math.toDegrees((Math.atan2(x, y) + 2 * Math.PI) % (2 * Math.PI));
     }
-
-    public static float calculateAngle(LatLong currentLocation, FriendAccount friendAccount) {
-        return calculateAngle(currentLocation, friendAccount.getLocation());
-    }
-
 }
