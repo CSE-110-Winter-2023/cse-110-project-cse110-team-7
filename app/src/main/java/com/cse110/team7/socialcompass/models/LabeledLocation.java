@@ -9,6 +9,7 @@ import com.google.gson.annotations.JsonAdapter;
 import com.google.gson.annotations.SerializedName;
 
 import java.time.Instant;
+import java.util.UUID;
 
 /**
  * Represents a user, which is just a labeled location on server
@@ -99,11 +100,6 @@ public class LabeledLocation {
         this.longitude = coordinate.longitude;
     }
 
-    @Override
-    public int hashCode() {
-        return publicCode.hashCode();
-    }
-
     private LabeledLocation(Builder builder) {
         this.publicCode = builder.publicCode;
         this.privateCode = builder.privateCode;
@@ -129,12 +125,12 @@ public class LabeledLocation {
         private long updatedAt;
 
         public Builder() {
-            this.publicCode = "";
-            this.privateCode = "";
+            this.publicCode = UUID.randomUUID().toString();
+            this.privateCode = UUID.randomUUID().toString();
             this.label = "";
             this.latitude = 0;
             this.longitude = 0;
-            this.isListedPublicly = true;
+            this.isListedPublicly = false;
             this.createdAt = Instant.now().getEpochSecond();
             this.updatedAt = Instant.now().getEpochSecond();
         }

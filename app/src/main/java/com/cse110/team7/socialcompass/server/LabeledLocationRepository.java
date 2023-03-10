@@ -142,12 +142,12 @@ public class LabeledLocationRepository {
     }
 
     /**
-     * Delete the labeled location corresponding to the given public code to remote server
+     * Delete the labeled location from the remote server
      *
-     * @param publicCode the public code of the labeled location
+     * @param labeledLocation the labeledLocation to be deleted
      */
-    public void deleteRemoteLabeledLocation(@NonNull String publicCode) {
-        ServerAPI.getInstance().asyncDeleteLabeledLocation(publicCode);
+    public void deleteRemoteLabeledLocation(@NonNull LabeledLocation labeledLocation) {
+        ServerAPI.getInstance().asyncDeleteLabeledLocation(labeledLocation);
     }
 
     /**
@@ -193,7 +193,7 @@ public class LabeledLocationRepository {
      */
     public void syncedDelete(@NonNull LabeledLocation labeledLocation) {
         deleteLocalLabeledLocation(labeledLocation);
-        deleteRemoteLabeledLocation(labeledLocation.getPublicCode());
+        deleteRemoteLabeledLocation(labeledLocation);
 
         var scheduledLabeledLocationUpdate = scheduledUpdate.getOrDefault(labeledLocation.getPublicCode(), null);
 
