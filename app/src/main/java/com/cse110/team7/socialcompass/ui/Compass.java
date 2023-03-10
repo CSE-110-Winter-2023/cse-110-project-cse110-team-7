@@ -116,7 +116,7 @@ public class Compass {
         Log.i(Compass.class.getName(), getCompassTag() + ": determine in range or not for labeled location display " + labeledLocationDisplay.getLabeledLocation().getLabel());
 
         boolean isInRange = DistanceFilter.isLabeledLocationInRange(
-                labeledLocationDisplay.getLabeledLocation(),
+                labeledLocationDisplay.getLabeledLocation().getCoordinate(),
                 currentCoordinate,
                 minDistance, maxDistance
         );
