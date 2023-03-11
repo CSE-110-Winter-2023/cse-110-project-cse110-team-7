@@ -175,4 +175,14 @@ public class CompassActivity extends AppCompatActivity {
     public LabeledLocation getUserLabeledLocation() {
         return userLabeledLocation;
     }
+
+    @VisibleForTesting
+    public Button getZoomInButton() {
+        return zoomInButton;
+    }
+
+    @VisibleForTesting
+    public Button getZoomOutButton() {
+        return zoomOutButton;
+    }
 }
