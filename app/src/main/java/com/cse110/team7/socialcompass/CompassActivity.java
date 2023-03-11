@@ -3,13 +3,17 @@ package com.cse110.team7.socialcompass;
 import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.Color;
 import android.hardware.SensorManager;
 import android.location.LocationManager;
+import android.media.Image;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.View;
 import android.view.WindowManager;
+import android.widget.ImageView;
+import android.widget.TextView;
 
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.Nullable;
@@ -41,6 +45,7 @@ public class CompassActivity extends AppCompatActivity {
     private Compass compass;
     private LabeledLocation userLabeledLocation;
     private boolean localUpdateRequired;
+    private LocationService locationService;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -122,12 +127,14 @@ public class CompassActivity extends AppCompatActivity {
         OrientationService.getInstance().getCurrentOrientation().observe(this, currentOrientation -> {
             compass.updateOrientationForAll(currentOrientation);
         });
+        updateGPSIcon();
     }
 
     @Override
     protected void onResume() {
         super.onResume();
         localUpdateRequired = true;
+        updateGPSIcon();
     }
 
     public void askForPermissionAndRegisterLocationUpdateListener() {
@@ -152,6 +159,28 @@ public class CompassActivity extends AppCompatActivity {
         intent.putExtra("userUID", userLabeledLocation.getPublicCode());
 
         startActivity(intent);
+    }
+
+    public void updateGPSIcon() {
+        locationService = locationService.getInstance();
+        locationService.trackGPSStatus();
+
+        ImageView gpsIndicator = findViewById(R.id.gpsIndicator);
+        TextView lastSignalTime = findViewById(R.id.lastSignalTimeTextView);
+        String gpsAvailable = "";
+
+        lastSignalTime.setText(gpsAvailable);
+
+        locationService.getFormattedLastSignalTime().observe(this, formattedLastSignalTime -> {
+            if (formattedLastSignalTime == null || formattedLastSignalTime.isEmpty()) {
+                gpsIndicator.setColorFilter(Color.GREEN);
+                lastSignalTime.setText(gpsAvailable);
+            } else {
+                gpsIndicator.setColorFilter(Color.RED);
+                lastSignalTime.setTextColor(Color.RED);
+                lastSignalTime.setText(formattedLastSignalTime);
+            }
+        });
     }
 
     @VisibleForTesting
