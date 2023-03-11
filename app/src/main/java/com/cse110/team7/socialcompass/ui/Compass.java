@@ -254,6 +254,10 @@ public class Compass {
         return new LabeledLocationDisplay(dotView, labelView);
     }
 
+    public Map<String, LabeledLocationDisplay> getLabeledLocationDisplayMap() {
+        return labeledLocationDisplayMap;
+    }
+
     /**
      * Helper method to get a special tag for the compass to indicate the range
      *
