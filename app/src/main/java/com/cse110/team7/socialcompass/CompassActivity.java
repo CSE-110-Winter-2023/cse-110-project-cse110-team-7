@@ -115,6 +115,10 @@ public class CompassActivity extends AppCompatActivity {
             compass.updateBearingForAll(currentCoordinate);
         });
 
+        LocationService.getInstance().getFormattedLastSignalTime().observe(this, GPSString -> {
+            Log.i("GPS STRING", GPSString);
+        });
+
         OrientationService.getInstance().getCurrentOrientation().observe(this, currentOrientation -> {
             compass.updateOrientationForAll(currentOrientation);
         });
