@@ -91,6 +91,7 @@ public class CompassActivity extends AppCompatActivity {
         //Create Compasses:
         allCompasses = createFourCompasses();
 
+
         syncedLabeledLocations.observe(this, labeledLocations -> {
             Log.i(CompassActivity.class.getName(), "synced labeled location update received");
 
