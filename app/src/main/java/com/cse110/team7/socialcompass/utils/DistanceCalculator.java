@@ -12,7 +12,7 @@ public class DistanceCalculator {
     private static final int EARTH_RADIUS = 6371;
 
     /**
-     * Calculate the distance between two coordinates on map
+     * Calculate the distance between two coordinates on map in miles.
      *
      * @param coordinate the first coordinate
      * @param otherCoordinate the second coordinate

@@ -38,6 +38,7 @@ public class Compass {
     private final Map<String, LabeledLocationDisplay> labeledLocationDisplayMap;
     private Coordinate currentCoordinate;
     private double currentOrientation;
+    //Radius of ...
     private int radius;
     private int sizeOfCircle;
 
@@ -51,6 +52,14 @@ public class Compass {
 //    private boolean isHidden;
 //    private boolean isLastCompass;
 
+    /**
+     * @param lifecycleOwner - The Compass Activity
+     * @param constraintLayout - Constraint Layout of where Compasses will be situated
+     * @param minDistance - Minimum distance for circle range (in miles)
+     * @param maxDistance - Maximum distance for circle range (in miles)
+     * @param scale - Size of the Compass Circle (use constants provided in Compass class)
+     * @param screenSize - Minimum screen size.
+     */
     public Compass(
             LifecycleOwner lifecycleOwner,
             ConstraintLayout constraintLayout,
