@@ -7,7 +7,6 @@ import android.hardware.SensorManager;
 import android.location.LocationManager;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
-import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.View;
 import android.view.WindowManager;
@@ -30,15 +29,17 @@ import com.cse110.team7.socialcompass.services.OrientationService;
 import com.cse110.team7.socialcompass.ui.Compass;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
 public class CompassActivity extends AppCompatActivity {
+    private static final int MIN_ZOOM_LEVEL = 2;
+    private static final int MAX_ZOOM_LEVEL = 4;
     private ConstraintLayout compassConstraintLayout;
     private FloatingActionButton addFriendFloatingActionButton;
     private Button zoomInButton;
     private Button zoomOutButton;
+    private int zoomLevel;
     private String userPublicCode;
     private LabeledLocationRepository repo;
     private MutableLiveData<List<LiveData<LabeledLocation>>> syncedLabeledLocations;
@@ -94,9 +95,13 @@ public class CompassActivity extends AppCompatActivity {
             localUpdateRequired = false;
         });
 
-        //Create Compasses:
-        allCompasses = createFourCompasses();
+        // Create Compasses:
+        allCompasses = createCompasses();
 
+        zoomLevel = preferences.getInt("zoomLevel", MIN_ZOOM_LEVEL);
+        zoomInButton.setClickable(zoomLevel != MIN_ZOOM_LEVEL);
+        zoomOutButton.setClickable(zoomLevel != MAX_ZOOM_LEVEL);
+        updateCompassByZoomLevel();
 
         syncedLabeledLocations.observe(this, labeledLocations -> {
             Log.i(CompassActivity.class.getName(), "synced labeled location update received");
@@ -110,10 +115,7 @@ public class CompassActivity extends AppCompatActivity {
             int radius = compassConstraintLayout.getWidth() / 2;
             Log.i(CompassActivity.class.getName(), "radius update received, current radius is " + radius);
 
-            for(Compass compass : allCompasses) {
-//                compass.setRadius((int) ((compass.getSizeOfCircle() - radius) * .96));
-                compass.setRadius((compass.getSizeOfCircle() / 2) - 10);
-            }
+            allCompasses.forEach(compass -> compass.setRadius(radius));
         });
 
         LocationService.getInstance().setLocationManager((LocationManager) getSystemService(LOCATION_SERVICE));
@@ -131,15 +133,11 @@ public class CompassActivity extends AppCompatActivity {
                 repo.syncedUpsert(userLabeledLocation);
             }
 
-            for(Compass compass : allCompasses) {
-                compass.updateBearingForAll(currentCoordinate);
-            }
+            allCompasses.forEach(compass -> compass.updateBearingForAll(currentCoordinate));
         });
 
         OrientationService.getInstance().getCurrentOrientation().observe(this, currentOrientation -> {
-            for(Compass compass : allCompasses) {
-                compass.updateOrientationForAll(currentOrientation);
-            }
+            allCompasses.forEach(compass -> compass.updateOrientationForAll(currentOrientation));
         });
     }
 
@@ -149,37 +147,14 @@ public class CompassActivity extends AppCompatActivity {
         localUpdateRequired = true;
     }
 
-    public List<Compass> createFourCompasses() {
-        List<Compass> allCompasses = new ArrayList<>();
-
-        Compass compass1 = new Compass(this, compassConstraintLayout,
-                0, 1,
-                Compass.FIRST_CIRCLE, screenSize());  //Inner circle: should always be showing.
-        Compass compass2 = new Compass(this, compassConstraintLayout,
-                1, 10,
-                Compass.SECOND_CIRCLE, screenSize());
-        Compass compass3 = new Compass(this, compassConstraintLayout,
-                10, 500,
-                Compass.THIRD_CIRCLE, screenSize());
-        Compass compass4 = new Compass(this, compassConstraintLayout,
-                500, 65536_000,
-                Compass.FOURTH_CIRCLE, screenSize());
-
-        allCompasses.add(compass1);
-        allCompasses.add(compass2);
-        allCompasses.add(compass3);
-        allCompasses.add(compass4);
-
-        return allCompasses;
-    }
-
-    public int screenSize(){
-        DisplayMetrics displayMetrics = new DisplayMetrics();
-        getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
-        int height = (int) (displayMetrics.heightPixels * .9);
-        int width = (int) (displayMetrics.widthPixels * .9);
-
-        return Math.min(height, width);
+    public List<Compass> createCompasses() {
+        return List.of(
+                new Compass(this, compassConstraintLayout, 0, 1),
+                new Compass(this, compassConstraintLayout, 1, 10),
+                new Compass(this, compassConstraintLayout, 10, 500),
+                // 65536 is just some random numbers, it could be any number bigger than 20000 km i think
+                new Compass(this, compassConstraintLayout, 500, 65536)
+        );
     }
 
     public void askForPermissionAndRegisterLocationUpdateListener() {
@@ -204,6 +179,59 @@ public class CompassActivity extends AppCompatActivity {
         intent.putExtra("userUID", userLabeledLocation.getPublicCode());
 
         startActivity(intent);
+    }
+
+    public void updateCompassByZoomLevel() {
+        Log.i(CompassActivity.class.getName(), "compass at index " + (zoomLevel - 1) + " is outer compass");
+
+        for (int compassIndex = 0; compassIndex < allCompasses.size(); compassIndex++) {
+            var compass = allCompasses.get(compassIndex);
+
+            if (compassIndex < zoomLevel) {
+                compass.setHidden(false);
+                compass.setScale((compassIndex + 1.0) / zoomLevel);
+            } else {
+                compass.setHidden(true);
+            }
+
+            compass.setLastCompass(compassIndex == zoomLevel - 1);
+        }
+    }
+
+    public void saveZoomLevel() {
+        var preferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+        var editor = preferences.edit();
+
+        editor.putInt("zoomLevel", zoomLevel);
+        editor.apply();
+    }
+
+    public void onZoomInButtonClicked(View view) {
+        Log.i(CompassActivity.class.getName(), "zoom in button clicked");
+
+        zoomLevel -= 1;
+        zoomOutButton.setClickable(true);
+
+        if (zoomLevel == MIN_ZOOM_LEVEL) {
+            zoomInButton.setClickable(false);
+        }
+
+        updateCompassByZoomLevel();
+        saveZoomLevel();
+    }
+
+    public void onZoomOutClicked(View view) {
+        Log.i(CompassActivity.class.getName(), "zoom out button clicked");
+
+        zoomLevel += 1;
+        zoomInButton.setClickable(true);
+
+        if (zoomLevel == MAX_ZOOM_LEVEL) {
+            zoomOutButton.setClickable(false);
+        }
+
+        updateCompassByZoomLevel();
+        saveZoomLevel();
     }
 
     @VisibleForTesting
