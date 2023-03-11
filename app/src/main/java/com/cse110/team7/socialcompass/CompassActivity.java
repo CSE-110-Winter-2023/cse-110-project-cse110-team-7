@@ -10,6 +10,7 @@ import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.View;
 import android.view.WindowManager;
+import android.widget.Button;
 
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.Nullable;
@@ -35,6 +36,8 @@ import java.util.stream.Collectors;
 public class CompassActivity extends AppCompatActivity {
     private ConstraintLayout compassConstraintLayout;
     private FloatingActionButton addFriendFloatingActionButton;
+    private Button zoomInButton;
+    private Button zoomOutButton;
     private String userPublicCode;
     private LabeledLocationRepository repo;
     private MutableLiveData<List<LiveData<LabeledLocation>>> syncedLabeledLocations;
@@ -49,6 +52,9 @@ public class CompassActivity extends AppCompatActivity {
 
         compassConstraintLayout = findViewById(R.id.compassConstraintLayout);
         addFriendFloatingActionButton = findViewById(R.id.addFriendFloatingActionButton);
+
+        zoomInButton = findViewById(R.id.zoomInButton);
+        zoomOutButton = findViewById(R.id.zoomOutButton);
 
         var database = SocialCompassDatabase.getInstance(this);
         var labeledLocationDao = database.getLabeledLocationDao();
