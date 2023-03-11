@@ -167,14 +167,14 @@ public class CompassActivity extends AppCompatActivity {
 
         ImageView gpsIndicator = findViewById(R.id.gpsIndicator);
         TextView lastSignalTime = findViewById(R.id.lastSignalTimeTextView);
-        String gpsAvailable = "";
+        String emptyLastSignalTime = "";
 
-        lastSignalTime.setText(gpsAvailable);
+        lastSignalTime.setText(emptyLastSignalTime);
 
         locationService.getFormattedLastSignalTime().observe(this, formattedLastSignalTime -> {
             if (formattedLastSignalTime == null || formattedLastSignalTime.isEmpty()) {
                 gpsIndicator.setColorFilter(Color.GREEN);
-                lastSignalTime.setText(gpsAvailable);
+                lastSignalTime.setText(emptyLastSignalTime);
             } else {
                 gpsIndicator.setColorFilter(Color.RED);
                 lastSignalTime.setTextColor(Color.RED);
