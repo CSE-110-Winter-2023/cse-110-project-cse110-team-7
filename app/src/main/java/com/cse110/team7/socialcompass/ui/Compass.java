@@ -39,7 +39,7 @@ public class Compass {
     private final Map<String, LabeledLocationDisplay> labeledLocationDisplayMap;
     private Coordinate currentCoordinate;
     private double currentOrientation;
-    //Radius of ...
+    // the radius of scale 1 compass
     private int radius;
     private double scale;
     private boolean isHidden;
