@@ -11,6 +11,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.VisibleForTesting;
 import androidx.appcompat.content.res.AppCompatResources;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.lifecycle.LifecycleOwner;
@@ -35,12 +36,14 @@ public class Compass {
     private final ImageView compassImageView;
     private final double minDistance;
     private final double maxDistance;
-    private final Map<String, LabeledLocationDisplay> labeledLocationDisplayMap;
+    public final Map<String, LabeledLocationDisplay> labeledLocationDisplayMap;
     private Coordinate currentCoordinate;
     private double currentOrientation;
     //Radius of ...
     private int radius;
     private int sizeOfCircle;
+
+    public double circleType;
 
     public static final double FIRST_CIRCLE = 4;
     public static final double SECOND_CIRCLE = 2.5;
@@ -75,6 +78,7 @@ public class Compass {
         this.currentCoordinate = new Coordinate(0, 0);
         this.currentOrientation = 0;
         this.radius = 0;
+        this.circleType = scale;
 
         this.sizeOfCircle = (int)( screenSize / scale);
 
@@ -280,11 +284,17 @@ public class Compass {
      *
      * @return a special tag for the compass to indicate the range
      */
-    private String getCompassTag() {
+    public String getCompassTag() {
         return Compass.class.getName() + "[" + minDistance + ", " + maxDistance + ")";
     }
 
     public int getSizeOfCircle() {
         return sizeOfCircle;
+    }
+
+    @VisibleForTesting
+    public int getVisibilityOfFriend(LabeledLocation loc) {
+        return this.labeledLocationDisplayMap.get(loc.getPublicCode())
+                .getDotView().getVisibility();
     }
 }
