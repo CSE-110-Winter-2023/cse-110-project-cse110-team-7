@@ -29,6 +29,7 @@ import java.util.Map;
  * Represents a compass on screen
  */
 public class Compass {
+    private static final int OFFSET = 64;
     private final LifecycleOwner lifecycleOwner;
     private final Context context;
     private final ConstraintLayout constraintLayout;
@@ -40,30 +41,20 @@ public class Compass {
     private double currentOrientation;
     //Radius of ...
     private int radius;
-    private int sizeOfCircle;
-
-    public static final double FIRST_CIRCLE = 4;
-    public static final double SECOND_CIRCLE = 2.5;
-    public static final double THIRD_CIRCLE = 1.6;
-    public static final double FOURTH_CIRCLE = 1.2;
-
-//    we might need these for iteration 2
-//    private double scale;
-//    private boolean isHidden;
-//    private boolean isLastCompass;
+    private double scale;
+    private boolean isHidden;
+    private boolean isLastCompass;
 
     /**
      * @param lifecycleOwner - The Compass Activity
      * @param constraintLayout - Constraint Layout of where Compasses will be situated
      * @param minDistance - Minimum distance for circle range (in miles)
      * @param maxDistance - Maximum distance for circle range (in miles)
-     * @param scale - Size of the Compass Circle (use constants provided in Compass class)
-     * @param screenSize - Minimum screen size.
      */
     public Compass(
             LifecycleOwner lifecycleOwner,
             ConstraintLayout constraintLayout,
-            double minDistance, double maxDistance, double scale, int screenSize
+            double minDistance, double maxDistance
     ) {
         this.lifecycleOwner = lifecycleOwner;
         this.context = constraintLayout.getContext();
@@ -75,9 +66,9 @@ public class Compass {
         this.currentCoordinate = new Coordinate(0, 0);
         this.currentOrientation = 0;
         this.radius = 0;
-
-        this.sizeOfCircle = (int)( screenSize / scale);
-
+        this.scale = 0;
+        this.isHidden = false;
+        this.isLastCompass = false;
 
         setupCompassImageView();
     }
@@ -87,7 +78,7 @@ public class Compass {
      */
     public void setupCompassImageView() {
 
-        Log.i(Compass.class.getName(), getCompassTag() + ": creating circle of size " + sizeOfCircle);
+        Log.i(Compass.class.getName(), getCompassTag() + ": creating circle of size: " + radius * scale);
 
         compassImageView.setId(View.generateViewId());
         compassImageView.setBackground(AppCompatResources.getDrawable(context, R.drawable.circle));
@@ -95,8 +86,8 @@ public class Compass {
 
         var layoutParams = (ConstraintLayout.LayoutParams) compassImageView.getLayoutParams();
 
-        layoutParams.width = sizeOfCircle;
-        layoutParams.height = sizeOfCircle;
+        layoutParams.width = (int) (radius * scale);
+        layoutParams.height = (int) (radius * scale);
         layoutParams.startToStart = constraintLayout.getId();
         layoutParams.endToEnd = constraintLayout.getId();
         layoutParams.topToTop = constraintLayout.getId();
@@ -106,13 +97,22 @@ public class Compass {
     }
 
     /**
+     * Resize the compass image based on the current compass scale
+     */
+    public void updateCompassImageView() {
+        Log.i(Compass.class.getName(), getCompassTag() + ": update compass image with scale " + scale);
+        compassImageView.setScaleX((float) scale);
+        compassImageView.setScaleY((float) scale);
+    }
+
+    /**
      * Update the distance from all location displays to the center of the compass
      */
     public void updateLabeledLocationDisplay() {
-        Log.i(Compass.class.getName(), getCompassTag() + ": update labeled location displays with radius " + radius);
+        Log.i(Compass.class.getName(), getCompassTag() + ": update labeled location displays with radius " + radius + " and scale " + scale);
         labeledLocationDisplayMap.values().forEach(labeledLocationDisplay -> {
             var layoutParams = (ConstraintLayout.LayoutParams) labeledLocationDisplay.getDotView().getLayoutParams();
-            layoutParams.circleRadius = radius;
+            layoutParams.circleRadius = (int) (radius * scale) - OFFSET;
             labeledLocationDisplay.getDotView().setLayoutParams(layoutParams);
         });
     }
@@ -125,7 +125,54 @@ public class Compass {
     public void setRadius(int radius) {
         Log.i(Compass.class.getName(), getCompassTag() + ": update radius to " + radius);
         this.radius = radius;
+
         updateLabeledLocationDisplay();
+    }
+
+    /**
+     * Set the scale of current compass image
+     *
+     * @param scale the scale of current compass image
+     */
+    public void setScale(double scale) {
+        Log.i(Compass.class.getName(), getCompassTag() + ": update scale to " + scale);
+        this.scale = scale;
+
+        updateCompassImageView();
+        updateLabeledLocationDisplay();
+    }
+
+    /**
+     * Set whether the current compass is hidden or not
+     *
+     * @param isHidden whether the current compass is hidden or not
+     */
+    public void setHidden(boolean isHidden) {
+        if (this.isHidden == isHidden) return;
+
+        this.isHidden = isHidden;
+
+        // we want to set every view to invisible if compass is hidden
+        // otherwise we want to set every view to visible
+        int visibility = isHidden ? View.INVISIBLE : View.VISIBLE;
+
+        compassImageView.setVisibility(visibility);
+        labeledLocationDisplayMap.values().forEach(labeledLocationDisplay -> {
+            labeledLocationDisplay.getDotView().setVisibility(visibility);
+            labeledLocationDisplay.getLabelView().setVisibility(visibility);
+        });
+    }
+
+    /**
+     * Set whether the current compass is the last compass
+     *
+     * @param isLastCompass whether the current compass is the last compass
+     */
+    public void setLastCompass(boolean isLastCompass) {
+        this.isLastCompass = isLastCompass;
+
+        // update all views again to display dots for locations outside of current compass range
+        labeledLocationDisplayMap.values().forEach(this::updateLabeledLocationDisplayInRange);
     }
 
     /**
@@ -135,6 +182,12 @@ public class Compass {
      */
     public void updateLabeledLocationDisplayInRange(LabeledLocationDisplay labeledLocationDisplay) {
         Log.i(Compass.class.getName(), getCompassTag() + ": determine in range or not for labeled location display " + labeledLocationDisplay.getLabeledLocation().getLabel());
+
+        // do not update when current compass is hidden, will be updated once the compass is not hidden anymore
+        if (isHidden) {
+            Log.i(Compass.class.getName(), getCompassTag() + ": current compass is hidden");
+            return;
+        }
 
         boolean isInRange = DistanceFilter.isLabeledLocationInRange(
                 labeledLocationDisplay.getLabeledLocation().getCoordinate(),
@@ -146,13 +199,34 @@ public class Compass {
             Log.i(Compass.class.getName(), getCompassTag() + ": labeled location display is in range, set to visible");
             labeledLocationDisplay.getLabelView().setVisibility(View.VISIBLE);
             labeledLocationDisplay.getDotView().setVisibility(View.VISIBLE);
+
+            var layoutParams = (ConstraintLayout.LayoutParams) labeledLocationDisplay.getDotView().getLayoutParams();
+            layoutParams.circleRadius = (int) (radius * scale) - OFFSET;
+            labeledLocationDisplay.getDotView().setLayoutParams(layoutParams);
             return;
         }
 
         Log.i(Compass.class.getName(), getCompassTag() + ": labeled location display is not in range, set label to invisible");
 
-        labeledLocationDisplay.getDotView().setVisibility(View.INVISIBLE);
         labeledLocationDisplay.getLabelView().setVisibility(View.INVISIBLE);
+
+        boolean isFurtherThanMaxDistance = DistanceFilter.isLabeledLocationFartherThanMaxDistance(
+                labeledLocationDisplay.getLabeledLocation().getCoordinate(),
+                currentCoordinate,
+                maxDistance
+        );
+
+        if (isFurtherThanMaxDistance && isLastCompass) {
+            Log.i(Compass.class.getName(), getCompassTag() + ": labeled location display is further than max distance and current compass is last compass, set dot to visible");
+            labeledLocationDisplay.getDotView().setVisibility(View.VISIBLE);
+
+            var layoutParams = (ConstraintLayout.LayoutParams) labeledLocationDisplay.getDotView().getLayoutParams();
+            layoutParams.circleRadius = (int) (radius * scale);
+            labeledLocationDisplay.getDotView().setLayoutParams(layoutParams);
+        } else {
+            Log.i(Compass.class.getName(), getCompassTag() + ": labeled location display is not further than max distance, set dot to invisible");
+            labeledLocationDisplay.getDotView().setVisibility(View.INVISIBLE);
+        }
     }
 
     /**
@@ -250,6 +324,10 @@ public class Compass {
         labelView.setTextColor(Color.WHITE);
         labelView.setShadowLayer(6, 1, 1, Color.BLACK);
 
+        if (isHidden) {
+            labelView.setVisibility(View.INVISIBLE);
+            dotView.setVisibility(View.INVISIBLE);
+        }
 
         constraintLayout.addView(dotView, -1);
         constraintLayout.addView(labelView, -1);
@@ -281,10 +359,8 @@ public class Compass {
      * @return a special tag for the compass to indicate the range
      */
     private String getCompassTag() {
-        return Compass.class.getName() + "[" + minDistance + ", " + maxDistance + ")";
+        return "Compass: [" + minDistance + ", " + maxDistance + ")";
     }
 
-    public int getSizeOfCircle() {
-        return sizeOfCircle;
-    }
+
 }

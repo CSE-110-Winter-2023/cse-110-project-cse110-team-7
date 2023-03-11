@@ -61,6 +61,7 @@
             android:layout_height="48dp"
             android:layout_marginEnd="8dp"
             android:layout_weight="1"
+            android:onClick="onZoomInButtonClicked"
             android:text="@string/button_text_zoom_in" />
 
         <Button
@@ -69,6 +70,7 @@
             android:layout_width="48dp"
             android:layout_height="48dp"
             android:layout_weight="1"
+            android:onClick="onZoomOutClicked"
             android:text="@string/button_text_zoom_out" />
     </LinearLayout>
 
