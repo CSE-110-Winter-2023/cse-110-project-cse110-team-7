@@ -103,7 +103,12 @@ public class MainActivity extends AppCompatActivity  {
         editor.putString("userPublicCode", userLabeledLocation.getPublicCode());
         editor.apply();
 
-        var intent = new Intent(this, CompassActivity.class);
+        TextView mockEndpoint = findViewById(R.id.mockEndpointView);
+        String mockEndpointStr = mockEndpoint.getText().toString();
+
+        Intent intent = new Intent(this, CompassActivity.class);
+        intent.putExtra("endpoint", mockEndpointStr);
+
         startActivity(intent);
     }
 

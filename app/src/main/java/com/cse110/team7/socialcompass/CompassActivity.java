@@ -24,6 +24,7 @@ import androidx.lifecycle.MutableLiveData;
 import com.cse110.team7.socialcompass.database.SocialCompassDatabase;
 import com.cse110.team7.socialcompass.models.LabeledLocation;
 import com.cse110.team7.socialcompass.server.LabeledLocationRepository;
+import com.cse110.team7.socialcompass.server.ServerAPI;
 import com.cse110.team7.socialcompass.services.LocationService;
 import com.cse110.team7.socialcompass.services.OrientationService;
 import com.cse110.team7.socialcompass.ui.Compass;
@@ -56,6 +57,12 @@ public class CompassActivity extends AppCompatActivity {
         var database = SocialCompassDatabase.getInstance(this);
         var labeledLocationDao = database.getLabeledLocationDao();
         repo = new LabeledLocationRepository(labeledLocationDao);
+
+        Intent intent = getIntent();
+        String mockEndpoint = intent.getStringExtra("endpoint");
+        if (mockEndpoint != null && mockEndpoint != "") {
+            ServerAPI.getInstance().changeEndpoint(mockEndpoint);
+        }
 
         var preferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
         userPublicCode = preferences.getString("userPublicCode", null);
