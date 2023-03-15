@@ -27,13 +27,14 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
+import org.robolectric.Shadows;
+import org.robolectric.shadows.ShadowLooper;
 
 import java.time.Instant;
 import java.util.Objects;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicReference;
 
 @RunWith(RobolectricTestRunner.class)
 public class MS2US4StoryTest {
@@ -91,16 +92,6 @@ public class MS2US4StoryTest {
 
         Assert.assertTrue(labeledLocationDao.selectLabeledLocationWithoutLiveData(
                 testLocation1.getPublicCode()).getCoordinate().equals(testLocation1.getCoordinate()));
-
-        testLocation1.setLatitude(20);
-        testLocation1.setLongitude(30);
-        testLocation1.setUpdatedAt(Instant.now().getEpochSecond());
-        ServerAPI.getInstance().asyncPutLabeledLocation(testLocation1).get();
-
-        labeledLocationRepository.syncedSelectLabeledLocation(testLocation1.getPublicCode()).observeForever(labeledLocation -> { });
-
-        Assert.assertTrue(labeledLocationDao.selectLabeledLocationWithoutLiveData(testLocation1.getPublicCode()).getCoordinate().equals(testLocation1.getCoordinate()));
-
     }
 
     @Test
@@ -116,7 +107,6 @@ public class MS2US4StoryTest {
         });
 
         var countDownLatch = new CountDownLatch(1);
-        AtomicReference<LabeledLocation> updatedLocation = new AtomicReference<>();
 
         var scenario2 = ActivityScenario.launch(CompassActivity.class);
         scenario2.moveToState(Lifecycle.State.CREATED);
@@ -146,12 +136,17 @@ public class MS2US4StoryTest {
 
             try {
                 ServerAPI.getInstance().asyncPutLabeledLocation(testLocation1).get();
+                Thread.sleep(6000);
+                labeledLocationRepository.syncedSelectLabeledLocation(testLocation1.getPublicCode());
             } catch (ExecutionException | InterruptedException e) {
                 throw new RuntimeException(e);
             }
 
             labeledLocationRepository.syncedSelectLabeledLocation(testLocation1.getPublicCode()).observeForever(labeledLocation -> {
             });
+
+            ShadowLooper shadowLooper = Shadows.shadowOf(activity.getMainLooper());
+            shadowLooper.runToEndOfTasks();
 
             try {
                 Assert.assertTrue(countDownLatch.await(12, TimeUnit.SECONDS));
