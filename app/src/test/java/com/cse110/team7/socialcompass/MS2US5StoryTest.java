@@ -35,6 +35,11 @@ import org.robolectric.RobolectricTestRunner;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
+/**
+ * Tests User Story 5: Gauge Friend's Distance; tests that friends appear in the correct circles
+ * depending on varying distances first, and then tests that friends positions on the compass update
+ * correctly when movement occurs.
+ */
 @RunWith(RobolectricTestRunner.class)
 public class MS2US5StoryTest {
 
