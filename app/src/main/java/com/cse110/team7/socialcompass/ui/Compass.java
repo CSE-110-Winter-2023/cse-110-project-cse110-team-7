@@ -1,6 +1,7 @@
 package com.cse110.team7.socialcompass.ui;
 
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
@@ -79,44 +80,43 @@ public class Compass {
         this.isLastCompass = false;
 
         setupCompassImageView();
+
         /*
         LabeledLocation test1 = new LabeledLocation.Builder()
                 .setPublicCode(UUID.randomUUID().toString())
                 .setPrivateCode(UUID.randomUUID().toString())
-                .setLabel("TEST_1")
-                .setLatitude(40)
-                .setLongitude(-120)
+                .setLabel("Youka")
+                .setLatitude(37.4)
+                .setLongitude(-122.098)
                 .build();
         LabeledLocation test2 = new LabeledLocation.Builder()
                 .setPublicCode(UUID.randomUUID().toString())
                 .setPrivateCode(UUID.randomUUID().toString())
-                .setLabel("TEST_2")
-                .setLatitude(40)
-                .setLongitude(-120.4)
+                .setLabel("Noa")
+                .setLatitude(37.4)
+                .setLongitude(-122.100)
                 .build();
         LabeledLocation test3 = new LabeledLocation.Builder()
                 .setPublicCode(UUID.randomUUID().toString())
                 .setPrivateCode(UUID.randomUUID().toString())
-                .setLabel("TEST_3")
-                .setLatitude(40)
-                .setLongitude(-122)
+                .setLabel("Alice")
+                .setLatitude(37.4)
+                .setLongitude(-122.122)
                 .build();
 
         LabeledLocationDisplay temp1 = createLabeledLocationDisplay();
         temp1.setLabeledLocation(test1);
-        temp1.getLabelView().setText("TEST_1");
         labeledLocationDisplayMap.put(test1.getPublicCode(), temp1);
 
         LabeledLocationDisplay temp2 = createLabeledLocationDisplay();
-        temp2.getLabelView().setText("TEST_2");
         temp2.setLabeledLocation(test2);
         labeledLocationDisplayMap.put(test2.getPublicCode(), temp2);
 
         LabeledLocationDisplay temp3 = createLabeledLocationDisplay();
-        temp3.getLabelView().setText("TEST_3");
         temp3.setLabeledLocation(test3);
         labeledLocationDisplayMap.put(test3.getPublicCode(), temp3);
-        */
+         */
+
     }
 
     /**
@@ -357,8 +357,10 @@ public class Compass {
         updateLayout();
     }
 
+    @SuppressLint("SetTextI18n")
     public void updateLayout() {
         displayConstraintView.keySet().forEach(labeledLocationDisplay -> {
+            labeledLocationDisplay.getLabelView().setText(labeledLocationDisplay.getLabeledLocation().getLabel());
             var labelViewLayoutParam = (ConstraintLayout.LayoutParams) labeledLocationDisplay.getLabelView().getLayoutParams();
             labelViewLayoutParam.topToBottom = labeledLocationDisplay.getDotView().getId();
             labelViewLayoutParam.startToStart = labeledLocationDisplay.getDotView().getId();
@@ -372,7 +374,7 @@ public class Compass {
         if (labeledLocationDisplayMap.size() <= 1) return;
 
         double stackAngle = 9;
-        double truncateAngle = 24;
+        double truncateAngle = 36;
 
         labeledLocationDisplayMap.values().forEach(labeledLocationDisplay -> {
             if (labeledLocationDisplay.getLabelView().getVisibility() == TextView.VISIBLE) {
@@ -391,19 +393,57 @@ public class Compass {
         var temp = new ArrayList<>(sortedDisplays);
 
         for(int i = 1; i < temp.size(); i++) {
-            if (temp.get(i).getBearing() - temp.get(i - 1).getBearing() <= stackAngle)
-                neighboringPairs.add(new Pair<LabeledLocationDisplay, LabeledLocationDisplay>
-                        (temp.get(i - 1), temp.get(i)));
-            if (temp.get(i).getBearing() - temp.get(i - 1).getBearing() <= truncateAngle)
-                nearbyPairs.add(new Pair<LabeledLocationDisplay, LabeledLocationDisplay>
-                        (temp.get(i - 1), temp.get(i)));
+            double angleA = temp.get(i).getBearing();
+            double angleB = temp.get(i - 1).getBearing();
+
+            if (Math.abs(angleA - angleB) > 180)
+                if (angleA < angleB)
+                    angleA += 360;
+                else
+                    angleB += 360;
+
+            double diff = Math.abs(angleA - angleB);
+
+            if (diff <= stackAngle) {
+                neighboringPairs.add(new Pair<>(temp.get(i - 1), temp.get(i)));
+            } else if (diff <= truncateAngle)
+                nearbyPairs.add(new Pair<>(temp.get(i - 1), temp.get(i)));
         }
-        if (temp.size() > 2 && temp.get(temp.size() - 1).getBearing() - temp.get(0).getBearing() <= stackAngle)
-            neighboringPairs.add(new Pair<LabeledLocationDisplay, LabeledLocationDisplay>
-                    (temp.get(temp.size() -1), temp.get(0)));
-        if (temp.size() > 2 && temp.get(temp.size() - 1).getBearing() - temp.get(0).getBearing() <= truncateAngle)
-            nearbyPairs.add(new Pair<LabeledLocationDisplay, LabeledLocationDisplay>
-                    (temp.get(temp.size() -1), temp.get(0)));
+        if (temp.size() > 2) {
+            double angleA = temp.get(temp.size() - 1).getBearing();
+            double angleB = temp.get(0).getBearing();
+
+            if (Math.abs(angleA - angleB) > 180)
+                if (angleA < angleB)
+                    angleA += 360;
+                else
+                    angleB += 360;
+
+            double diff = Math.abs(angleA - angleB);
+
+            if (diff <= stackAngle) {
+                neighboringPairs.add(new Pair<>(temp.get(temp.size() - 1), temp.get(0)));
+            } else if (diff <= truncateAngle)
+                nearbyPairs.add(new Pair<>(temp.get(temp.size() - 1), temp.get(0)));
+        }
+
+        if (nearbyPairs.size() >=  1) {
+            nearbyPairs.forEach(pair -> {
+                double firstAngle = ((ConstraintLayout.LayoutParams) pair.first.getDotView().getLayoutParams()).circleAngle;
+                double secondAngle = ((ConstraintLayout.LayoutParams) pair.second.getDotView().getLayoutParams()).circleAngle;
+                if (Math.abs(firstAngle - secondAngle) > 180)
+                    if (firstAngle < secondAngle)
+                        firstAngle += 360;
+                    else
+                        secondAngle += 360;
+                double diff = Math.abs(firstAngle - secondAngle);
+                int index = (int) (diff - 9) / 5 + 1;
+                pair.first.getLabelView().setText(pair.first.getLabelView().getText().
+                        subSequence(0, Math.min(pair.first.getLabelView().getText().length(), index)));
+                pair.second.getLabelView().setText(pair.second.getLabelView().getText().
+                        subSequence(0, Math.min(pair.second.getLabelView().getText().length(), index)));
+            });
+        }
 
         if (neighboringPairs.size() >=  1) {
             ArrayList<ArrayList<LabeledLocationDisplay>> neighboringGroups = new ArrayList<>();
@@ -452,6 +492,7 @@ public class Compass {
                 int count = 0;
                 for (var labeledLocationDisplay : neighboringGroup) {
                     displayConstraintView.put(labeledLocationDisplay, stackConstraint);
+                    labeledLocationDisplay.getLabelView().setText(labeledLocationDisplay.getLabeledLocation().getLabel());
                     var labelViewLayoutParam = (ConstraintLayout.LayoutParams) labeledLocationDisplay.getLabelView().getLayoutParams();
                     labelViewLayoutParam.topToBottom = stackConstraint.getId();
                     labelViewLayoutParam.startToStart = stackConstraint.getId();

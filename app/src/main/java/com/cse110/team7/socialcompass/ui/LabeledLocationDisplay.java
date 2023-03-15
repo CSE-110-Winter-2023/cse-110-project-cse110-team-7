@@ -62,6 +62,11 @@ public class LabeledLocationDisplay implements Comparable<LabeledLocationDisplay
 
     @Override
     public int compareTo(LabeledLocationDisplay o) {
-        return Double.compare(getBearing(), o.getBearing());
+        if (Double.compare(getBearing(), o.getBearing()) > 0)
+            return 1;
+        if (Double.compare(getBearing(), o.getBearing()) < 0)
+            return -1;
+        return 0;
+
     }
 }
