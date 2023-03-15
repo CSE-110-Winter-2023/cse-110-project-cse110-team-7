@@ -24,6 +24,7 @@ import com.cse110.team7.socialcompass.utils.DistanceFilter;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.CountDownLatch;
 
 /**
  * Represents a compass on screen
@@ -36,6 +37,7 @@ public class Compass {
     private final double minDistance;
     private final double maxDistance;
     private final Map<String, LabeledLocationDisplay> labeledLocationDisplayMap;
+    private final Map<String, CountDownLatch> locationUpdateTimeMap;
     private Coordinate currentCoordinate;
     private double currentOrientation;
     private int radius;
@@ -57,6 +59,7 @@ public class Compass {
         this.minDistance = minDistance;
         this.maxDistance = maxDistance;
         this.labeledLocationDisplayMap = new HashMap<>();
+        this.locationUpdateTimeMap = new HashMap<>();
         this.currentCoordinate = new Coordinate(0, 0);
         this.currentOrientation = 0;
         this.radius = 0;
@@ -158,6 +161,12 @@ public class Compass {
 
             updateBearing(labeledLocationDisplay);
             updateLabeledLocationDisplayInRange(labeledLocationDisplay);
+
+            var countDown = locationUpdateTimeMap.get(labeledLocation.getPublicCode());
+
+            if (countDown != null) {
+                countDown.countDown();
+            }
         });
     }
 
@@ -265,5 +274,9 @@ public class Compass {
      */
     private String getCompassTag() {
         return Compass.class.getName() + "[" + minDistance + ", " + maxDistance + ")";
+    }
+
+    public Map<String, CountDownLatch> getLocationUpdateTimeMap() {
+        return locationUpdateTimeMap;
     }
 }

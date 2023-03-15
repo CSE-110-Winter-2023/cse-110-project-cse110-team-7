@@ -1,10 +1,9 @@
 package com.cse110.team7.socialcompass;
 
-import android.app.Activity;
 import android.content.Context;
-import android.location.Location;
 import android.view.inputmethod.EditorInfo;
 
+import androidx.arch.core.executor.testing.InstantTaskExecutorRule;
 import androidx.lifecycle.Lifecycle;
 import androidx.lifecycle.Observer;
 import androidx.room.Room;
@@ -19,31 +18,35 @@ import com.cse110.team7.socialcompass.server.LabeledLocationRepository;
 import com.cse110.team7.socialcompass.server.ServerAPI;
 import com.cse110.team7.socialcompass.services.LocationService;
 import com.cse110.team7.socialcompass.services.OrientationService;
-import com.cse110.team7.socialcompass.ui.LabeledLocationDisplay;
 import com.cse110.team7.socialcompass.utils.AngleCalculator;
-import com.cse110.team7.socialcompass.utils.DistanceFilter;
 
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
-import org.robolectric.shadows.ShadowAlertDialog;
 
 import java.time.Instant;
 import java.util.Objects;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
 
 @RunWith(RobolectricTestRunner.class)
 public class MS2US4StoryTest {
 
+    @Rule
+    public InstantTaskExecutorRule rule = new InstantTaskExecutorRule();
     private static final LabeledLocation testLocation1 = new LabeledLocation.Builder()
             .setLabel("Mom")
             .setLatitude(40)
             .setLongitude(50)
             .build();
 
+    private static final LabeledLocation testLocation2 = new LabeledLocation.Builder().build();
 
 
     private SocialCompassDatabase socialCompassDatabase;
@@ -94,17 +97,14 @@ public class MS2US4StoryTest {
         testLocation1.setUpdatedAt(Instant.now().getEpochSecond());
         ServerAPI.getInstance().asyncPutLabeledLocation(testLocation1).get();
 
-        labeledLocationRepository.syncedSelectLabeledLocation(testLocation1.getPublicCode()).observeForever(new Observer<LabeledLocation>() {
-            @Override
-            public void onChanged(LabeledLocation labeledLocation) { }
-        });
+        labeledLocationRepository.syncedSelectLabeledLocation(testLocation1.getPublicCode()).observeForever(labeledLocation -> { });
 
         Assert.assertTrue(labeledLocationDao.selectLabeledLocationWithoutLiveData(testLocation1.getPublicCode()).getCoordinate().equals(testLocation1.getCoordinate()));
 
     }
 
     @Test
-    public void US4StoryTest2() throws ExecutionException, InterruptedException {
+    public void US4StoryTest2() {
         var scenario1 = ActivityScenario.launch(AddFriendActivity.class);
         scenario1.moveToState(Lifecycle.State.CREATED);
         scenario1.moveToState(Lifecycle.State.STARTED);
@@ -114,6 +114,9 @@ public class MS2US4StoryTest {
             activity.getFriendUIDEditText().onEditorAction(EditorInfo.IME_ACTION_DONE);
             activity.getAddFriendButton().performClick();
         });
+
+        var countDownLatch = new CountDownLatch(1);
+        AtomicReference<LabeledLocation> updatedLocation = new AtomicReference<>();
 
         var scenario2 = ActivityScenario.launch(CompassActivity.class);
         scenario2.moveToState(Lifecycle.State.CREATED);
@@ -126,10 +129,11 @@ public class MS2US4StoryTest {
             LocationService.getInstance().setCurrentCoordinate(currentCoordinate);
             OrientationService.getInstance().unregisterSensorEventUpdateListener();
             OrientationService.getInstance().setCurrentOrientation(0);
-            activity.getCompass().updateBearingForAll(currentCoordinate);
-            var temp = activity.getCompass().getLabeledLocationDisplayMap();
 
-            System.out.println(temp.get(testLocation1.getPublicCode()).getBearing());
+            activity.getCompass().getLocationUpdateTimeMap().put(testLocation1.getPublicCode(), countDownLatch);
+            activity.getCompass().updateBearingForAll(currentCoordinate);
+
+            var temp = activity.getCompass().getLabeledLocationDisplayMap();
 
             Assert.assertEquals(Double.compare(
                     AngleCalculator.calculateAngle(currentCoordinate, testLocation1.getCoordinate()),
@@ -138,32 +142,25 @@ public class MS2US4StoryTest {
 
             testLocation1.setLatitude(20);
             testLocation1.setLongitude(20);
-            testLocation1.setUpdatedAt(Instant.now().getEpochSecond());
+            testLocation1.setUpdatedAt(Instant.now().getEpochSecond() + 10);
+
             try {
                 ServerAPI.getInstance().asyncPutLabeledLocation(testLocation1).get();
             } catch (ExecutionException | InterruptedException e) {
                 throw new RuntimeException(e);
             }
 
-            labeledLocationRepository.syncedSelectLabeledLocation(testLocation1.getPublicCode()).observeForever(new Observer<LabeledLocation>() {
-                @Override
-                public void onChanged(LabeledLocation labeledLocation) { }
+            labeledLocationRepository.syncedSelectLabeledLocation(testLocation1.getPublicCode()).observeForever(labeledLocation -> {
             });
 
             try {
-                Thread.sleep(5000);
+                Assert.assertTrue(countDownLatch.await(12, TimeUnit.SECONDS));
             } catch (InterruptedException e) {
                 throw new RuntimeException(e);
             }
 
-            System.out.println(testLocation1);
-            System.out.println(temp.get(testLocation1.getPublicCode()).getLabeledLocation());
-            Assert.assertEquals(Double.compare(
-                    AngleCalculator.calculateAngle(currentCoordinate, testLocation1.getCoordinate()),
-                    Objects.requireNonNull(temp.get(testLocation1.getPublicCode())).getBearing()),
-                    0);
+            Assert.assertTrue(testLocation1.getCoordinate().equals(Objects.requireNonNull(temp.get(testLocation1.getPublicCode())).getLabeledLocation().getCoordinate()));
         });
-
     }
 
 }
