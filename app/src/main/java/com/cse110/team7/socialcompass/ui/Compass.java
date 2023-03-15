@@ -79,7 +79,6 @@ public class Compass {
         this.isLastCompass = false;
 
         setupCompassImageView();
-
         /*
         LabeledLocation test1 = new LabeledLocation.Builder()
                 .setPublicCode(UUID.randomUUID().toString())
@@ -100,7 +99,7 @@ public class Compass {
                 .setPrivateCode(UUID.randomUUID().toString())
                 .setLabel("TEST_3")
                 .setLatitude(40)
-                .setLongitude(-121.4)
+                .setLongitude(-122)
                 .build();
 
         LabeledLocationDisplay temp1 = createLabeledLocationDisplay();
@@ -373,6 +372,7 @@ public class Compass {
         if (labeledLocationDisplayMap.size() <= 1) return;
 
         double stackAngle = 9;
+        double truncateAngle = 24;
 
         labeledLocationDisplayMap.values().forEach(labeledLocationDisplay -> {
             if (labeledLocationDisplay.getLabelView().getVisibility() == TextView.VISIBLE) {
@@ -387,73 +387,80 @@ public class Compass {
         sortedDisplays.addAll(displayConstraintView.keySet());
 
         ArrayList<Pair<LabeledLocationDisplay, LabeledLocationDisplay>> neighboringPairs = new ArrayList<>();
+        ArrayList<Pair<LabeledLocationDisplay, LabeledLocationDisplay>> nearbyPairs = new ArrayList<>();
         var temp = new ArrayList<>(sortedDisplays);
 
         for(int i = 1; i < temp.size(); i++) {
             if (temp.get(i).getBearing() - temp.get(i - 1).getBearing() <= stackAngle)
                 neighboringPairs.add(new Pair<LabeledLocationDisplay, LabeledLocationDisplay>
                         (temp.get(i - 1), temp.get(i)));
+            if (temp.get(i).getBearing() - temp.get(i - 1).getBearing() <= truncateAngle)
+                nearbyPairs.add(new Pair<LabeledLocationDisplay, LabeledLocationDisplay>
+                        (temp.get(i - 1), temp.get(i)));
         }
         if (temp.size() > 2 && temp.get(temp.size() - 1).getBearing() - temp.get(0).getBearing() <= stackAngle)
             neighboringPairs.add(new Pair<LabeledLocationDisplay, LabeledLocationDisplay>
                     (temp.get(temp.size() -1), temp.get(0)));
+        if (temp.size() > 2 && temp.get(temp.size() - 1).getBearing() - temp.get(0).getBearing() <= truncateAngle)
+            nearbyPairs.add(new Pair<LabeledLocationDisplay, LabeledLocationDisplay>
+                    (temp.get(temp.size() -1), temp.get(0)));
 
-        if (neighboringPairs.size() < 1) return;
+        if (neighboringPairs.size() >=  1) {
+            ArrayList<ArrayList<LabeledLocationDisplay>> neighboringGroups = new ArrayList<>();
+            neighboringGroups.add(new ArrayList<>());
+            neighboringGroups.get(0).add(neighboringPairs.get(0).first);
+            neighboringGroups.get(0).add(neighboringPairs.get(0).second);
+            int index = 0;
 
-        ArrayList<ArrayList<LabeledLocationDisplay>> neighboringGroups = new ArrayList<>();
-        neighboringGroups.add(new ArrayList<>());
-        neighboringGroups.get(0).add(neighboringPairs.get(0).first);
-        neighboringGroups.get(0).add(neighboringPairs.get(0).second);
-        int index = 0;
+            for (int i = 1; i < neighboringPairs.size(); i++) {
+                if (neighboringPairs.get(i - 1).second == neighboringPairs.get(i).first) {
+                    neighboringGroups.get(index).add(neighboringPairs.get(i).second);
+                } else {
+                    index++;
+                    neighboringGroups.add(new ArrayList<>());
+                    neighboringGroups.get(index).add(neighboringPairs.get(i).first);
+                    neighboringGroups.get(index).add(neighboringPairs.get(i).second);
+                }
+            }
+            if (neighboringGroups.size() > 1 && neighboringPairs.get(neighboringPairs.size() - 1).second == neighboringPairs.get(0).first) {
+                neighboringGroups.get(0).addAll(0, neighboringGroups.get(neighboringGroups.size() - 1));
+                neighboringGroups.remove(neighboringGroups.size() - 1);
+            }
 
-        for(int i = 1; i < neighboringPairs.size(); i++) {
-            if (neighboringPairs.get(i -1).second == neighboringPairs.get(i).first) {
-                neighboringGroups.get(index).add(neighboringPairs.get(i).second);
-            } else {
-                index++;
-                neighboringGroups.add(new ArrayList<>());
-                neighboringGroups.get(index).add(neighboringPairs.get(i).first);
-                neighboringGroups.get(index).add(neighboringPairs.get(i).second);
+            for (var neighboringGroup : neighboringGroups) {
+                var dotViewLayoutParamFirst = (ConstraintLayout.LayoutParams) neighboringGroup.get(0).getDotView().getLayoutParams();
+                var dotViewLayoutParamLast = (ConstraintLayout.LayoutParams) neighboringGroup.get(neighboringGroup.size() - 1).getDotView().getLayoutParams();
+
+                ImageView stackConstraint = new ImageView(context);
+                stackConstraint.setId(View.generateViewId());
+                stackConstraint.setBackground(AppCompatResources.getDrawable(context, R.drawable.circle));
+                stackConstraint.getBackground().setColorFilter(Color.RED, PorterDuff.Mode.SRC_ATOP);
+                stackConstraint.setVisibility(ImageView.INVISIBLE);
+
+                constraintLayout.addView(stackConstraint, -1);
+
+                var dotViewParameters = (ConstraintLayout.LayoutParams) stackConstraint.getLayoutParams();
+
+                dotViewParameters.circleConstraint = constraintLayout.getId();
+                dotViewParameters.circleRadius = dotViewLayoutParamFirst.circleRadius;
+                dotViewParameters.circleAngle = (dotViewLayoutParamFirst.circleAngle + dotViewLayoutParamLast.circleAngle) / 2;
+                dotViewParameters.width = 60;
+                dotViewParameters.height = 60;
+
+                stackConstraint.setLayoutParams(dotViewParameters);
+
+                int count = 0;
+                for (var labeledLocationDisplay : neighboringGroup) {
+                    displayConstraintView.put(labeledLocationDisplay, stackConstraint);
+                    var labelViewLayoutParam = (ConstraintLayout.LayoutParams) labeledLocationDisplay.getLabelView().getLayoutParams();
+                    labelViewLayoutParam.topToBottom = stackConstraint.getId();
+                    labelViewLayoutParam.startToStart = stackConstraint.getId();
+                    labelViewLayoutParam.endToEnd = stackConstraint.getId();
+                    labelViewLayoutParam.topMargin = 48 * count++;
+                    labeledLocationDisplay.getLabelView().setLayoutParams(labelViewLayoutParam);
+                }
             }
         }
-        if (neighboringGroups.size() > 1 && neighboringPairs.get(neighboringPairs.size() - 1).second == neighboringPairs.get(0).first) {
-            neighboringGroups.get(0).addAll(0, neighboringGroups.get(neighboringGroups.size() - 1));
-            neighboringGroups.remove(neighboringGroups.size() - 1);
-        }
-
-        for(var neighboringGroup : neighboringGroups) {
-            var dotViewLayoutParamFirst = (ConstraintLayout.LayoutParams) neighboringGroup.get(0).getDotView().getLayoutParams();
-            var dotViewLayoutParamLast = (ConstraintLayout.LayoutParams) neighboringGroup.get(neighboringGroup.size() - 1).getDotView().getLayoutParams();
-
-            ImageView stackConstraint = new ImageView(context);
-            stackConstraint.setId(View.generateViewId());
-            stackConstraint.setBackground(AppCompatResources.getDrawable(context, R.drawable.circle));
-            stackConstraint.getBackground().setColorFilter(Color.RED, PorterDuff.Mode.SRC_ATOP);
-            stackConstraint.setVisibility(ImageView.INVISIBLE);
-
-            constraintLayout.addView(stackConstraint, -1);
-
-            var dotViewParameters = (ConstraintLayout.LayoutParams) stackConstraint.getLayoutParams();
-
-            dotViewParameters.circleConstraint = constraintLayout.getId();
-            dotViewParameters.circleRadius = dotViewLayoutParamFirst.circleRadius;
-            dotViewParameters.circleAngle = (dotViewLayoutParamFirst.circleAngle + dotViewLayoutParamLast.circleAngle) / 2;
-            dotViewParameters.width = 60;
-            dotViewParameters.height = 60;
-
-            stackConstraint.setLayoutParams(dotViewParameters);
-
-            int count = 0;
-            for (var labeledLocationDisplay : neighboringGroup) {
-                displayConstraintView.put(labeledLocationDisplay, stackConstraint);
-                var labelViewLayoutParam = (ConstraintLayout.LayoutParams) labeledLocationDisplay.getLabelView().getLayoutParams();
-                labelViewLayoutParam.topToBottom = stackConstraint.getId();
-                labelViewLayoutParam.startToStart = stackConstraint.getId();
-                labelViewLayoutParam.endToEnd = stackConstraint.getId();
-                labelViewLayoutParam.topMargin = 48 * count++;
-                labeledLocationDisplay.getLabelView().setLayoutParams(labelViewLayoutParam);
-            }
-        };
     }
 
     /**
