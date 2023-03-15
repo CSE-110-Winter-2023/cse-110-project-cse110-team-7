@@ -6,6 +6,7 @@ import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.graphics.Typeface;
 import android.util.Log;
+import android.util.Pair;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -22,8 +23,13 @@ import com.cse110.team7.socialcompass.models.LabeledLocation;
 import com.cse110.team7.socialcompass.utils.AngleCalculator;
 import com.cse110.team7.socialcompass.utils.DistanceFilter;
 
+import java.sql.SQLOutput;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.PriorityQueue;
+import java.util.UUID;
+import java.util.stream.Collectors;
 
 /**
  * Represents a compass on screen
@@ -37,6 +43,7 @@ public class Compass {
     private final double minDistance;
     private final double maxDistance;
     private final Map<String, LabeledLocationDisplay> labeledLocationDisplayMap;
+    private final Map<LabeledLocationDisplay, View> displayConstraintView;
     private Coordinate currentCoordinate;
     private double currentOrientation;
     // the radius of scale 1 compass
@@ -63,6 +70,7 @@ public class Compass {
         this.minDistance = minDistance;
         this.maxDistance = maxDistance;
         this.labeledLocationDisplayMap = new HashMap<>();
+        this.displayConstraintView = new HashMap<>();
         this.currentCoordinate = new Coordinate(0, 0);
         this.currentOrientation = 0;
         this.radius = 0;
@@ -71,6 +79,44 @@ public class Compass {
         this.isLastCompass = false;
 
         setupCompassImageView();
+
+        LabeledLocation test1 = new LabeledLocation.Builder()
+                .setPublicCode(UUID.randomUUID().toString())
+                .setPrivateCode(UUID.randomUUID().toString())
+                .setLabel("TEST_1")
+                .setLatitude(40)
+                .setLongitude(-120)
+                .build();
+        LabeledLocation test2 = new LabeledLocation.Builder()
+                .setPublicCode(UUID.randomUUID().toString())
+                .setPrivateCode(UUID.randomUUID().toString())
+                .setLabel("TEST_2")
+                .setLatitude(40)
+                .setLongitude(-121)
+                .build();
+        LabeledLocation test3 = new LabeledLocation.Builder()
+                .setPublicCode(UUID.randomUUID().toString())
+                .setPrivateCode(UUID.randomUUID().toString())
+                .setLabel("TEST_3")
+                .setLatitude(40)
+                .setLongitude(-121.4)
+                .build();
+
+        LabeledLocationDisplay temp1 = createLabeledLocationDisplay();
+        temp1.setLabeledLocation(test1);
+        temp1.getLabelView().setText("TEST_1");
+        labeledLocationDisplayMap.put(test1.getPublicCode(), temp1);
+
+        LabeledLocationDisplay temp2 = createLabeledLocationDisplay();
+        temp2.getLabelView().setText("TEST_2");
+        temp2.setLabeledLocation(test2);
+        labeledLocationDisplayMap.put(test2.getPublicCode(), temp2);
+/*
+        LabeledLocationDisplay temp3 = createLabeledLocationDisplay();
+        temp3.getLabelView().setText("TEST_3");
+        temp3.setLabeledLocation(test3);
+        labeledLocationDisplayMap.put(test3.getPublicCode(), temp3);
+*/
     }
 
     /**
@@ -115,6 +161,8 @@ public class Compass {
             layoutParams.circleRadius = (int) (radius * scale) - OFFSET;
             labeledLocationDisplay.getDotView().setLayoutParams(layoutParams);
         });
+
+        updateLayout();
     }
 
     /**
@@ -227,6 +275,8 @@ public class Compass {
             Log.i(Compass.class.getName(), getCompassTag() + ": labeled location display is not further than max distance, set dot to invisible");
             labeledLocationDisplay.getDotView().setVisibility(View.INVISIBLE);
         }
+
+        updateLayout();
     }
 
     /**
@@ -283,6 +333,8 @@ public class Compass {
         this.currentCoordinate = currentCoordinate;
 
         labeledLocationDisplayMap.values().forEach(this::updateBearing);
+
+        updateLayout();
     }
 
     /**
@@ -301,6 +353,107 @@ public class Compass {
         labeledLocationDisplayMap.values().forEach(labeledLocationDisplay -> {
             labeledLocationDisplay.updateLayoutParams(currentOrientation);
         });
+
+        updateLayout();
+    }
+
+    public void updateLayout() {
+        displayConstraintView.keySet().forEach(labeledLocationDisplay -> {
+            var labelViewLayoutParam = (ConstraintLayout.LayoutParams) labeledLocationDisplay.getLabelView().getLayoutParams();
+            labelViewLayoutParam.topToBottom = labeledLocationDisplay.getDotView().getId();
+            labelViewLayoutParam.startToStart = labeledLocationDisplay.getDotView().getId();
+            labelViewLayoutParam.endToEnd = labeledLocationDisplay.getDotView().getId();
+            labelViewLayoutParam.topMargin = 0;
+            labeledLocationDisplay.getLabelView().setLayoutParams(labelViewLayoutParam);
+            if (displayConstraintView.get(labeledLocationDisplay) != labeledLocationDisplay.getDotView())
+                constraintLayout.removeView(displayConstraintView.get(labeledLocationDisplay));
+        });
+
+        if (labeledLocationDisplayMap.size() <= 1) return;
+
+        double stackAngle = 9;
+
+        labeledLocationDisplayMap.values().forEach(labeledLocationDisplay -> {
+            if (labeledLocationDisplay.getLabelView().getVisibility() == TextView.VISIBLE) {
+                displayConstraintView.computeIfAbsent(labeledLocationDisplay, LabeledLocationDisplay::getDotView);
+            } else {
+                displayConstraintView.remove(labeledLocationDisplay);
+            }
+        });
+
+        PriorityQueue<LabeledLocationDisplay> sortedDisplays = new PriorityQueue<>();
+
+        sortedDisplays.addAll(displayConstraintView.keySet());
+
+        ArrayList<Pair<LabeledLocationDisplay, LabeledLocationDisplay>> neighboringPairs = new ArrayList<>();
+        var temp = new ArrayList<>(sortedDisplays);
+
+        for(int i = 1; i < temp.size(); i++) {
+            if (temp.get(i).getBearing() - temp.get(i - 1).getBearing() <= stackAngle)
+                neighboringPairs.add(new Pair<LabeledLocationDisplay, LabeledLocationDisplay>
+                        (temp.get(i - 1), temp.get(i)));
+        }
+        if (temp.size() > 2 && temp.get(temp.size() - 1).getBearing() - temp.get(0).getBearing() <= stackAngle)
+            neighboringPairs.add(new Pair<LabeledLocationDisplay, LabeledLocationDisplay>
+                    (temp.get(temp.size() -1), temp.get(0)));
+
+        if (neighboringPairs.size() < 1) return;
+
+        ArrayList<ArrayList<LabeledLocationDisplay>> neighboringGroups = new ArrayList<>();
+        neighboringGroups.add(new ArrayList<>());
+        neighboringGroups.get(0).add(neighboringPairs.get(0).first);
+        neighboringGroups.get(0).add(neighboringPairs.get(0).second);
+        int index = 0;
+
+        for(int i = 1; i < neighboringPairs.size(); i++) {
+            if (neighboringPairs.get(i -1).second == neighboringPairs.get(i).first) {
+                neighboringGroups.get(index).add(neighboringPairs.get(i).second);
+            } else {
+                index++;
+                neighboringGroups.add(new ArrayList<>());
+                neighboringGroups.get(index).add(neighboringPairs.get(i).first);
+                neighboringGroups.get(index).add(neighboringPairs.get(i).second);
+            }
+        }
+        if (neighboringGroups.size() > 1 && neighboringPairs.get(neighboringPairs.size() - 1).second == neighboringPairs.get(0).first) {
+            neighboringGroups.get(0).addAll(0, neighboringGroups.get(neighboringGroups.size() - 1));
+            neighboringGroups.remove(neighboringGroups.size() - 1);
+        }
+
+        for(var neighboringGroup : neighboringGroups) {
+            var dotViewLayoutParamFirst = (ConstraintLayout.LayoutParams) neighboringGroup.get(0).getDotView().getLayoutParams();
+            var dotViewLayoutParamLast = (ConstraintLayout.LayoutParams) neighboringGroup.get(neighboringGroup.size() - 1).getDotView().getLayoutParams();
+
+            ImageView stackConstraint = new ImageView(context);
+            stackConstraint.setId(View.generateViewId());
+            stackConstraint.setBackground(AppCompatResources.getDrawable(context, R.drawable.circle));
+            stackConstraint.getBackground().setColorFilter(Color.RED, PorterDuff.Mode.SRC_ATOP);
+            stackConstraint.setVisibility(ImageView.INVISIBLE);
+
+            constraintLayout.addView(stackConstraint, -1);
+
+            var dotViewParameters = (ConstraintLayout.LayoutParams) stackConstraint.getLayoutParams();
+
+            dotViewParameters.circleConstraint = constraintLayout.getId();
+            dotViewParameters.circleRadius = dotViewLayoutParamFirst.circleRadius;
+            dotViewParameters.circleAngle = (dotViewLayoutParamFirst.circleAngle + dotViewLayoutParamLast.circleAngle) / 2;
+            dotViewParameters.width = 60;
+            dotViewParameters.height = 60;
+
+            stackConstraint.setLayoutParams(dotViewParameters);
+
+            int count = 0;
+            for (var labeledLocationDisplay : neighboringGroup) {
+                System.out.println(labeledLocationDisplay.getLabelView().getText());
+                displayConstraintView.put(labeledLocationDisplay, stackConstraint);
+                var labelViewLayoutParam = (ConstraintLayout.LayoutParams) labeledLocationDisplay.getLabelView().getLayoutParams();
+                labelViewLayoutParam.topToBottom = stackConstraint.getId();
+                labelViewLayoutParam.startToStart = stackConstraint.getId();
+                labelViewLayoutParam.endToEnd = stackConstraint.getId();
+                labelViewLayoutParam.topMargin = 48 * count++;
+                labeledLocationDisplay.getLabelView().setLayoutParams(labelViewLayoutParam);
+            }
+        };
     }
 
     /**
@@ -319,17 +472,17 @@ public class Compass {
         dotView.setBackground(AppCompatResources.getDrawable(context, R.drawable.circle));
         dotView.getBackground().setColorFilter(Color.RED, PorterDuff.Mode.SRC_ATOP);
 
-        labelView.setTextSize(20);
+        labelView.setTextSize(16);
         labelView.setTypeface(null, Typeface.BOLD);
-        labelView.setTextColor(Color.WHITE);
-        labelView.setShadowLayer(6, 1, 1, Color.BLACK);
+        labelView.setTextColor(Color.BLACK);
+        labelView.setShadowLayer(6, 1, 1, Color.WHITE);
 
         if (isHidden) {
             labelView.setVisibility(View.INVISIBLE);
             dotView.setVisibility(View.INVISIBLE);
         }
 
-        constraintLayout.addView(dotView, -1);
+        constraintLayout.addView(dotView, 1);
         constraintLayout.addView(labelView, -1);
 
         var dotViewParameters = (ConstraintLayout.LayoutParams) dotView.getLayoutParams();
@@ -346,7 +499,7 @@ public class Compass {
 
         labelParameters.topToBottom = dotView.getId();
         labelParameters.startToStart = dotView.getId();
-        labelParameters.startToEnd = dotView.getId();
+        labelParameters.endToEnd = dotView.getId();
         labelParameters.width = ConstraintLayout.LayoutParams.WRAP_CONTENT;
         labelParameters.height = ConstraintLayout.LayoutParams.WRAP_CONTENT;
 

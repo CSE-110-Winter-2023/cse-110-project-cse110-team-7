@@ -12,7 +12,7 @@ import com.cse110.team7.socialcompass.models.LabeledLocation;
 /**
  * Represents the labeled location views on screen
  */
-public class LabeledLocationDisplay {
+public class LabeledLocationDisplay implements Comparable<LabeledLocationDisplay> {
     private final ImageView dotView;
     private final TextView labelView;
     private LabeledLocation labeledLocation;
@@ -58,5 +58,10 @@ public class LabeledLocationDisplay {
 
     public void setBearing(double bearing) {
         this.bearing = bearing;
+    }
+
+    @Override
+    public int compareTo(LabeledLocationDisplay o) {
+        return Double.compare(getBearing(), o.getBearing());
     }
 }
