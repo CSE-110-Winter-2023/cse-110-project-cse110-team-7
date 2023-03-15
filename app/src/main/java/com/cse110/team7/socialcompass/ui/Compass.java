@@ -80,6 +80,7 @@ public class Compass {
 
         setupCompassImageView();
 
+        /*
         LabeledLocation test1 = new LabeledLocation.Builder()
                 .setPublicCode(UUID.randomUUID().toString())
                 .setPrivateCode(UUID.randomUUID().toString())
@@ -92,7 +93,7 @@ public class Compass {
                 .setPrivateCode(UUID.randomUUID().toString())
                 .setLabel("TEST_2")
                 .setLatitude(40)
-                .setLongitude(-121)
+                .setLongitude(-120.4)
                 .build();
         LabeledLocation test3 = new LabeledLocation.Builder()
                 .setPublicCode(UUID.randomUUID().toString())
@@ -111,12 +112,12 @@ public class Compass {
         temp2.getLabelView().setText("TEST_2");
         temp2.setLabeledLocation(test2);
         labeledLocationDisplayMap.put(test2.getPublicCode(), temp2);
-/*
+
         LabeledLocationDisplay temp3 = createLabeledLocationDisplay();
         temp3.getLabelView().setText("TEST_3");
         temp3.setLabeledLocation(test3);
         labeledLocationDisplayMap.put(test3.getPublicCode(), temp3);
-*/
+        */
     }
 
     /**
@@ -444,7 +445,6 @@ public class Compass {
 
             int count = 0;
             for (var labeledLocationDisplay : neighboringGroup) {
-                System.out.println(labeledLocationDisplay.getLabelView().getText());
                 displayConstraintView.put(labeledLocationDisplay, stackConstraint);
                 var labelViewLayoutParam = (ConstraintLayout.LayoutParams) labeledLocationDisplay.getLabelView().getLayoutParams();
                 labelViewLayoutParam.topToBottom = stackConstraint.getId();
