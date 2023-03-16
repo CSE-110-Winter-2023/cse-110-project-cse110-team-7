@@ -38,18 +38,18 @@
             android:id="@+id/nameEditText"
             android:layout_width="0dp"
             android:layout_height="64dp"
+            android:layout_marginBottom="16dp"
             android:ems="10"
             android:gravity="center"
             android:hint="@string/input_user_name_hint"
             android:inputType="text"
+            android:singleLine="true"
             android:textColor="@color/black"
-            android:layout_marginBottom="16dp"
             app:layout_constraintBottom_toTopOf="@id/uidTextView"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_weight="1"
             app:layout_constraintStart_toEndOf="@+id/nameTagTextView"
-            app:layout_constraintTop_toTopOf="parent"
-            />
+            app:layout_constraintTop_toTopOf="parent" />
 
         <TextView
             android:id="@+id/uidTagTextView"
