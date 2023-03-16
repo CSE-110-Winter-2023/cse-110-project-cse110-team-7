@@ -115,7 +115,7 @@ public class Compass {
         LabeledLocationDisplay temp3 = createLabeledLocationDisplay();
         temp3.setLabeledLocation(test3);
         labeledLocationDisplayMap.put(test3.getPublicCode(), temp3);
-         */
+        */
 
     }
 
@@ -552,6 +552,14 @@ public class Compass {
         labelParameters.height = ConstraintLayout.LayoutParams.WRAP_CONTENT;
 
         return new LabeledLocationDisplay(dotView, labelView);
+    }
+
+    public Map<String, LabeledLocationDisplay> getLabeledLocationDisplayMap() {
+        return labeledLocationDisplayMap;
+    }
+
+    public Map<LabeledLocationDisplay, View> getDisplayConstraintView() {
+        return displayConstraintView;
     }
 
     /**
