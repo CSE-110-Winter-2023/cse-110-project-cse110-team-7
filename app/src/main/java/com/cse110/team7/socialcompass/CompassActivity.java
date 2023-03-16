@@ -46,6 +46,8 @@ public class CompassActivity extends AppCompatActivity {
     private LabeledLocation userLabeledLocation;
     private boolean localUpdateRequired;
     private LocationService locationService;
+    private ImageView gpsIndicator;
+    private TextView lastSignalTime;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -165,8 +167,8 @@ public class CompassActivity extends AppCompatActivity {
         locationService = locationService.getInstance();
         locationService.trackGPSStatus();
 
-        ImageView gpsIndicator = findViewById(R.id.gpsIndicator);
-        TextView lastSignalTime = findViewById(R.id.lastSignalTimeTextView);
+        gpsIndicator = findViewById(R.id.gpsIndicator);
+        lastSignalTime = findViewById(R.id.lastSignalTimeTextView);
         String emptyLastSignalTime = "";
 
         lastSignalTime.setText(emptyLastSignalTime);
@@ -201,5 +203,15 @@ public class CompassActivity extends AppCompatActivity {
     @VisibleForTesting
     public LabeledLocation getUserLabeledLocation() {
         return userLabeledLocation;
+    }
+
+    @VisibleForTesting
+    public ImageView getGpsIndicator() {
+        return gpsIndicator;
+    }
+
+    @VisibleForTesting
+    public TextView getLastSignalTime() {
+        return lastSignalTime;
     }
 }
