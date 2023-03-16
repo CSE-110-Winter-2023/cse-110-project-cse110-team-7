@@ -163,6 +163,11 @@ public class CompassActivity extends AppCompatActivity {
         startActivity(intent);
     }
 
+    public void onCompassBackButtonClicked(View view) {
+        Intent intent = new Intent(this, MainActivity.class);
+        startActivity(intent);
+    }
+
     public void updateGPSIcon() {
         locationService = locationService.getInstance();
         locationService.trackGPSStatus();
