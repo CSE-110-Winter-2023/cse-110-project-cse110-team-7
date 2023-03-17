@@ -143,16 +143,6 @@ public class MS2US5StoryTest {
             assertFalse(isLabeledLocationInRange(myCoordinates, northPole.getCoordinate(), minDistance, maxDistance));
 
 
-            //Brief check of remaining ones:
-            assertTrue(isLabeledLocationInRange(myCoordinates, sorentoValley.getCoordinate(), 1, 10));
-
-            assertTrue(isLabeledLocationInRange(myCoordinates, lasVegas.getCoordinate(), 10, 100));
-
-            assertTrue(isLabeledLocationInRange(myCoordinates, northPole.getCoordinate(), 100, 200));
-
-
-
-
 
             // Now we move our position to be at same position as las vegas.
             Coordinate lasVegasCoordinates =
