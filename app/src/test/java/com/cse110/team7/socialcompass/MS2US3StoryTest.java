@@ -1,5 +1,9 @@
 package com.cse110.team7.socialcompass;
 
+import static org.mockserver.integration.ClientAndServer.startClientAndServer;
+import static org.mockserver.model.HttpRequest.request;
+import static org.mockserver.model.HttpResponse.response;
+
 import android.content.Context;
 import android.content.DialogInterface;
 import android.preference.PreferenceManager;
@@ -19,6 +23,8 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockserver.client.MockServerClient;
+import org.mockserver.integration.ClientAndServer;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.shadows.ShadowAlertDialog;
 
@@ -30,6 +36,7 @@ public class MS2US3StoryTest {
     private String uid;
     private SocialCompassDatabase socialCompassDatabase;
     private LabeledLocationDao labeledLocationDao;
+    private ClientAndServer mockServer;
 
     @Before
     public void init() {
@@ -43,11 +50,14 @@ public class MS2US3StoryTest {
 
         socialCompassDatabase = SocialCompassDatabase.getInstance(context);
         labeledLocationDao = socialCompassDatabase.getLabeledLocationDao();
+
+        mockServer = startClientAndServer(1080);
     }
 
     @After
     public void destroy() {
         socialCompassDatabase.close();
+        mockServer.close();
     }
 
     @Test
@@ -85,6 +95,8 @@ public class MS2US3StoryTest {
             uid = preferences.getString("userPublicCode", null);
             Assert.assertNotNull(uid);
 
+            mockUIServer();
+
             Assert.assertNotNull(labeledLocationDao.selectLabeledLocationWithoutLiveData(uid));
             try {
                 Assert.assertNotNull(ServerAPI.getInstance().asyncGetLabeledLocation(uid).get());
@@ -92,5 +104,27 @@ public class MS2US3StoryTest {
                 throw new RuntimeException(e);
             }
         });
+    }
+
+    void mockUIServer() {
+        ServerAPI.getInstance().changeEndpoint("http://localhost:1080");
+        new MockServerClient("localhost", 1080)
+                .when(
+                        request()
+                                .withMethod("GET")
+                                .withPath("/location/"+uid)
+                )
+                .respond(
+                        response()
+                                .withStatusCode(200)
+                                .withBody("{\n" +
+                                        "  \"public_code\": \""+uid+"\",\n" +
+                                        "  \"label\": \"Mom\",\n" +
+                                        "  \"latitude\": 0,\n" +
+                                        "  \"longitude\": 10,\n" +
+                                        "  \"created_at\": \"2023-02-18T12:00:00Z\",\n" +
+                                        "  \"updated_at\": \"2023-02-18T18:30:00Z\"\n" +
+                                        "}")
+                );
     }
 }

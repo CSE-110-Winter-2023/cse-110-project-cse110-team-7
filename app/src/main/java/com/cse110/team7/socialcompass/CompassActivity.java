@@ -9,6 +9,7 @@ import android.location.LocationManager;
 import android.media.Image;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.View;
 import android.view.WindowManager;
@@ -33,11 +34,13 @@ import androidx.lifecycle.Observer;
 import com.cse110.team7.socialcompass.database.SocialCompassDatabase;
 import com.cse110.team7.socialcompass.models.LabeledLocation;
 import com.cse110.team7.socialcompass.server.LabeledLocationRepository;
+import com.cse110.team7.socialcompass.server.ServerAPI;
 import com.cse110.team7.socialcompass.services.LocationService;
 import com.cse110.team7.socialcompass.services.OrientationService;
 import com.cse110.team7.socialcompass.ui.Compass;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -75,6 +78,12 @@ public class CompassActivity extends AppCompatActivity {
         var database = SocialCompassDatabase.getInstance(this);
         var labeledLocationDao = database.getLabeledLocationDao();
         repo = new LabeledLocationRepository(labeledLocationDao);
+
+        Intent intent = getIntent();
+        String mockEndpoint = intent.getStringExtra("endpoint");
+        if (mockEndpoint != null && mockEndpoint != "") {
+            ServerAPI.getInstance().changeEndpoint(mockEndpoint);
+        }
 
         var preferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
         userPublicCode = preferences.getString("userPublicCode", null);
