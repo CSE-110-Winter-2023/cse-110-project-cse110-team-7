@@ -11,6 +11,7 @@
     <string name="add_friend_input_uid_prompt">UID:</string>
     <string name="button_text_add">Add</string>
     <string name="add_friend_display_user_uid">Your UID: %1$s</string>
+    <string name="last_signal_time_default">0m</string>
     <string name="button_text_zoom_in">+</string>
     <string name="button_text_zoom_out">-</string>
 </resources>

@@ -24,6 +24,9 @@ import org.robolectric.shadows.ShadowAlertDialog;
 
 import java.util.concurrent.ExecutionException;
 
+/**
+ * Tests User Story 1: Adding Friends to the Compass.
+ */
 @RunWith(RobolectricTestRunner.class)
 public class MS2US1StoryTest {
     private static final LabeledLocation testLocation = new LabeledLocation.Builder()
