@@ -40,7 +40,6 @@ public class MS2US7StoryTest {
 
     @Before
     public void init() throws ExecutionException, InterruptedException {
-        LocationService.clearLocationService();
         OrientationService.clearOrientationService();
 
         Context context = ApplicationProvider.getApplicationContext();

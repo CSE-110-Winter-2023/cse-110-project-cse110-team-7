@@ -72,6 +72,11 @@ public class LocationService {
         return INSTANCE;
     }
 
+    @VisibleForTesting
+    public static void clearLocationService() {
+        INSTANCE = null;
+    }
+
     /**
      * Register the location update listener to start receiving location updates from sensor
      *
