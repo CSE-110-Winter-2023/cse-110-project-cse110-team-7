@@ -8,6 +8,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import android.content.Context;
+import android.location.Location;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
 
@@ -77,6 +78,9 @@ public class MS2US5StoryTest {
 
     @Before
     public void init() throws ExecutionException, InterruptedException {
+        LocationService.clearLocationService();
+        OrientationService.clearOrientationService();
+
         Context context = ApplicationProvider.getApplicationContext();
 
         SocialCompassDatabase.injectTestDatabase(
@@ -107,6 +111,9 @@ public class MS2US5StoryTest {
         ServerAPI.getInstance().asyncDeleteLabeledLocation(lasVegas).get();
         ServerAPI.getInstance().asyncDeleteLabeledLocation(northPole).get();
         ServerAPI.getInstance().asyncDeleteLabeledLocation(sorentoValley).get();
+
+        LocationService.clearLocationService();
+        OrientationService.clearOrientationService();
     }
 
     //Assumes all 4 circles are showing.
