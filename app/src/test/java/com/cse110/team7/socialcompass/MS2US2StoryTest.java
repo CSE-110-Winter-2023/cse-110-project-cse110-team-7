@@ -1,6 +1,10 @@
 package com.cse110.team7.socialcompass;
 
 
+import static org.mockserver.integration.ClientAndServer.startClientAndServer;
+import static org.mockserver.model.HttpRequest.request;
+import static org.mockserver.model.HttpResponse.response;
+
 import android.content.Context;
 import android.view.inputmethod.EditorInfo;
 
@@ -19,13 +23,12 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockserver.client.MockServerClient;
+import org.mockserver.integration.ClientAndServer;
 import org.robolectric.RobolectricTestRunner;
 
 import java.util.concurrent.ExecutionException;
 
-/**
- * Tests User Story 2: Seeing Nearby Friends (those within a 10 mile radius).
- */
 @RunWith(RobolectricTestRunner.class)
 public class MS2US2StoryTest {
     private static final LabeledLocation testLocation1 = new LabeledLocation.Builder()
@@ -54,6 +57,8 @@ public class MS2US2StoryTest {
             .setLongitude(100)
             .build();
 
+    private ClientAndServer mockServer;
+
     private SocialCompassDatabase socialCompassDatabase;
     private LabeledLocationDao labeledLocationDao;
 
@@ -70,20 +75,20 @@ public class MS2US2StoryTest {
         socialCompassDatabase = SocialCompassDatabase.getInstance(context);
         labeledLocationDao = socialCompassDatabase.getLabeledLocationDao();
 
-        ServerAPI.getInstance().asyncPutLabeledLocation(testLocation1).get();
-        ServerAPI.getInstance().asyncPutLabeledLocation(testLocation2).get();
-        ServerAPI.getInstance().asyncPutLabeledLocation(testLocation3).get();
-        ServerAPI.getInstance().asyncPutLabeledLocation(testLocation4).get();
+        mockServer = startClientAndServer(1080);
+
+        ServerAPI.getInstance().changeEndpoint("http://localhost:1080");
+        var client = new MockServerClient("localhost", 1080);
+        setupMockPutServer(testLocation1, client);
+        setupMockPutServer(testLocation2, client);
+        setupMockPutServer(testLocation3, client);
+        setupMockPutServer(testLocation4, client);
     }
 
     @After
-    public void destroy() throws ExecutionException, InterruptedException {
+    public void destroy()  {
         socialCompassDatabase.close();
-
-        ServerAPI.getInstance().asyncDeleteLabeledLocation(testLocation1).get();
-        ServerAPI.getInstance().asyncDeleteLabeledLocation(testLocation2).get();
-        ServerAPI.getInstance().asyncDeleteLabeledLocation(testLocation3).get();
-        ServerAPI.getInstance().asyncDeleteLabeledLocation(testLocation4).get();
+        mockServer.close();
     }
 
     @Test
@@ -127,5 +132,26 @@ public class MS2US2StoryTest {
             activity.getFriendUIDEditText().onEditorAction(EditorInfo.IME_ACTION_DONE);
             activity.getAddFriendButton().performClick();
         });
+    }
+
+    public void setupMockPutServer(LabeledLocation testLocation, MockServerClient client) {
+
+        client.when(
+                        request()
+                                .withMethod("GET")
+                                .withPath("/location/" + testLocation.getPublicCode())
+                )
+                .respond(
+                        response()
+                                .withStatusCode(200)
+                                .withBody("{\n" +
+                                        "  \"public_code\": \""+ testLocation.getPublicCode() + "\",\n" +
+                                        "  \"label\": \""+ testLocation.getLabel() + "\",\n" +
+                                        "  \"latitude\": "+ testLocation.getLatitude() + ",\n" +
+                                        "  \"longitude\": "+ testLocation.getLongitude() + ",\n" +
+                                        "  \"created_at\": \"2023-02-18T12:00:00Z\",\n" +
+                                        "  \"updated_at\": \"2023-02-18T18:30:00Z\"\n" +
+                                        "}")
+                );
     }
 }

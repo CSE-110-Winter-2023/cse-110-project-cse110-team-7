@@ -1,6 +1,9 @@
 package com.cse110.team7.socialcompass;
 
 import static org.junit.Assert.*;
+import static org.mockserver.integration.ClientAndServer.startClientAndServer;
+import static org.mockserver.model.HttpRequest.request;
+import static org.mockserver.model.HttpResponse.response;
 
 import android.content.Context;
 import android.view.View;
@@ -26,6 +29,8 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockserver.client.MockServerClient;
+import org.mockserver.integration.ClientAndServer;
 import org.robolectric.RobolectricTestRunner;
 
 import java.util.List;
@@ -63,6 +68,8 @@ public class MS2US6StoryTest   {
    private SocialCompassDatabase socialCompassDatabase;
    private LabeledLocationDao labeledLocationDao;
 
+   private ClientAndServer mockServer;
+
    @Before
    public void init() throws ExecutionException, InterruptedException {
       Context context = ApplicationProvider.getApplicationContext();
@@ -76,10 +83,15 @@ public class MS2US6StoryTest   {
       socialCompassDatabase = SocialCompassDatabase.getInstance(context);
       labeledLocationDao = socialCompassDatabase.getLabeledLocationDao();
 
-      ServerAPI.getInstance().asyncPutLabeledLocation(warrenCollege).get();
-      ServerAPI.getInstance().asyncPutLabeledLocation(sorrentoValley).get();
-      ServerAPI.getInstance().asyncPutLabeledLocation(northClairemont).get();
-      ServerAPI.getInstance().asyncPutLabeledLocation(lasVegas).get();
+
+      mockServer = startClientAndServer(1080);
+
+      ServerAPI.getInstance().changeEndpoint("http://localhost:1080");
+      var client = new MockServerClient("localhost", 1080);
+      setupMockPutServer(warrenCollege, client);
+      setupMockPutServer(sorrentoValley, client);
+      setupMockPutServer(northClairemont, client);
+      setupMockPutServer(lasVegas, client);
 
       // add three friends
       addFriend(warrenCollege);
@@ -91,11 +103,7 @@ public class MS2US6StoryTest   {
    @After
    public void destroy() throws ExecutionException, InterruptedException {
       socialCompassDatabase.close();
-
-      ServerAPI.getInstance().asyncDeleteLabeledLocation(warrenCollege).get();
-      ServerAPI.getInstance().asyncDeleteLabeledLocation(sorrentoValley).get();
-      ServerAPI.getInstance().asyncDeleteLabeledLocation(northClairemont).get();
-      ServerAPI.getInstance().asyncDeleteLabeledLocation(lasVegas).get();
+      mockServer.close();
 
    }
 
@@ -403,6 +411,28 @@ public class MS2US6StoryTest   {
          activity.getAddFriendButton().performClick();
       });
    }
+
+   public void setupMockPutServer(LabeledLocation testLocation, MockServerClient client) {
+
+      client.when(
+                      request()
+                              .withMethod("GET")
+                              .withPath("/location/" + testLocation.getPublicCode())
+              )
+              .respond(
+                      response()
+                              .withStatusCode(200)
+                              .withBody("{\n" +
+                                      "  \"public_code\": \""+ testLocation.getPublicCode() + "\",\n" +
+                                      "  \"label\": \""+ testLocation.getLabel() + "\",\n" +
+                                      "  \"latitude\": "+ testLocation.getLatitude() + ",\n" +
+                                      "  \"longitude\": "+ testLocation.getLongitude() + ",\n" +
+                                      "  \"created_at\": \"2023-02-18T12:00:00Z\",\n" +
+                                      "  \"updated_at\": \"2023-02-18T18:30:00Z\"\n" +
+                                      "}")
+              );
+   }
+
 }
 
 

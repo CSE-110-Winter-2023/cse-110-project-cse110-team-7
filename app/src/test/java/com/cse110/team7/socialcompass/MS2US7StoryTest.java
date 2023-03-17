@@ -16,7 +16,6 @@ import androidx.test.core.app.ActivityScenario;
 import androidx.test.core.app.ApplicationProvider;
 
 import com.cse110.team7.socialcompass.database.SocialCompassDatabase;
-import com.cse110.team7.socialcompass.server.ServerAPI;
 import com.cse110.team7.socialcompass.services.LocationService;
 import com.cse110.team7.socialcompass.services.OrientationService;
 

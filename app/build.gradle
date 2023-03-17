@@ -58,6 +58,9 @@ dependencies {
     testImplementation 'androidx.test:core:1.5.0'
     testImplementation 'androidx.test.ext:junit:1.1.5'
 
+    testImplementation "org.mock-server:mockserver-client-java-no-dependencies:5.14.0"
+    testImplementation("org.mock-server:mockserver-netty-no-dependencies:5.14.0")
+
     testImplementation 'androidx.arch.core:core-common:2.2.0'
     testImplementation 'androidx.arch.core:core-runtime:2.2.0'
     testImplementation 'androidx.arch.core:core-testing:2.2.0'
