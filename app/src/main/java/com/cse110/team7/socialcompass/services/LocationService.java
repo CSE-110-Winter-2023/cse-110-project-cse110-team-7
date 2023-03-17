@@ -9,11 +9,21 @@ import androidx.lifecycle.MutableLiveData;
 
 import com.cse110.team7.socialcompass.models.Coordinate;
 
+import java.util.Calendar;
+import java.util.Date;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
+
 
 /**
  * Observes location updates from user and broadcast to all observers
  */
 public class LocationService {
+    private static final int SECS_PER_MIN = 60;
+    private static final int MIN_PER_HOUR = 60;
+    public static final int MILIS_PER_SEC = 1000;
     private static LocationService INSTANCE = null;
 
     private final MutableLiveData<Coordinate> currentCoordinate;
@@ -21,8 +31,14 @@ public class LocationService {
     private LocationManager locationManager;
     private boolean isListenerRegistered;
 
+    private MutableLiveData<Date> lastSignalTime;
+    private ScheduledFuture<?> future;
+    private MutableLiveData<String> formattedLastSignalTime;
+
     private LocationService() {
         this.currentCoordinate = new MutableLiveData<>();
+        this.lastSignalTime = new MutableLiveData<>();
+        this.formattedLastSignalTime = new MutableLiveData<>();
         this.locationUpdateListener = location -> {
             var currentCoordinate = this.currentCoordinate.getValue();
             var nextCoordinate = new Coordinate(location.getLatitude(), location.getLongitude());
@@ -32,7 +48,12 @@ public class LocationService {
 
                 this.currentCoordinate.postValue(nextCoordinate);
             }
+
+            lastSignalTime.postValue(Calendar.getInstance().getTime());
+
         };
+
+        this.trackGPSStatus();
         this.isListenerRegistered = false;
     }
 
@@ -110,4 +131,39 @@ public class LocationService {
     public void setLocationManager(@NonNull LocationManager locationManager) {
         this.locationManager = locationManager;
     }
+
+    /**
+     * If there isn't GPS signal gets the time signal was lost
+     *
+     * @return time GPS signal was lost
+     */
+    public String parseLastSignalTime() {
+        String formattedString;
+        long milisDifference = Calendar.getInstance().getTime().getTime()- lastSignalTime.getValue().getTime();
+        long minDifference = milisDifference / MILIS_PER_SEC /SECS_PER_MIN;
+        if (minDifference < SECS_PER_MIN) {
+            formattedString = minDifference+"m";
+            return formattedString;
+        }
+        long hourDifference = minDifference /MIN_PER_HOUR;
+        formattedString = hourDifference+"h";
+        return formattedString;
+    }
+
+    public void trackGPSStatus() {
+        ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
+        this.future = executor.scheduleAtFixedRate(() -> {
+            if (lastSignalTime.getValue() == null) return;
+            if (lastSignalTime.getValue().getTime() + SECS_PER_MIN * MILIS_PER_SEC < Calendar.getInstance().getTime().getTime()) {
+                formattedLastSignalTime.postValue(parseLastSignalTime());
+            } else {
+                formattedLastSignalTime.postValue("");
+            }
+        }, 0, 1, TimeUnit.SECONDS);
+    }
+
+    public MutableLiveData<String> getFormattedLastSignalTime() {
+        return formattedLastSignalTime;
+    }
+
 }
