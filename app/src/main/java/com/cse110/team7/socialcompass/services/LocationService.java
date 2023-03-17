@@ -5,10 +5,19 @@ import android.location.LocationManager;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.VisibleForTesting;
 import androidx.lifecycle.MutableLiveData;
 
+import com.cse110.team7.socialcompass.database.SocialCompassDatabase;
 import com.cse110.team7.socialcompass.models.Coordinate;
 import com.cse110.team7.socialcompass.models.Coordinate;
+
+import java.util.Calendar;
+import java.util.Date;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
 
 import java.util.Calendar;
 import java.util.Date;
@@ -61,6 +70,11 @@ public class LocationService {
     public static LocationService getInstance() {
         if (INSTANCE == null) INSTANCE = new LocationService();
         return INSTANCE;
+    }
+
+    @VisibleForTesting
+    public static void clearLocationService() {
+        INSTANCE = null;
     }
 
     /**

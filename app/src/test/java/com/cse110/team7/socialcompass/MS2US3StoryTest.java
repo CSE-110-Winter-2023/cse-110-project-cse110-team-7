@@ -30,7 +30,9 @@ import org.robolectric.shadows.ShadowAlertDialog;
 
 import java.util.concurrent.ExecutionException;
 
-
+/**
+ * Tests US3: Sending Your Location to the Server.
+ */
 @RunWith(RobolectricTestRunner.class)
 public class MS2US3StoryTest {
     private String uid;

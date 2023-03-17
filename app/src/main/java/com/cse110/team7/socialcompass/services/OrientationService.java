@@ -9,6 +9,7 @@ import android.view.Surface;
 import android.view.WindowManager;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.VisibleForTesting;
 import androidx.lifecycle.MutableLiveData;
 
 
@@ -180,5 +181,10 @@ public class OrientationService {
 
     public void setWindowManager(@NonNull WindowManager windowManager) {
         this.windowManager = windowManager;
+    }
+
+    @VisibleForTesting
+    public static void clearOrientationService() {
+        INSTANCE = null;
     }
 }

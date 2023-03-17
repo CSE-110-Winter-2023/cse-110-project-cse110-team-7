@@ -33,6 +33,8 @@ import java.util.PriorityQueue;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import java.util.concurrent.CountDownLatch;
+
 /**
  * Represents a compass on screen
  */
@@ -46,6 +48,7 @@ public class Compass {
     private final double maxDistance;
     private final Map<String, LabeledLocationDisplay> labeledLocationDisplayMap;
     private final Map<LabeledLocationDisplay, View> displayConstraintView;
+    private final Map<String, CountDownLatch> locationUpdateTimeMap;
     private Coordinate currentCoordinate;
     private double currentOrientation;
     // the radius of scale 1 compass
@@ -53,6 +56,7 @@ public class Compass {
     private double scale;
     private boolean isHidden;
     private boolean isLastCompass;
+
 
     /**
      * @param lifecycleOwner - The Compass Activity
@@ -73,6 +77,8 @@ public class Compass {
         this.maxDistance = maxDistance;
         this.labeledLocationDisplayMap = new HashMap<>();
         this.displayConstraintView = new HashMap<>();
+
+        this.locationUpdateTimeMap = new HashMap<>();
         this.currentCoordinate = new Coordinate(0, 0);
         this.currentOrientation = 0;
         this.radius = 0;
@@ -81,6 +87,43 @@ public class Compass {
         this.isLastCompass = false;
 
         setupCompassImageView();
+
+        /*
+        LabeledLocation test1 = new LabeledLocation.Builder()
+                .setPublicCode(UUID.randomUUID().toString())
+                .setPrivateCode(UUID.randomUUID().toString())
+                .setLabel("Youka")
+                .setLatitude(37.4)
+                .setLongitude(-122.098)
+                .build();
+        LabeledLocation test2 = new LabeledLocation.Builder()
+                .setPublicCode(UUID.randomUUID().toString())
+                .setPrivateCode(UUID.randomUUID().toString())
+                .setLabel("Noa")
+                .setLatitude(37.4)
+                .setLongitude(-122.100)
+                .build();
+        LabeledLocation test3 = new LabeledLocation.Builder()
+                .setPublicCode(UUID.randomUUID().toString())
+                .setPrivateCode(UUID.randomUUID().toString())
+                .setLabel("Alice")
+                .setLatitude(37.4)
+                .setLongitude(-122.122)
+                .build();
+
+        LabeledLocationDisplay temp1 = createLabeledLocationDisplay();
+        temp1.setLabeledLocation(test1);
+        labeledLocationDisplayMap.put(test1.getPublicCode(), temp1);
+
+        LabeledLocationDisplay temp2 = createLabeledLocationDisplay();
+        temp2.setLabeledLocation(test2);
+        labeledLocationDisplayMap.put(test2.getPublicCode(), temp2);
+
+        LabeledLocationDisplay temp3 = createLabeledLocationDisplay();
+        temp3.setLabeledLocation(test3);
+        labeledLocationDisplayMap.put(test3.getPublicCode(), temp3);
+        */
+
     }
 
     /**
@@ -127,6 +170,7 @@ public class Compass {
         });
 
         updateLayout();
+
     }
 
     /**
@@ -267,6 +311,12 @@ public class Compass {
 
             updateBearing(labeledLocationDisplay);
             updateLabeledLocationDisplayInRange(labeledLocationDisplay);
+
+            var countDown = locationUpdateTimeMap.get(labeledLocation.getPublicCode());
+
+            if (countDown != null) {
+                countDown.countDown();
+            }
         });
     }
 
@@ -534,6 +584,11 @@ public class Compass {
     private String getCompassTag() {
         return "Compass: [" + minDistance + ", " + maxDistance + ")";
     }
+
+    public Map<String, CountDownLatch> getLocationUpdateTimeMap() {
+        return locationUpdateTimeMap;
+    }
+
 
     public boolean isHidden() {
         return isHidden;

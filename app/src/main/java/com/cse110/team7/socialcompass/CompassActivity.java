@@ -157,9 +157,9 @@ public class CompassActivity extends AppCompatActivity {
             allCompasses.forEach(compass -> compass.updateBearingForAll(currentCoordinate));
         });
 
-        LocationService.getInstance().getFormattedLastSignalTime().observe(this, GPSString -> {
-            Log.i("GPS STRING", GPSString);
-        });
+//        LocationService.getInstance().getFormattedLastSignalTime().observe(this, GPSString -> {
+//            Log.i("GPS STRING", GPSString);
+//        });
 
         OrientationService.getInstance().getCurrentOrientation().observe(this, currentOrientation -> {
             allCompasses.forEach(compass -> compass.updateOrientationForAll(currentOrientation));
@@ -265,7 +265,6 @@ public class CompassActivity extends AppCompatActivity {
         saveZoomLevel();
     }
 
-
     public void onCompassBackButtonClicked(View view) {
         Intent intent = new Intent(this, MainActivity.class);
         startActivity(intent);
@@ -292,7 +291,6 @@ public class CompassActivity extends AppCompatActivity {
             }
         });
     }
-
     @VisibleForTesting
     public ConstraintLayout getCompassConstraintLayout() {
         return compassConstraintLayout;
@@ -332,7 +330,7 @@ public class CompassActivity extends AppCompatActivity {
     public TextView getLastSignalTime() {
         return lastSignalTime;
     }
-
+    
     @VisibleForTesting
     public int getZoomLevel() {
         return zoomLevel;
