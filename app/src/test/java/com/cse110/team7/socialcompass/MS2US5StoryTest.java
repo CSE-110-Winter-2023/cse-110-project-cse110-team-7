@@ -3,7 +3,9 @@
  */
 package com.cse110.team7.socialcompass;
 
+import static com.cse110.team7.socialcompass.utils.DistanceFilter.isLabeledLocationInRange;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockserver.integration.ClientAndServer.startClientAndServer;
@@ -135,73 +137,21 @@ public class MS2US5StoryTest {
             LocationService.getInstance().setCurrentCoordinate(myCoordinates);
             OrientationService.getInstance().setCurrentOrientation(0); //Facing North
 
-
-
-            // Get all compass.
-            List<Compass> allCompasses = activity.getCompasses();
-            Compass firstCompass = null;
-            Compass secondCompass = null;
-            Compass thirdCompass = null;
-            Compass fourthCompass = null;
-
-            for(Compass compasses : allCompasses){
-                if(compasses.circleType == compasses.FIRST_CIRCLE) {
-                    firstCompass = compasses;
-                }
-                if(compasses.circleType == compasses.SECOND_CIRCLE) {
-                    secondCompass = compasses;
-                }
-                if(compasses.circleType == compasses.THIRD_CIRCLE) {
-                    thirdCompass = compasses;
-                }
-                if(compasses.circleType == compasses.FOURTH_CIRCLE) {
-                    fourthCompass = compasses;
-                }
-            }
-
-
-
-            //Should have found compasses.
-            assertNotNull(firstCompass);
-
-            int endIndx = firstCompass.getCompassTag().indexOf("[");
-            assertEquals("[" + 0.0 + ", " + 1.0 + ")",
-                    firstCompass.getCompassTag().substring(endIndx));
-
-            assertNotNull(secondCompass);
-            assertNotNull(thirdCompass);
-            assertNotNull(fourthCompass);
-
-
-
-            //In depth check of first compass.
-            firstCompass.updateLabeledLocationDisplay();
-            int visibilityNear = firstCompass.getVisibilityOfFriend(warrenCollege);
-            int visibilityMiddleNear = firstCompass.getVisibilityOfFriend(sorentoValley);
-            int visibilityMiddleFar = firstCompass.getVisibilityOfFriend(lasVegas);
-            int visibilityFar = firstCompass.getVisibilityOfFriend(northPole);
-
-            assertEquals(View.VISIBLE, visibilityNear);
-            assertEquals(View.INVISIBLE, visibilityMiddleNear);
-            assertEquals(View.INVISIBLE, visibilityMiddleFar);
-            assertEquals(View.INVISIBLE, visibilityFar);
+            //First circle
+            double minDistance = 0;
+            double maxDistance = 1;
+            assertTrue(isLabeledLocationInRange(myCoordinates, warrenCollege.getCoordinate(), minDistance, maxDistance));
+            assertFalse(isLabeledLocationInRange(myCoordinates, sorentoValley.getCoordinate(), minDistance, maxDistance));
+            assertFalse(isLabeledLocationInRange(myCoordinates, lasVegas.getCoordinate(), minDistance, maxDistance));
+            assertFalse(isLabeledLocationInRange(myCoordinates, northPole.getCoordinate(), minDistance, maxDistance));
 
 
             //Brief check of remaining ones:
-            secondCompass.updateLabeledLocationDisplay();
-            visibilityMiddleNear = secondCompass.getVisibilityOfFriend(sorentoValley);
-            assertEquals(View.VISIBLE, visibilityMiddleNear);
+            assertTrue(isLabeledLocationInRange(myCoordinates, sorentoValley.getCoordinate(), 1, 10));
 
-            thirdCompass.updateLabeledLocationDisplay();
-            visibilityMiddleFar = thirdCompass.getVisibilityOfFriend(lasVegas);
-            assertEquals(View.VISIBLE, visibilityMiddleFar);
+            assertTrue(isLabeledLocationInRange(myCoordinates, lasVegas.getCoordinate(), 10, 100));
 
-            fourthCompass.updateLabeledLocationDisplay();
-            visibilityFar = fourthCompass.getVisibilityOfFriend(northPole);
-            assertEquals(View.VISIBLE, visibilityFar);
-
-
-
+            assertTrue(isLabeledLocationInRange(myCoordinates, northPole.getCoordinate(), 100, 200));
 
 
 
@@ -214,16 +164,15 @@ public class MS2US5StoryTest {
             OrientationService.getInstance().setCurrentOrientation(0); //Facing North
 
 
-            //Another in-depth check of first compass.
-            visibilityNear = firstCompass.getVisibilityOfFriend(warrenCollege);
-            visibilityMiddleNear = firstCompass.getVisibilityOfFriend(sorentoValley);
-            visibilityMiddleFar = firstCompass.getVisibilityOfFriend(lasVegas);
-            visibilityFar = firstCompass.getVisibilityOfFriend(northPole);
 
-            assertEquals(View.INVISIBLE, visibilityNear);
-            assertEquals(View.INVISIBLE, visibilityMiddleNear);
-            assertEquals(View.VISIBLE, visibilityMiddleFar);
-            assertEquals(View.INVISIBLE, visibilityFar);
+            //Another in-depth check of first compass.
+             minDistance = 0;
+             maxDistance = 1;
+            assertFalse(isLabeledLocationInRange(lasVegasCoordinates, warrenCollege.getCoordinate(), minDistance, maxDistance));
+            assertFalse(isLabeledLocationInRange(lasVegasCoordinates, sorentoValley.getCoordinate(), minDistance, maxDistance));
+            assertTrue(isLabeledLocationInRange(lasVegasCoordinates, lasVegas.getCoordinate(), minDistance, maxDistance));
+            assertFalse(isLabeledLocationInRange(lasVegasCoordinates, northPole.getCoordinate(), minDistance, maxDistance));
+
         });
     }
 
