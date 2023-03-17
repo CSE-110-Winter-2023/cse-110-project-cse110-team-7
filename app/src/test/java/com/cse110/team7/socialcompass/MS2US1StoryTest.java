@@ -1,97 +1,86 @@
 package com.cse110.team7.socialcompass;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-
 import android.content.Context;
-import android.widget.Button;
-import android.widget.EditText;
-import android.widget.TextView;
+import android.content.DialogInterface;
+import android.view.inputmethod.EditorInfo;
 
 import androidx.lifecycle.Lifecycle;
 import androidx.room.Room;
 import androidx.test.core.app.ActivityScenario;
 import androidx.test.core.app.ApplicationProvider;
 
-import com.cse110.team7.socialcompass.backend.FriendAccountDao;
-import com.cse110.team7.socialcompass.backend.FriendDatabase;
-import com.cse110.team7.socialcompass.backend.LocationAPI;
-import com.cse110.team7.socialcompass.models.FriendAccount;
-import com.cse110.team7.socialcompass.models.LatLong;
-import com.cse110.team7.socialcompass.services.LocationService;
-import com.cse110.team7.socialcompass.services.OrientationService;
+import com.cse110.team7.socialcompass.database.LabeledLocationDao;
+import com.cse110.team7.socialcompass.database.SocialCompassDatabase;
+import com.cse110.team7.socialcompass.models.LabeledLocation;
+import com.cse110.team7.socialcompass.server.ServerAPI;
 
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
+import org.robolectric.shadows.ShadowAlertDialog;
+
+import java.util.concurrent.ExecutionException;
 
 @RunWith(RobolectricTestRunner.class)
-/**
- * Tests Adding Friends to Compass.
- */
 public class MS2US1StoryTest {
+    private static final LabeledLocation testLocation = new LabeledLocation.Builder()
+            .setLabel("Mom")
+            .setLatitude(0)
+            .setLongitude(10)
+            .build();
 
-    FriendAccount testLoc1 = new FriendAccount("Mom", new LatLong(0, 10));
-
-
-    LocationAPI locAPI;
-    private FriendAccountDao friendAccountDao;
-    private FriendDatabase friendDatabase;
-
-
-    @Before
-    public void setupFriends() { //Create friends
-        locAPI = LocationAPI.provide();
-        locAPI.putLocation(testLoc1);
-
-        // print private IDs- locations must be manually deleted if program crashes
-        System.err.println(testLoc1.getPublicID() + " : " + testLoc1.getPrivateID());
-    }
+    private SocialCompassDatabase socialCompassDatabase;
+    private LabeledLocationDao labeledLocationDao;
 
     @Before
-    public void createDatabase() {
+    public void init() throws ExecutionException, InterruptedException {
         Context context = ApplicationProvider.getApplicationContext();
 
-        friendDatabase = Room.inMemoryDatabaseBuilder(context, FriendDatabase.class)
-                .allowMainThreadQueries()
-                .build();
+        SocialCompassDatabase.injectTestDatabase(
+                Room.inMemoryDatabaseBuilder(context, SocialCompassDatabase.class)
+                        .allowMainThreadQueries()
+                        .build()
+        );
 
-        FriendDatabase.injectTestDatabase(friendDatabase);
+        socialCompassDatabase = SocialCompassDatabase.getInstance(context);
+        labeledLocationDao = socialCompassDatabase.getLabeledLocationDao();
 
-        friendAccountDao = friendDatabase.getFriendDao();
+        ServerAPI.getInstance().asyncPutLabeledLocation(testLocation).get();
     }
 
     @After
-    public void closeDatabase() {
-        locAPI.deleteFriend(testLoc1);
-        friendDatabase.close();
+    public void destroy() throws ExecutionException, InterruptedException {
+        socialCompassDatabase.close();
+
+        ServerAPI.getInstance().asyncDeleteLabeledLocation(testLocation).get();
     }
 
     @Test
-    public void testAddingFriendUsingPremadePubID() {
-
-        //Start the AddFriend Scenario
+    public void US1StoryTest() {
         var scenario = ActivityScenario.launch(AddFriendActivity.class);
         scenario.moveToState(Lifecycle.State.CREATED);
         scenario.moveToState(Lifecycle.State.STARTED);
 
         scenario.onActivity(activity -> {
-            EditText addUID = activity.findViewById(R.id.promptUID);
-            Button addButton = activity.findViewById(R.id.addButton);
+            activity.getFriendUIDEditText().setText("");
+            activity.getFriendUIDEditText().onEditorAction(EditorInfo.IME_ACTION_DONE);
+            activity.getAddFriendButton().performClick();
 
-            //Insert Invalid Friend PubID to Textbox.
-            addUID.setText("This is an invalid PUBID");
-            addButton.performClick();
-            assertNull(locAPI.getFriend("This is an invalid PUBID"));
-            assertNull(friendAccountDao.selectFriends().getValue());
+            var latestAlertDialog = ShadowAlertDialog.getLatestAlertDialog();
+            Assert.assertNotNull(latestAlertDialog);
 
-            //Insert Valid Friend PubID
-            addUID.setText(testLoc1.getPublicID());
-            addButton.performClick();
-            assertNotNull(friendAccountDao.selectFriend(testLoc1.getId()));
+            Assert.assertNull(labeledLocationDao.selectLabeledLocationWithoutLiveData(testLocation.getPublicCode()));
+
+            latestAlertDialog.getButton(DialogInterface.BUTTON_POSITIVE).performClick();
+
+            activity.getFriendUIDEditText().setText(testLocation.getPublicCode());
+            activity.getFriendUIDEditText().onEditorAction(EditorInfo.IME_ACTION_DONE);
+            activity.getAddFriendButton().performClick();
+
+            Assert.assertNotNull(labeledLocationDao.selectLabeledLocationWithoutLiveData(testLocation.getPublicCode()));
         });
     }
 }

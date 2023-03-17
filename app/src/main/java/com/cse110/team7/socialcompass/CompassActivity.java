@@ -3,14 +3,19 @@ package com.cse110.team7.socialcompass;
 import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.Color;
 import android.hardware.SensorManager;
 import android.location.LocationManager;
+import android.media.Image;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.Button;
+import android.view.WindowManager;
+import android.widget.ImageView;
+import android.widget.TextView;
 
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.Nullable;
@@ -20,6 +25,10 @@ import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.core.app.ActivityCompat;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
+import androidx.core.app.ActivityCompat;
+import androidx.lifecycle.LiveData;
+import androidx.lifecycle.MutableLiveData;
+import androidx.lifecycle.Observer;
 
 import com.cse110.team7.socialcompass.database.SocialCompassDatabase;
 import com.cse110.team7.socialcompass.models.LabeledLocation;
@@ -48,6 +57,9 @@ public class CompassActivity extends AppCompatActivity {
     //private Compass compass;
     private LabeledLocation userLabeledLocation;
     private boolean localUpdateRequired;
+    private LocationService locationService;
+    private ImageView gpsIndicator;
+    private TextView lastSignalTime;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -134,6 +146,10 @@ public class CompassActivity extends AppCompatActivity {
             }
 
             allCompasses.forEach(compass -> compass.updateBearingForAll(currentCoordinate));
+        });
+
+        LocationService.getInstance().getFormattedLastSignalTime().observe(this, GPSString -> {
+            Log.i("GPS STRING", GPSString);
         });
 
         OrientationService.getInstance().getCurrentOrientation().observe(this, currentOrientation -> {
@@ -232,6 +248,34 @@ public class CompassActivity extends AppCompatActivity {
 
         updateCompassByZoomLevel();
         saveZoomLevel();
+    }
+
+
+    public void onCompassBackButtonClicked(View view) {
+        Intent intent = new Intent(this, MainActivity.class);
+        startActivity(intent);
+    }
+
+    public void updateGPSIcon() {
+        locationService = locationService.getInstance();
+        locationService.trackGPSStatus();
+
+        gpsIndicator = findViewById(R.id.gpsIndicator);
+        lastSignalTime = findViewById(R.id.lastSignalTimeTextView);
+        String emptyLastSignalTime = "";
+
+        lastSignalTime.setText(emptyLastSignalTime);
+
+        locationService.getFormattedLastSignalTime().observe(this, formattedLastSignalTime -> {
+            if (formattedLastSignalTime == null || formattedLastSignalTime.isEmpty()) {
+                gpsIndicator.setColorFilter(Color.GREEN);
+                lastSignalTime.setText(emptyLastSignalTime);
+            } else {
+                gpsIndicator.setColorFilter(Color.RED);
+                lastSignalTime.setTextColor(Color.RED);
+                lastSignalTime.setText(formattedLastSignalTime);
+            }
+        });
     }
 
     @VisibleForTesting

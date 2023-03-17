@@ -1,15 +1,7 @@
 package com.cse110.team7.socialcompass;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-
-import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
-import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 import android.view.inputmethod.EditorInfo;
 
@@ -18,81 +10,87 @@ import androidx.room.Room;
 import androidx.test.core.app.ActivityScenario;
 import androidx.test.core.app.ApplicationProvider;
 
-import com.cse110.team7.socialcompass.backend.FriendAccountDao;
-import com.cse110.team7.socialcompass.backend.FriendDatabase;
-import com.cse110.team7.socialcompass.backend.LocationAPI;
+import com.cse110.team7.socialcompass.database.LabeledLocationDao;
+import com.cse110.team7.socialcompass.database.SocialCompassDatabase;
+import com.cse110.team7.socialcompass.server.ServerAPI;
 
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.shadows.ShadowAlertDialog;
 
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.ExecutionException;
 
 
 @RunWith(RobolectricTestRunner.class)
 public class MS2US3StoryTest {
-
-
-    private FriendAccountDao friendAccountDao;
-    private FriendDatabase friendDatabase;
-
+    private String uid;
+    private SocialCompassDatabase socialCompassDatabase;
+    private LabeledLocationDao labeledLocationDao;
 
     @Before
-    public void createDatabase() {
+    public void init() {
         Context context = ApplicationProvider.getApplicationContext();
 
-        friendDatabase = Room.inMemoryDatabaseBuilder(context, FriendDatabase.class)
-                .allowMainThreadQueries()
-                .build();
+        SocialCompassDatabase.injectTestDatabase(
+                Room.inMemoryDatabaseBuilder(context, SocialCompassDatabase.class)
+                        .allowMainThreadQueries()
+                        .build()
+        );
 
-        FriendDatabase.injectTestDatabase(friendDatabase);
-
-        friendAccountDao = friendDatabase.getFriendDao();
+        socialCompassDatabase = SocialCompassDatabase.getInstance(context);
+        labeledLocationDao = socialCompassDatabase.getLabeledLocationDao();
     }
-
 
     @After
-    public void closeDatabase() {
-        friendDatabase.close();
+    public void destroy() {
+        socialCompassDatabase.close();
     }
 
-
     @Test
-    public void US3Test() {
+    public void US3StoryTest() {
+        Context context = ApplicationProvider.getApplicationContext();
+
         var scenario = ActivityScenario.launch(MainActivity.class);
         scenario.moveToState(Lifecycle.State.CREATED);
         scenario.moveToState(Lifecycle.State.STARTED);
 
         scenario.onActivity(activity -> {
-            assertEquals("", activity.getNameView().getText().toString());
-            assertEquals("N/A", activity.getUidView().getText().toString());
+            Assert.assertEquals("", activity.getNameEditText().getText().toString());
+            Assert.assertEquals(context.getResources().getString(R.string.user_uid_placeholder), activity.getUidTextView().getText().toString());
 
             activity.getOkButton().performClick();
 
-            var latestAlertDialog = ShadowAlertDialog.getLatestAlertDialog() ;
-
-            assertNotNull(latestAlertDialog);
+            var latestAlertDialog = ShadowAlertDialog.getLatestAlertDialog();
+            Assert.assertNotNull(latestAlertDialog);
 
             latestAlertDialog.getButton(DialogInterface.BUTTON_POSITIVE).performClick();
 
-            assertEquals("", activity.getNameView().getText().toString());
-            assertEquals("N/A", activity.getUidView().getText().toString());
+            Assert.assertEquals("", activity.getNameEditText().getText().toString());
+            Assert.assertEquals(context.getResources().getString(R.string.user_uid_placeholder), activity.getUidTextView().getText().toString());
 
-            activity.getNameView().setText("james");
-            activity.getNameView().onEditorAction(EditorInfo.IME_ACTION_DONE);
+            activity.getNameEditText().setText("james");
+            activity.getNameEditText().onEditorAction(EditorInfo.IME_ACTION_DONE);
 
-            assertEquals("james", activity.getNameView().getText().toString());
-            assertNotEquals("N/A", activity.getUidView().getText().toString());
+            Assert.assertEquals("james", activity.getNameEditText().getText().toString());
+            Assert.assertNotEquals(context.getResources().getString(R.string.user_uid_placeholder), activity.getUidTextView().getText().toString());
 
             activity.getOkButton().performClick();
 
-            SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(activity.getApplicationContext());
+            var preferences = PreferenceManager.getDefaultSharedPreferences(context);
 
-            var uid = preferences.getString("myPublicID", null);
-            assertNotNull(uid);
+            uid = preferences.getString("userPublicCode", null);
+            Assert.assertNotNull(uid);
+
+            Assert.assertNotNull(labeledLocationDao.selectLabeledLocationWithoutLiveData(uid));
+            try {
+                Assert.assertNotNull(ServerAPI.getInstance().asyncGetLabeledLocation(uid).get());
+            } catch (ExecutionException | InterruptedException e) {
+                throw new RuntimeException(e);
+            }
         });
     }
 }

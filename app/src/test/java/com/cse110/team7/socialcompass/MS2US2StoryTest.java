@@ -1,123 +1,128 @@
 package com.cse110.team7.socialcompass;
 
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
 
 import android.content.Context;
-import android.widget.Button;
-import android.widget.EditText;
+import android.view.inputmethod.EditorInfo;
 
 import androidx.lifecycle.Lifecycle;
 import androidx.room.Room;
 import androidx.test.core.app.ActivityScenario;
 import androidx.test.core.app.ApplicationProvider;
 
-import com.cse110.team7.socialcompass.backend.FriendAccountDao;
-import com.cse110.team7.socialcompass.backend.FriendDatabase;
-import com.cse110.team7.socialcompass.backend.LocationAPI;
-import com.cse110.team7.socialcompass.models.FriendAccount;
-import com.cse110.team7.socialcompass.models.LatLong;
+import com.cse110.team7.socialcompass.database.LabeledLocationDao;
+import com.cse110.team7.socialcompass.database.SocialCompassDatabase;
+import com.cse110.team7.socialcompass.models.LabeledLocation;
+import com.cse110.team7.socialcompass.server.ServerAPI;
 
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
 
+import java.util.concurrent.ExecutionException;
+
 @RunWith(RobolectricTestRunner.class)
 public class MS2US2StoryTest {
+    private static final LabeledLocation testLocation1 = new LabeledLocation.Builder()
+            .setLabel("Mom")
+            .setLatitude(0)
+            .setLongitude(1)
+            .build();
 
-    FriendAccount testLoc1 = new FriendAccount("Mom", new LatLong(0, 1));
-    FriendAccount testLoc2 = new FriendAccount("Dad", new LatLong(1, 1));
-    FriendAccount testLoc3 = new FriendAccount("Friend", new LatLong(100, 0));
-    FriendAccount testLoc4 = new FriendAccount("Best Friend", new LatLong(100, 100));
+
+    private static final LabeledLocation testLocation2 = new LabeledLocation.Builder()
+            .setLabel("Dad")
+            .setLatitude(1)
+            .setLongitude(1)
+            .build();
 
 
-    LocationAPI locAPI;
+    private static final LabeledLocation testLocation3 = new LabeledLocation.Builder()
+            .setLabel("Friend")
+            .setLatitude(45)
+            .setLongitude(0)
+            .build();
 
-    private FriendAccountDao friendAccountDao;
-    private FriendDatabase friendDatabase;
+    private static final LabeledLocation testLocation4 = new LabeledLocation.Builder()
+            .setLabel("Friend")
+            .setLatitude(40)
+            .setLongitude(100)
+            .build();
+
+    private SocialCompassDatabase socialCompassDatabase;
+    private LabeledLocationDao labeledLocationDao;
 
     @Before
-    /* populate server */
-    public void setup() {
-        locAPI = LocationAPI.provide();
-        locAPI.putLocation(testLoc1);
-        // print private IDs- locations must be manually deleted if program crashes
-        System.err.println(testLoc1.getPublicID() + " : " + testLoc1.getPrivateID());
-        locAPI.putLocation(testLoc2);
-        System.err.println(testLoc2.getPublicID() + " : " + testLoc2.getPrivateID());
-        locAPI.putLocation(testLoc3);
-        System.err.println(testLoc3.getPublicID() + " : " + testLoc3.getPrivateID());
-        locAPI.putLocation(testLoc4);
-        System.err.println(testLoc4.getPublicID() + " : " + testLoc4.getPrivateID());
+    public void init() throws ExecutionException, InterruptedException {
+        Context context = ApplicationProvider.getApplicationContext();
 
+        SocialCompassDatabase.injectTestDatabase(
+                Room.inMemoryDatabaseBuilder(context, SocialCompassDatabase.class)
+                        .allowMainThreadQueries()
+                        .build()
+        );
+
+        socialCompassDatabase = SocialCompassDatabase.getInstance(context);
+        labeledLocationDao = socialCompassDatabase.getLabeledLocationDao();
+
+        ServerAPI.getInstance().asyncPutLabeledLocation(testLocation1).get();
+        ServerAPI.getInstance().asyncPutLabeledLocation(testLocation2).get();
+        ServerAPI.getInstance().asyncPutLabeledLocation(testLocation3).get();
+        ServerAPI.getInstance().asyncPutLabeledLocation(testLocation4).get();
     }
 
     @After
-    public void cleanServer() {
-        locAPI.deleteFriend(testLoc1);
-        locAPI.deleteFriend(testLoc2);
-        locAPI.deleteFriend(testLoc3);
-        locAPI.deleteFriend(testLoc4);
+    public void destroy() throws ExecutionException, InterruptedException {
+        socialCompassDatabase.close();
 
+        ServerAPI.getInstance().asyncDeleteLabeledLocation(testLocation1).get();
+        ServerAPI.getInstance().asyncDeleteLabeledLocation(testLocation2).get();
+        ServerAPI.getInstance().asyncDeleteLabeledLocation(testLocation3).get();
+        ServerAPI.getInstance().asyncDeleteLabeledLocation(testLocation4).get();
     }
 
-        @Before
-        public void createDatabase() {
-            Context context = ApplicationProvider.getApplicationContext();
+    @Test
+    public void US2StoryTest() {
+        addFriend(testLocation1);
 
-            friendDatabase = Room.inMemoryDatabaseBuilder(context, FriendDatabase.class)
-                    .allowMainThreadQueries()
-                    .build();
+        Assert.assertNotNull(labeledLocationDao.selectLabeledLocationWithoutLiveData(testLocation1.getPublicCode()));
+        Assert.assertNull(labeledLocationDao.selectLabeledLocationWithoutLiveData(testLocation2.getPublicCode()));
+        Assert.assertNull(labeledLocationDao.selectLabeledLocationWithoutLiveData(testLocation3.getPublicCode()));
+        Assert.assertNull(labeledLocationDao.selectLabeledLocationWithoutLiveData(testLocation4.getPublicCode()));
 
-            FriendDatabase.injectTestDatabase(friendDatabase);
+        addFriend(testLocation2);
 
-            friendAccountDao = friendDatabase.getFriendDao();
-        }
+        Assert.assertNotNull(labeledLocationDao.selectLabeledLocationWithoutLiveData(testLocation1.getPublicCode()));
+        Assert.assertNotNull(labeledLocationDao.selectLabeledLocationWithoutLiveData(testLocation2.getPublicCode()));
+        Assert.assertNull(labeledLocationDao.selectLabeledLocationWithoutLiveData(testLocation3.getPublicCode()));
+        Assert.assertNull(labeledLocationDao.selectLabeledLocationWithoutLiveData(testLocation4.getPublicCode()));
 
-        @After
-        public void closeDatabase() {
-            locAPI.deleteFriend(testLoc1);
-            locAPI.deleteFriend(testLoc2);
-            locAPI.deleteFriend(testLoc3);
-            friendDatabase.close();
-        }
+        addFriend(testLocation3);
 
-        @Test
-        public void US2StoryTest() {
+        Assert.assertNotNull(labeledLocationDao.selectLabeledLocationWithoutLiveData(testLocation1.getPublicCode()));
+        Assert.assertNotNull(labeledLocationDao.selectLabeledLocationWithoutLiveData(testLocation2.getPublicCode()));
+        Assert.assertNotNull(labeledLocationDao.selectLabeledLocationWithoutLiveData(testLocation3.getPublicCode()));
+        Assert.assertNull(labeledLocationDao.selectLabeledLocationWithoutLiveData(testLocation4.getPublicCode()));
 
-            addUser(testLoc1);
-            addUser(testLoc2);
-            assertNotNull(friendAccountDao.selectFriend(testLoc1.getId()));
-            assertNotNull(friendAccountDao.selectFriend(testLoc2.getId()));
-            assertNull(friendAccountDao.selectFriend(testLoc3.getId()));
-            assertNull(friendAccountDao.selectFriend(testLoc4.getId()));
+        addFriend(testLocation4);
 
-            addUser(testLoc3);
-            assertNotNull(friendAccountDao.selectFriend(testLoc1.getId()));
-            assertNotNull(friendAccountDao.selectFriend(testLoc2.getId()));
-            assertNotNull(friendAccountDao.selectFriend(testLoc3.getId()));
-            assertNull(friendAccountDao.selectFriend(testLoc4.getId()));
+        Assert.assertNotNull(labeledLocationDao.selectLabeledLocationWithoutLiveData(testLocation1.getPublicCode()));
+        Assert.assertNotNull(labeledLocationDao.selectLabeledLocationWithoutLiveData(testLocation2.getPublicCode()));
+        Assert.assertNotNull(labeledLocationDao.selectLabeledLocationWithoutLiveData(testLocation3.getPublicCode()));
+        Assert.assertNotNull(labeledLocationDao.selectLabeledLocationWithoutLiveData(testLocation4.getPublicCode()));
+    }
 
-            addUser(testLoc4);
-            assertNotNull(friendAccountDao.selectFriend(testLoc1.getId()));
-            assertNotNull(friendAccountDao.selectFriend(testLoc2.getId()));
-            assertNotNull(friendAccountDao.selectFriend(testLoc3.getId()));
-            assertNotNull(friendAccountDao.selectFriend(testLoc4.getId()));
+    public void addFriend(LabeledLocation labeledLocation) {
+        var scenario = ActivityScenario.launch(AddFriendActivity.class);
+        scenario.moveToState(Lifecycle.State.CREATED);
+        scenario.moveToState(Lifecycle.State.STARTED);
 
-        }
-
-        public void addUser(FriendAccount friend) {
-            var scenario = ActivityScenario.launch(AddFriendActivity.class);
-            scenario.moveToState(Lifecycle.State.CREATED);
-            scenario.moveToState(Lifecycle.State.STARTED);
-
-            scenario.onActivity(activity -> {
-                EditText addUID = activity.findViewById(R.id.promptUID);
-                addUID.setText(friend.getPublicID());
-                Button addButton = activity.findViewById(R.id.addButton);
-                addButton.performClick();
-            });
-        }
+        scenario.onActivity(activity -> {
+            activity.getFriendUIDEditText().setText(labeledLocation.getPublicCode());
+            activity.getFriendUIDEditText().onEditorAction(EditorInfo.IME_ACTION_DONE);
+            activity.getAddFriendButton().performClick();
+        });
+    }
 }
