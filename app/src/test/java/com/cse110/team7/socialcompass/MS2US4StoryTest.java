@@ -1,5 +1,9 @@
 package com.cse110.team7.socialcompass;
 
+import static org.mockserver.integration.ClientAndServer.startClientAndServer;
+import static org.mockserver.model.HttpRequest.request;
+import static org.mockserver.model.HttpResponse.response;
+
 import android.content.Context;
 import android.view.inputmethod.EditorInfo;
 
@@ -26,6 +30,8 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockserver.client.MockServerClient;
+import org.mockserver.integration.ClientAndServer;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.Shadows;
 import org.robolectric.shadows.ShadowLooper;
@@ -54,6 +60,9 @@ public class MS2US4StoryTest {
     private LabeledLocationDao labeledLocationDao;
     private LabeledLocationRepository labeledLocationRepository;
 
+    private ClientAndServer mockServer;
+    private MockServerClient client;
+
     @Before
     public void init() throws ExecutionException, InterruptedException {
         Context context = ApplicationProvider.getApplicationContext();
@@ -68,14 +77,17 @@ public class MS2US4StoryTest {
         labeledLocationDao = socialCompassDatabase.getLabeledLocationDao();
         labeledLocationRepository = new LabeledLocationRepository(labeledLocationDao);
 
-        ServerAPI.getInstance().asyncPutLabeledLocation(testLocation1).get();
+        mockServer = startClientAndServer(1080);
+
+        ServerAPI.getInstance().changeEndpoint("http://localhost:1080");
+        client = new MockServerClient("localhost", 1080);
+        setupMockPutServer(testLocation1, client);
     }
 
     @After
     public void destroy() throws ExecutionException, InterruptedException {
         socialCompassDatabase.close();
-
-        ServerAPI.getInstance().asyncDeleteLabeledLocation(testLocation1).get();
+        mockServer.close();
     }
 
     @Test
@@ -126,8 +138,8 @@ public class MS2US4StoryTest {
 //            var temp = activity.getCompass().getLabeledLocationDisplayMap();
 //
 //            Assert.assertEquals(Double.compare(
-//                    AngleCalculator.calculateAngle(currentCoordinate, testLocation1.getCoordinate()),
-//                    Objects.requireNonNull(temp.get(testLocation1.getPublicCode())).getBearing()),
+//                            AngleCalculator.calculateAngle(currentCoordinate, testLocation1.getCoordinate()),
+//                            Objects.requireNonNull(temp.get(testLocation1.getPublicCode())).getBearing()),
 //                    0);
 //
 //            testLocation1.setLatitude(20);
@@ -135,7 +147,7 @@ public class MS2US4StoryTest {
 //            testLocation1.setUpdatedAt(Instant.now().getEpochSecond() + 10);
 //
 //            try {
-//                ServerAPI.getInstance().asyncPutLabeledLocation(testLocation1).get();
+//                setupMockPutServer(testLocation1, client);
 //                Thread.sleep(6000);
 //                labeledLocationRepository.syncedSelectLabeledLocation(testLocation1.getPublicCode());
 //            } catch (ExecutionException | InterruptedException e) {
@@ -145,17 +157,37 @@ public class MS2US4StoryTest {
 //            labeledLocationRepository.syncedSelectLabeledLocation(testLocation1.getPublicCode()).observeForever(labeledLocation -> {
 //            });
 //
-////            ShadowLooper shadowLooper = Shadows.shadowOf(activity.getMainLooper());
-////            shadowLooper.runToEndOfTasks();
+//            ShadowLooper shadowLooper = Shadows.shadowOf(activity.getMainLooper());
+//            shadowLooper.runToEndOfTasks();
 //
-////            try {
-////                Assert.assertTrue(countDownLatch.await(12, TimeUnit.SECONDS));
-////            } catch (InterruptedException e) {
-////                throw new RuntimeException(e);
-////            }
-////
-////            Assert.assertTrue(testLocation1.getCoordinate().equals(Objects.requireNonNull(temp.get(testLocation1.getPublicCode())).getLabeledLocation().getCoordinate()));
+//            try {
+//                Assert.assertTrue(countDownLatch.await(12, TimeUnit.SECONDS));
+//            } catch (InterruptedException e) {
+//                throw new RuntimeException(e);
+//            }
+//
+//            Assert.assertTrue(testLocation1.getCoordinate().equals(Objects.requireNonNull(temp.get(testLocation1.getPublicCode())).getLabeledLocation().getCoordinate()));
 //        });
 //    }
 
+    public void setupMockPutServer(LabeledLocation testLocation, MockServerClient client) {
+
+        client.when(
+                        request()
+                                .withMethod("GET")
+                                .withPath("/location/" + testLocation.getPublicCode())
+                )
+                .respond(
+                        response()
+                                .withStatusCode(200)
+                                .withBody("{\n" +
+                                        "  \"public_code\": \""+ testLocation.getPublicCode() + "\",\n" +
+                                        "  \"label\": \""+ testLocation.getLabel() + "\",\n" +
+                                        "  \"latitude\": "+ testLocation.getLatitude() + ",\n" +
+                                        "  \"longitude\": "+ testLocation.getLongitude() + ",\n" +
+                                        "  \"created_at\": \"2023-02-18T12:00:00Z\",\n" +
+                                        "  \"updated_at\": \"2023-02-18T18:30:00Z\"\n" +
+                                        "}")
+                );
+    }
 }
