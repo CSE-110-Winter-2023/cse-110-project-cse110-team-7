@@ -10,6 +10,14 @@ import androidx.lifecycle.MutableLiveData;
 
 import com.cse110.team7.socialcompass.database.SocialCompassDatabase;
 import com.cse110.team7.socialcompass.models.Coordinate;
+import com.cse110.team7.socialcompass.models.Coordinate;
+
+import java.util.Calendar;
+import java.util.Date;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
 
 import java.util.Calendar;
 import java.util.Date;
@@ -168,8 +176,4 @@ public class LocationService {
         return formattedLastSignalTime;
     }
 
-    @VisibleForTesting
-    public static void clearLocationService() {
-        INSTANCE = null;
-    }
 }

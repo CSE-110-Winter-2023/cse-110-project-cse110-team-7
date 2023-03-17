@@ -1,5 +1,9 @@
 package com.cse110.team7.socialcompass;
 
+import static org.mockserver.integration.ClientAndServer.startClientAndServer;
+import static org.mockserver.model.HttpRequest.request;
+import static org.mockserver.model.HttpResponse.response;
+
 import android.content.Context;
 import android.content.DialogInterface;
 import android.view.inputmethod.EditorInfo;
@@ -19,10 +23,13 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockserver.client.MockServerClient;
+import org.mockserver.integration.ClientAndServer;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.shadows.ShadowAlertDialog;
 
 import java.util.concurrent.ExecutionException;
+
 
 /**
  * Tests User Story 1: Adding Friends to the Compass.
@@ -33,10 +40,13 @@ public class MS2US1StoryTest {
             .setLabel("Mom")
             .setLatitude(0)
             .setLongitude(10)
+            .setPublicCode("1234")
             .build();
 
     private SocialCompassDatabase socialCompassDatabase;
     private LabeledLocationDao labeledLocationDao;
+
+    private ClientAndServer mockServer;
 
     @Before
     public void init() throws ExecutionException, InterruptedException {
@@ -51,14 +61,33 @@ public class MS2US1StoryTest {
         socialCompassDatabase = SocialCompassDatabase.getInstance(context);
         labeledLocationDao = socialCompassDatabase.getLabeledLocationDao();
 
-        ServerAPI.getInstance().asyncPutLabeledLocation(testLocation).get();
+        mockServer = startClientAndServer(1080);
+
+        ServerAPI.getInstance().changeEndpoint("http://localhost:1080");
+                new MockServerClient("localhost", 1080)
+                .when(
+                        request()
+                                .withMethod("GET")
+                                .withPath("/location/1234")
+                )
+                .respond(
+                        response()
+                                .withStatusCode(200)
+                                .withBody("{\n" +
+                                        "  \"public_code\": \"1234\",\n" +
+                                        "  \"label\": \"Mom\",\n" +
+                                        "  \"latitude\": 0,\n" +
+                                        "  \"longitude\": 10,\n" +
+                                        "  \"created_at\": \"2023-02-18T12:00:00Z\",\n" +
+                                        "  \"updated_at\": \"2023-02-18T18:30:00Z\"\n" +
+                                        "}")
+                );
     }
 
     @After
-    public void destroy() throws ExecutionException, InterruptedException {
+    public void destroy() {
         socialCompassDatabase.close();
-
-        ServerAPI.getInstance().asyncDeleteLabeledLocation(testLocation).get();
+        mockServer.stop();
     }
 
     @Test

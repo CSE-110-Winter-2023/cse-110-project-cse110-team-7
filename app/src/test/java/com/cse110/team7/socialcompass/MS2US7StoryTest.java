@@ -16,6 +16,7 @@ import androidx.test.core.app.ActivityScenario;
 import androidx.test.core.app.ApplicationProvider;
 
 import com.cse110.team7.socialcompass.database.SocialCompassDatabase;
+
 import com.cse110.team7.socialcompass.server.ServerAPI;
 import com.cse110.team7.socialcompass.services.LocationService;
 import com.cse110.team7.socialcompass.services.OrientationService;
@@ -49,6 +50,7 @@ public class MS2US7StoryTest {
                         .allowMainThreadQueries()
                         .build()
         );
+        
 
         socialCompassDatabase = SocialCompassDatabase.getInstance(context);
 //        labeledLocationDao = socialCompassDatabase.getLabeledLocationDao();
@@ -65,6 +67,9 @@ public class MS2US7StoryTest {
     public void US7StoryTest() {
         var scenario = ActivityScenario.launch(CompassActivity.class);
 
+
+        LocationService locationService = LocationService.getInstance();
+        
         scenario.moveToState(Lifecycle.State.CREATED);
         scenario.moveToState(Lifecycle.State.STARTED);
 

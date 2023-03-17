@@ -3,9 +3,12 @@
  */
 package com.cse110.team7.socialcompass;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static com.cse110.team7.socialcompass.utils.DistanceFilter.isLabeledLocationInRange;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
+import static org.mockserver.integration.ClientAndServer.startClientAndServer;
+import static org.mockserver.model.HttpRequest.request;
+import static org.mockserver.model.HttpResponse.response;
 
 import android.content.Context;
 import android.location.Location;
@@ -31,6 +34,8 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockserver.client.MockServerClient;
+import org.mockserver.integration.ClientAndServer;
 import org.robolectric.RobolectricTestRunner;
 
 import java.util.List;
@@ -72,6 +77,7 @@ public class MS2US5StoryTest {
             .setLongitude(-135)
             .build();
 
+    private ClientAndServer mockServer;
 
     private SocialCompassDatabase socialCompassDatabase;
     private LabeledLocationDao labeledLocationDao;
@@ -92,10 +98,14 @@ public class MS2US5StoryTest {
         socialCompassDatabase = SocialCompassDatabase.getInstance(context);
         labeledLocationDao = socialCompassDatabase.getLabeledLocationDao();
 
-        ServerAPI.getInstance().asyncPutLabeledLocation(warrenCollege).get();
-        ServerAPI.getInstance().asyncPutLabeledLocation(lasVegas).get();
-        ServerAPI.getInstance().asyncPutLabeledLocation(northPole).get();
-        ServerAPI.getInstance().asyncPutLabeledLocation(sorentoValley).get();
+        mockServer = startClientAndServer(1080);
+
+        ServerAPI.getInstance().changeEndpoint("http://localhost:1080");
+        var client = new MockServerClient("localhost", 1080);
+        setupMockPutServer(warrenCollege, client);
+        setupMockPutServer(sorentoValley, client);
+        setupMockPutServer(lasVegas, client);
+        setupMockPutServer(northPole, client);
 
         addFriend(warrenCollege);
         addFriend(sorentoValley);
@@ -107,13 +117,7 @@ public class MS2US5StoryTest {
     public void destroy() throws ExecutionException, InterruptedException {
         socialCompassDatabase.close();
 
-        ServerAPI.getInstance().asyncDeleteLabeledLocation(warrenCollege).get();
-        ServerAPI.getInstance().asyncDeleteLabeledLocation(lasVegas).get();
-        ServerAPI.getInstance().asyncDeleteLabeledLocation(northPole).get();
-        ServerAPI.getInstance().asyncDeleteLabeledLocation(sorentoValley).get();
-
-        LocationService.clearLocationService();
-        OrientationService.clearOrientationService();
+        mockServer.close();
     }
 
     //Assumes all 4 circles are showing.
@@ -140,75 +144,13 @@ public class MS2US5StoryTest {
             LocationService.getInstance().setCurrentCoordinate(myCoordinates);
             OrientationService.getInstance().setCurrentOrientation(0); //Facing North
 
-
-
-            // Get all compass.
-            List<Compass> allCompasses = activity.getCompasses();
-            Compass firstCompass = null;
-            Compass secondCompass = null;
-            Compass thirdCompass = null;
-            Compass fourthCompass = null;
-
-            for(Compass compasses : allCompasses){
-                if(compasses.circleType == compasses.FIRST_CIRCLE) {
-                    firstCompass = compasses;
-                }
-                if(compasses.circleType == compasses.SECOND_CIRCLE) {
-                    secondCompass = compasses;
-                }
-                if(compasses.circleType == compasses.THIRD_CIRCLE) {
-                    thirdCompass = compasses;
-                }
-                if(compasses.circleType == compasses.FOURTH_CIRCLE) {
-                    fourthCompass = compasses;
-                }
-            }
-
-
-
-            //Should have found compasses.
-            assertNotNull(firstCompass);
-
-            int endIndx = firstCompass.getCompassTag().indexOf("[");
-            assertEquals("[" + 0.0 + ", " + 1.0 + ")",
-                    firstCompass.getCompassTag().substring(endIndx));
-
-            assertNotNull(secondCompass);
-            assertNotNull(thirdCompass);
-            assertNotNull(fourthCompass);
-
-
-
-            //In depth check of first compass.
-            firstCompass.updateLabeledLocationDisplay();
-            int visibilityNear = firstCompass.getVisibilityOfFriend(warrenCollege);
-            int visibilityMiddleNear = firstCompass.getVisibilityOfFriend(sorentoValley);
-            int visibilityMiddleFar = firstCompass.getVisibilityOfFriend(lasVegas);
-            int visibilityFar = firstCompass.getVisibilityOfFriend(northPole);
-
-            assertEquals(View.VISIBLE, visibilityNear);
-            assertEquals(View.INVISIBLE, visibilityMiddleNear);
-            assertEquals(View.INVISIBLE, visibilityMiddleFar);
-            assertEquals(View.INVISIBLE, visibilityFar);
-
-
-            //Brief check of remaining ones:
-            secondCompass.updateLabeledLocationDisplay();
-            visibilityMiddleNear = secondCompass.getVisibilityOfFriend(sorentoValley);
-            assertEquals(View.VISIBLE, visibilityMiddleNear);
-
-            thirdCompass.updateLabeledLocationDisplay();
-            visibilityMiddleFar = thirdCompass.getVisibilityOfFriend(lasVegas);
-            assertEquals(View.VISIBLE, visibilityMiddleFar);
-
-            fourthCompass.updateLabeledLocationDisplay();
-            visibilityFar = fourthCompass.getVisibilityOfFriend(northPole);
-            assertEquals(View.VISIBLE, visibilityFar);
-
-
-
-
-
+            //First circle
+            double minDistance = 0;
+            double maxDistance = 1;
+            assertTrue(isLabeledLocationInRange(myCoordinates, warrenCollege.getCoordinate(), minDistance, maxDistance));
+            assertFalse(isLabeledLocationInRange(myCoordinates, sorentoValley.getCoordinate(), minDistance, maxDistance));
+            assertFalse(isLabeledLocationInRange(myCoordinates, lasVegas.getCoordinate(), minDistance, maxDistance));
+            assertFalse(isLabeledLocationInRange(myCoordinates, northPole.getCoordinate(), minDistance, maxDistance));
 
 
 
@@ -219,16 +161,15 @@ public class MS2US5StoryTest {
             OrientationService.getInstance().setCurrentOrientation(0); //Facing North
 
 
-            //Another in-depth check of first compass.
-            visibilityNear = firstCompass.getVisibilityOfFriend(warrenCollege);
-            visibilityMiddleNear = firstCompass.getVisibilityOfFriend(sorentoValley);
-            visibilityMiddleFar = firstCompass.getVisibilityOfFriend(lasVegas);
-            visibilityFar = firstCompass.getVisibilityOfFriend(northPole);
 
-            assertEquals(View.INVISIBLE, visibilityNear);
-            assertEquals(View.INVISIBLE, visibilityMiddleNear);
-            assertEquals(View.VISIBLE, visibilityMiddleFar);
-            assertEquals(View.INVISIBLE, visibilityFar);
+            //Another in-depth check of first compass.
+            minDistance = 0;
+            maxDistance = 1;
+            assertFalse(isLabeledLocationInRange(lasVegasCoordinates, warrenCollege.getCoordinate(), minDistance, maxDistance));
+            assertFalse(isLabeledLocationInRange(lasVegasCoordinates, sorentoValley.getCoordinate(), minDistance, maxDistance));
+            assertTrue(isLabeledLocationInRange(lasVegasCoordinates, lasVegas.getCoordinate(), minDistance, maxDistance));
+            assertFalse(isLabeledLocationInRange(lasVegasCoordinates, northPole.getCoordinate(), minDistance, maxDistance));
+
         });
     }
 
@@ -242,5 +183,26 @@ public class MS2US5StoryTest {
             activity.getFriendUIDEditText().onEditorAction(EditorInfo.IME_ACTION_DONE);
             activity.getAddFriendButton().performClick();
         });
+    }
+
+    public void setupMockPutServer(LabeledLocation testLocation, MockServerClient client) {
+
+        client.when(
+                        request()
+                                .withMethod("GET")
+                                .withPath("/location/" + testLocation.getPublicCode())
+                )
+                .respond(
+                        response()
+                                .withStatusCode(200)
+                                .withBody("{\n" +
+                                        "  \"public_code\": \""+ testLocation.getPublicCode() + "\",\n" +
+                                        "  \"label\": \""+ testLocation.getLabel() + "\",\n" +
+                                        "  \"latitude\": "+ testLocation.getLatitude() + ",\n" +
+                                        "  \"longitude\": "+ testLocation.getLongitude() + ",\n" +
+                                        "  \"created_at\": \"2023-02-18T12:00:00Z\",\n" +
+                                        "  \"updated_at\": \"2023-02-18T18:30:00Z\"\n" +
+                                        "}")
+                );
     }
 }

@@ -1,6 +1,13 @@
 package com.cse110.team7.socialcompass;
 
-import static org.junit.Assert.*;
+import android.view.inputmethod.EditorInfo;
+
+import androidx.lifecycle.Lifecycle;
+import androidx.test.core.app.ActivityScenario;
+
+import com.cse110.team7.socialcompass.ui.Compass;
+
+import org.junit.Assert;
 
 import android.content.Context;
 import android.view.View;
@@ -28,381 +35,42 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
 
-import java.util.List;
-import java.util.concurrent.ExecutionException;
+import java.util.stream.Collectors;
 
 @RunWith(RobolectricTestRunner.class)
-public class MS2US6StoryTest   {
+public class MS2US6StoryTest {
 
-   private Coordinate myCoordinates = new Coordinate(32.880209067700804, -117.23403495767106);
+    @Test
+    public void testUS6() {
+        var scenarioOne = ActivityScenario.launch(CompassActivity.class);
+        scenarioOne.moveToState(Lifecycle.State.CREATED);
+        scenarioOne.moveToState(Lifecycle.State.STARTED);
 
-   private static final LabeledLocation warrenCollege = new LabeledLocation.Builder()
-           .setLabel("Friend1")
-           .setLatitude(32.88241546981538)
-           .setLongitude(-117.2340876160442)
-           .build();
+        scenarioOne.onActivity(activity -> {
+            var compasses = activity.getCompasses();
 
-   private static final LabeledLocation sorrentoValley = new LabeledLocation.Builder()
-           .setLabel("Friend2")
-           .setLatitude(32.89520798145009)
-           .setLongitude(-117.18983658532336)
-           .build();
+            Assert.assertEquals(2, activity.getZoomLevel());
+            Assert.assertEquals(2, compasses.stream().filter(Compass::isHidden).count());
 
-   private static final LabeledLocation northClairemont = new LabeledLocation.Builder()
-           .setLabel("Friend3")
-           .setLatitude(32.8328259)
-           .setLongitude(-117.2000351)
-           .build();
+            activity.getZoomInButton().performClick();
 
-   private static final LabeledLocation lasVegas = new LabeledLocation.Builder()
-           .setLabel("Friend4")
-           .setLatitude(36.117211715254264)
-           .setLongitude(-115.17245155490667)
-           .build();
+            Assert.assertEquals(2, activity.getZoomLevel());
+            Assert.assertEquals(2, compasses.stream().filter(Compass::isHidden).count());
 
-   private SocialCompassDatabase socialCompassDatabase;
-   private LabeledLocationDao labeledLocationDao;
+            activity.getZoomOutButton().performClick();
 
-   @Before
-   public void init() throws ExecutionException, InterruptedException {
-      Context context = ApplicationProvider.getApplicationContext();
+            Assert.assertEquals(3, activity.getZoomLevel());
+            Assert.assertEquals(1, compasses.stream().filter(Compass::isHidden).count());
 
-      SocialCompassDatabase.injectTestDatabase(
-              Room.inMemoryDatabaseBuilder(context, SocialCompassDatabase.class)
-                      .allowMainThreadQueries()
-                      .build()
-      );
+            activity.getZoomOutButton().performClick();
 
-      socialCompassDatabase = SocialCompassDatabase.getInstance(context);
-      labeledLocationDao = socialCompassDatabase.getLabeledLocationDao();
+            Assert.assertEquals(4, activity.getZoomLevel());
+            Assert.assertEquals(0, compasses.stream().filter(Compass::isHidden).count());
 
-      ServerAPI.getInstance().asyncPutLabeledLocation(warrenCollege).get();
-      ServerAPI.getInstance().asyncPutLabeledLocation(sorrentoValley).get();
-      ServerAPI.getInstance().asyncPutLabeledLocation(northClairemont).get();
-      ServerAPI.getInstance().asyncPutLabeledLocation(lasVegas).get();
+            activity.getZoomOutButton().performClick();
 
-      // add three friends
-      addFriend(warrenCollege);
-      addFriend(sorrentoValley);
-      addFriend(northClairemont);
-      addFriend(lasVegas);
-   }
-
-   @After
-   public void destroy() throws ExecutionException, InterruptedException {
-      socialCompassDatabase.close();
-
-      ServerAPI.getInstance().asyncDeleteLabeledLocation(warrenCollege).get();
-      ServerAPI.getInstance().asyncDeleteLabeledLocation(sorrentoValley).get();
-      ServerAPI.getInstance().asyncDeleteLabeledLocation(northClairemont).get();
-      ServerAPI.getInstance().asyncDeleteLabeledLocation(lasVegas).get();
-
-   }
-
-   @Test
-   public void US6StoryTest() {
-
-      // Startup From Main Activity
-      var scenarioOne = ActivityScenario.launch(MainActivity.class);
-      scenarioOne.moveToState(Lifecycle.State.CREATED);
-      scenarioOne.moveToState(Lifecycle.State.STARTED);
-
-      scenarioOne.onActivity(activity -> {
-         activity.getNameEditText().setText("UCSD Location");
-         activity.getNameEditText().onEditorAction(EditorInfo.IME_ACTION_DONE);
-         activity.getOkButton().performClick();
-      });
-
-
-      var scenarioTwo = ActivityScenario.launch(CompassActivity.class);
-      scenarioTwo.onActivity(activity -> {
-         //Setting Location to UCSD:
-         LocationService.getInstance().unregisterLocationUpdateListener();
-         OrientationService.getInstance().unregisterSensorEventUpdateListener();
-
-         LocationService.getInstance().setCurrentCoordinate(myCoordinates);
-         OrientationService.getInstance().setCurrentOrientation(0); //Facing North
-
-         // Get all compass.
-         List<Compass> allCompasses = activity.getCompasses();
-         Compass firstCompass = null;
-         Compass secondCompass = null;
-         Compass thirdCompass = null;
-         Compass fourthCompass = null;
-
-         for(Compass compasses : allCompasses){
-            if(compasses.circleType == compasses.FIRST_CIRCLE) {
-               firstCompass = compasses;
-            }
-            if(compasses.circleType == compasses.SECOND_CIRCLE) {
-               secondCompass = compasses;
-            }
-            if(compasses.circleType == compasses.THIRD_CIRCLE) {
-               thirdCompass = compasses;
-            }
-            if(compasses.circleType == compasses.FOURTH_CIRCLE) {
-               fourthCompass = compasses;
-            }
-         }
-
-         //Should have found compasses.
-         assertNotNull(firstCompass);
-
-         int endIndx = firstCompass.getCompassTag().indexOf("[");
-         assertEquals("[" + 0.0 + ", " + 1.0 + ")",
-                 firstCompass.getCompassTag().substring(endIndx));
-
-         assertNotNull(secondCompass);
-         assertNotNull(thirdCompass);
-         assertNotNull(fourthCompass);
-
-         //In depth check of first compass.
-         assertFalse(firstCompass.getHidden());
-         assertFalse(secondCompass.getHidden());
-         assertTrue(thirdCompass.getHidden());
-         assertTrue(fourthCompass.getHidden());
-         firstCompass.updateLabeledLocationDisplay();
-         int visibilityNear = firstCompass.getVisibilityOfFriend(warrenCollege);
-         int visibilityMiddleNear = firstCompass.getVisibilityOfFriend(sorrentoValley);
-         int visibilityMiddleFar = firstCompass.getVisibilityOfFriend(northClairemont);
-         int visibilityFar = firstCompass.getVisibilityOfFriend(lasVegas);
-
-         assertEquals(View.VISIBLE, visibilityNear);
-         assertEquals(View.INVISIBLE, visibilityMiddleNear);
-         assertEquals(View.INVISIBLE, visibilityMiddleFar);
-         assertEquals(View.INVISIBLE, visibilityFar);
-
-         //In depth check of other compasses.
-         secondCompass.updateLabeledLocationDisplay();
-         visibilityMiddleNear = secondCompass.getVisibilityOfFriend(sorrentoValley);
-         assertEquals(View.VISIBLE, visibilityMiddleNear);
-
-         secondCompass.updateLabeledLocationDisplay();
-         visibilityMiddleFar = secondCompass.getVisibilityOfFriend(northClairemont);
-         assertEquals(View.VISIBLE, visibilityMiddleFar);
-
-         thirdCompass.updateLabeledLocationDisplay();
-         visibilityFar = thirdCompass.getVisibilityOfFriend(lasVegas);
-         assertEquals(View.VISIBLE, visibilityFar);
-
-         // First Zoom Out
-         Button zoomOutButton = (Button) activity.findViewById(R.id.zoomOutButton);
-         zoomOutButton.performClick();
-
-         //In depth check of first compass.
-         assertFalse(firstCompass.getHidden());
-         assertFalse(secondCompass.getHidden());
-         assertFalse(thirdCompass.getHidden());
-         assertTrue(fourthCompass.getHidden());
-         firstCompass.updateLabeledLocationDisplay();
-         visibilityNear = firstCompass.getVisibilityOfFriend(warrenCollege);
-         visibilityMiddleNear = firstCompass.getVisibilityOfFriend(sorrentoValley);
-         visibilityMiddleFar = firstCompass.getVisibilityOfFriend(northClairemont);
-         visibilityFar = firstCompass.getVisibilityOfFriend(lasVegas);
-
-         assertEquals(View.VISIBLE, visibilityNear);
-         assertEquals(View.INVISIBLE, visibilityMiddleNear);
-         assertEquals(View.INVISIBLE, visibilityMiddleFar);
-         assertEquals(View.INVISIBLE, visibilityFar);
-
-         //In depth check of other compasses.
-         secondCompass.updateLabeledLocationDisplay();
-         visibilityMiddleNear = secondCompass.getVisibilityOfFriend(sorrentoValley);
-         assertEquals(View.VISIBLE, visibilityMiddleNear);
-
-         secondCompass.updateLabeledLocationDisplay();
-         visibilityMiddleFar = secondCompass.getVisibilityOfFriend(northClairemont);
-         assertEquals(View.VISIBLE, visibilityMiddleFar);
-
-         thirdCompass.updateLabeledLocationDisplay();
-         visibilityFar = thirdCompass.getVisibilityOfFriend(lasVegas);
-         assertEquals(View.VISIBLE, visibilityFar);
-
-         // SECOND zoom out
-         zoomOutButton.performClick();
-
-         //In depth check of first compass.
-         assertFalse(firstCompass.getHidden());
-         assertFalse(secondCompass.getHidden());
-         assertFalse(thirdCompass.getHidden());
-         assertFalse(fourthCompass.getHidden());
-         firstCompass.updateLabeledLocationDisplay();
-         visibilityNear = firstCompass.getVisibilityOfFriend(warrenCollege);
-         visibilityMiddleNear = firstCompass.getVisibilityOfFriend(sorrentoValley);
-         visibilityMiddleFar = firstCompass.getVisibilityOfFriend(northClairemont);
-         visibilityFar = firstCompass.getVisibilityOfFriend(lasVegas);
-
-         assertEquals(View.VISIBLE, visibilityNear);
-         assertEquals(View.INVISIBLE, visibilityMiddleNear);
-         assertEquals(View.INVISIBLE, visibilityMiddleFar);
-         assertEquals(View.INVISIBLE, visibilityFar);
-
-         //In depth check of other compasses.
-         secondCompass.updateLabeledLocationDisplay();
-         visibilityMiddleNear = secondCompass.getVisibilityOfFriend(sorrentoValley);
-         assertEquals(View.VISIBLE, visibilityMiddleNear);
-
-         secondCompass.updateLabeledLocationDisplay();
-         visibilityMiddleFar = secondCompass.getVisibilityOfFriend(northClairemont);
-         assertEquals(View.VISIBLE, visibilityMiddleFar);
-
-         thirdCompass.updateLabeledLocationDisplay();
-         visibilityFar = thirdCompass.getVisibilityOfFriend(lasVegas);
-         assertEquals(View.VISIBLE, visibilityFar);
-
-         // THIRD zoom out
-         zoomOutButton.performClick();
-
-         //In depth check of first compass.
-         assertFalse(firstCompass.getHidden());
-         assertFalse(secondCompass.getHidden());
-         assertFalse(thirdCompass.getHidden());
-         assertFalse(fourthCompass.getHidden());
-         firstCompass.updateLabeledLocationDisplay();
-         visibilityNear = firstCompass.getVisibilityOfFriend(warrenCollege);
-         visibilityMiddleNear = firstCompass.getVisibilityOfFriend(sorrentoValley);
-         visibilityMiddleFar = firstCompass.getVisibilityOfFriend(northClairemont);
-         visibilityFar = firstCompass.getVisibilityOfFriend(lasVegas);
-
-         assertEquals(View.VISIBLE, visibilityNear);
-         assertEquals(View.INVISIBLE, visibilityMiddleNear);
-         assertEquals(View.INVISIBLE, visibilityMiddleFar);
-         assertEquals(View.INVISIBLE, visibilityFar);
-
-         //In depth check of other compasses.
-         secondCompass.updateLabeledLocationDisplay();
-         visibilityMiddleNear = secondCompass.getVisibilityOfFriend(sorrentoValley);
-         assertEquals(View.VISIBLE, visibilityMiddleNear);
-
-         secondCompass.updateLabeledLocationDisplay();
-         visibilityMiddleFar = secondCompass.getVisibilityOfFriend(northClairemont);
-         assertEquals(View.VISIBLE, visibilityMiddleFar);
-
-         thirdCompass.updateLabeledLocationDisplay();
-         visibilityFar = thirdCompass.getVisibilityOfFriend(lasVegas);
-         assertEquals(View.VISIBLE, visibilityFar);
-
-         // Zoom In
-         Button zoomInButton = (Button) activity.findViewById(R.id.zoomInButton);
-         zoomInButton.performClick();
-         zoomInButton.performClick();
-
-         //In depth check of first compass.
-         assertFalse(firstCompass.getHidden());
-         assertFalse(secondCompass.getHidden());
-         assertFalse(thirdCompass.getHidden());
-         assertTrue(fourthCompass.getHidden());
-         firstCompass.updateLabeledLocationDisplay();
-         visibilityNear = firstCompass.getVisibilityOfFriend(warrenCollege);
-         visibilityMiddleNear = firstCompass.getVisibilityOfFriend(sorrentoValley);
-         visibilityMiddleFar = firstCompass.getVisibilityOfFriend(northClairemont);
-         visibilityFar = firstCompass.getVisibilityOfFriend(lasVegas);
-
-         assertEquals(View.VISIBLE, visibilityNear);
-         assertEquals(View.INVISIBLE, visibilityMiddleNear);
-         assertEquals(View.INVISIBLE, visibilityMiddleFar);
-         assertEquals(View.INVISIBLE, visibilityFar);
-
-         //In depth check of other compasses.
-         secondCompass.updateLabeledLocationDisplay();
-         visibilityMiddleNear = secondCompass.getVisibilityOfFriend(sorrentoValley);
-         assertEquals(View.VISIBLE, visibilityMiddleNear);
-
-         secondCompass.updateLabeledLocationDisplay();
-         visibilityMiddleFar = secondCompass.getVisibilityOfFriend(northClairemont);
-         assertEquals(View.VISIBLE, visibilityMiddleFar);
-
-         thirdCompass.updateLabeledLocationDisplay();
-         visibilityFar = thirdCompass.getVisibilityOfFriend(lasVegas);
-         assertEquals(View.VISIBLE, visibilityFar);
-
-         // Second Zoom In
-         zoomInButton.performClick();
-         //In depth check of first compass.
-         assertFalse(firstCompass.getHidden());
-         assertFalse(secondCompass.getHidden());
-         assertTrue(thirdCompass.getHidden());
-         assertTrue(fourthCompass.getHidden());
-         firstCompass.updateLabeledLocationDisplay();
-         visibilityNear = firstCompass.getVisibilityOfFriend(warrenCollege);
-         visibilityMiddleNear = firstCompass.getVisibilityOfFriend(sorrentoValley);
-         visibilityMiddleFar = firstCompass.getVisibilityOfFriend(northClairemont);
-         visibilityFar = firstCompass.getVisibilityOfFriend(lasVegas);
-
-         assertEquals(View.VISIBLE, visibilityNear);
-         assertEquals(View.INVISIBLE, visibilityMiddleNear);
-         assertEquals(View.INVISIBLE, visibilityMiddleFar);
-         assertEquals(View.INVISIBLE, visibilityFar);
-
-         //In depth check of other compasses.
-         secondCompass.updateLabeledLocationDisplay();
-         visibilityMiddleNear = secondCompass.getVisibilityOfFriend(sorrentoValley);
-         assertEquals(View.VISIBLE, visibilityMiddleNear);
-
-         secondCompass.updateLabeledLocationDisplay();
-         visibilityMiddleFar = secondCompass.getVisibilityOfFriend(northClairemont);
-         assertEquals(View.VISIBLE, visibilityMiddleFar);
-
-         thirdCompass.updateLabeledLocationDisplay();
-         visibilityFar = thirdCompass.getVisibilityOfFriend(lasVegas);
-         assertEquals(View.VISIBLE, visibilityFar);
-
-         // Third Zoom In
-         zoomInButton.performClick();
-
-         //In depth check of first compass.
-         assertFalse(firstCompass.getHidden());
-         assertTrue(secondCompass.getHidden());
-         assertTrue(thirdCompass.getHidden());
-         assertTrue(fourthCompass.getHidden());
-         firstCompass.updateLabeledLocationDisplay();
-         visibilityNear = firstCompass.getVisibilityOfFriend(warrenCollege);
-         visibilityMiddleNear = firstCompass.getVisibilityOfFriend(sorrentoValley);
-         visibilityMiddleFar = firstCompass.getVisibilityOfFriend(northClairemont);
-         visibilityFar = firstCompass.getVisibilityOfFriend(lasVegas);
-
-         assertEquals(View.VISIBLE, visibilityNear);
-         assertEquals(View.INVISIBLE, visibilityMiddleNear);
-         assertEquals(View.INVISIBLE, visibilityMiddleFar);
-         assertEquals(View.INVISIBLE, visibilityFar);
-
-         //In depth check of other compasses.
-         secondCompass.updateLabeledLocationDisplay();
-         visibilityMiddleNear = secondCompass.getVisibilityOfFriend(sorrentoValley);
-         assertEquals(View.VISIBLE, visibilityMiddleNear);
-
-         secondCompass.updateLabeledLocationDisplay();
-         visibilityMiddleFar = secondCompass.getVisibilityOfFriend(northClairemont);
-         assertEquals(View.VISIBLE, visibilityMiddleFar);
-
-         thirdCompass.updateLabeledLocationDisplay();
-         visibilityFar = thirdCompass.getVisibilityOfFriend(lasVegas);
-         assertEquals(View.VISIBLE, visibilityFar);
-
-         zoomOutButton.performClick();
-         activity.recreate();
-         assertFalse(firstCompass.getHidden());
-         assertFalse(secondCompass.getHidden());
-         assertTrue(thirdCompass.getHidden());
-         assertTrue(fourthCompass.getHidden());
-
-      });
-   }
-
-
-   // do you see the zoom in and out buttons?
-
-   public void addFriend(LabeledLocation labeledLocation) {
-      var scenario = ActivityScenario.launch(AddFriendActivity.class);
-      scenario.moveToState(Lifecycle.State.CREATED);
-      scenario.moveToState(Lifecycle.State.STARTED);
-
-      scenario.onActivity(activity -> {
-         activity.getFriendUIDEditText().setText(labeledLocation.getPublicCode());
-         activity.getFriendUIDEditText().onEditorAction(EditorInfo.IME_ACTION_DONE);
-         activity.getAddFriendButton().performClick();
-      });
-   }
+            Assert.assertEquals(4, activity.getZoomLevel());
+            Assert.assertEquals(0, compasses.stream().filter(Compass::isHidden).count());
+        });
+    }
 }
-
-
