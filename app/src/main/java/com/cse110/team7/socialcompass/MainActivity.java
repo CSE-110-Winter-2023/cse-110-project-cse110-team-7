@@ -55,7 +55,7 @@ public class MainActivity extends AppCompatActivity  {
         }
 
         nameEditText.setOnEditorActionListener((view, actionId, event) -> {
-            if (actionId != EditorInfo.IME_ACTION_DONE) {
+            if (actionId != EditorInfo.IME_ACTION_DONE && actionId != EditorInfo.IME_ACTION_NEXT) {
                 return false;
             }
 
@@ -103,7 +103,16 @@ public class MainActivity extends AppCompatActivity  {
         editor.putString("userPublicCode", userLabeledLocation.getPublicCode());
         editor.apply();
 
-        var intent = new Intent(this, CompassActivity.class);
+        TextView mockEndpoint = findViewById(R.id.mockEndpointView);
+        String mockEndpointStr = mockEndpoint.getText().toString();
+
+        if(mockEndpointStr == null || mockEndpointStr.equals("")) {
+            mockEndpointStr = "https://socialcompass.goto.ucsd.edu/";
+        }
+
+        Intent intent = new Intent(this, CompassActivity.class);
+        intent.putExtra("endpoint", mockEndpointStr);
+
         startActivity(intent);
     }
 
