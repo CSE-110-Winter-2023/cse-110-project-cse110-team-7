@@ -1,82 +1,118 @@
 package com.cse110.team7.socialcompass;
 
+import androidx.annotation.Nullable;
+import androidx.annotation.VisibleForTesting;
 import androidx.appcompat.app.AppCompatActivity;
 
-import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
-import android.text.TextUtils;
+import android.util.Log;
 import android.view.View;
-import android.view.WindowManager;
+import android.view.inputmethod.EditorInfo;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.cse110.team7.socialcompass.backend.FriendAccountDao;
-import com.cse110.team7.socialcompass.backend.FriendDatabase;
-import com.cse110.team7.socialcompass.backend.LocationAPI;
-import com.cse110.team7.socialcompass.models.FriendAccount;
-import com.cse110.team7.socialcompass.models.LatLong;
-import com.cse110.team7.socialcompass.utils.ShowAlert;
+import com.cse110.team7.socialcompass.database.SocialCompassDatabase;
+import com.cse110.team7.socialcompass.server.LabeledLocationRepository;
+import com.cse110.team7.socialcompass.server.ServerAPI;
+import com.cse110.team7.socialcompass.utils.Alert;
 
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 
 public class AddFriendActivity extends AppCompatActivity {
-    private LocationAPI locationAPI;
-    private Future<FriendAccount> future;
-    private FriendAccount friendAccount;
-    private EditText addUID;
-    private String publicID;
+    private EditText friendUIDEditText;
+    private TextView userUIDTextView;
+    private Button addFriendButton;
+    private String friendUID;
+    private LabeledLocationRepository repo;
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_add_friend);
-        this.locationAPI = LocationAPI.provide();
-        loadMyUID();
+
+        friendUIDEditText = findViewById(R.id.friendUIDEditText);
+        userUIDTextView = findViewById(R.id.userUIDTextView);
+        addFriendButton = findViewById(R.id.add_friend_button);
+
+        var preferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+        var userPublicCode = preferences.getString("userPublicCode", null);
+
+        if (userPublicCode != null) {
+            userUIDTextView.setText(getString(R.string.add_friend_display_user_uid, userPublicCode));
+        }
+
+        var database = SocialCompassDatabase.getInstance(this);
+        var labeledLocationDao = database.getLabeledLocationDao();
+        repo = new LabeledLocationRepository(labeledLocationDao);
+
+        friendUIDEditText.setOnEditorActionListener((view, actionId, event) -> {
+            if (actionId != EditorInfo.IME_ACTION_DONE) {
+                return false;
+            }
+
+            var nextFriendUID = friendUIDEditText.getText().toString();
+            Log.i(AddFriendActivity.class.getName(), "adding friend with uid: " + nextFriendUID);
+
+            if (nextFriendUID.isBlank()) {
+                Log.w(AddFriendActivity.class.getName(), "friend uid is blank");
+                Alert.show(this, "friend uid cannot be empty!");
+                return false;
+            }
+
+            friendUID = nextFriendUID;
+
+            return true;
+        });
     }
 
-    private void loadMyUID(){
-        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
-        TextView myUIDView = findViewById(R.id.displayUID);
-        String data = preferences.getString("myUID", "N/A");
-        myUIDView.setText("Your UID: " + data);
-    }
-
-    public void addFriend(String publicID) throws ExecutionException, InterruptedException {
-        if(publicID.isEmpty()) {
-            ShowAlert.alert(this, "Please enter a UID.");
+    public void onAddFriendButtonClicked(View view) {
+        if (friendUID == null || friendUID.isBlank()) {
+            Log.w(AddFriendActivity.class.getName(), "friend uid is blank");
+            Alert.show(this, "friend uid cannot be empty!");
             return;
         }
 
-        future = locationAPI.getFriendAsync(publicID);
+        var friendLabeledLocationFuture = ServerAPI.getInstance().asyncGetLabeledLocation(friendUID);
 
-        friendAccount = future.get();
+        try {
+            var friendLabeledLocation = friendLabeledLocationFuture.get(5, TimeUnit.SECONDS);
 
-        if(friendAccount == null) {
-            ShowAlert.alert(this, "Invalid UID.");
-            return;
+            if (friendLabeledLocation == null) {
+                Alert.show(this, "friend UID does not exist on server!");
+                return;
+            }
+
+            repo.upsertLocalLabeledLocation(friendLabeledLocation);
+            finish();
+        } catch (Exception exception) {
+            exception.printStackTrace();
+            Alert.show(this, "unexpected exception occurred!");
         }
-
-        FriendDatabase friendDao = FriendDatabase.getInstance(getApplicationContext());
-        final FriendAccountDao db = friendDao.getFriendDao();
-        db.insertFriend(friendAccount);
-
-        addUID.getText().clear();
     }
 
-    public void onAddFriendBtnClicked(View view) throws ExecutionException, InterruptedException {
-        addUID = findViewById(R.id.promptUID);
-        publicID = addUID.getText().toString();
-        addFriend(publicID);
+    @VisibleForTesting
+    public EditText getFriendUIDEditText() {
+        return friendUIDEditText;
     }
 
-    public void onBackBtnClicked(View view) {
-        Intent intent = new Intent(this, CompassActivity.class);
-        startActivity(intent);
+    @VisibleForTesting
+    public TextView getUserUIDTextView() {
+        return userUIDTextView;
+    }
+
+    @VisibleForTesting
+    public Button getAddFriendButton() {
+        return addFriendButton;
+    }
+
+    @VisibleForTesting
+    public String getFriendUID() {
+        return friendUID;
     }
 }

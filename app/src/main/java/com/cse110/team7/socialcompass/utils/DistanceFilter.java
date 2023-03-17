@@ -1,48 +1,49 @@
 package com.cse110.team7.socialcompass.utils;
 
-import com.cse110.team7.socialcompass.models.FriendAccount;
-import com.cse110.team7.socialcompass.models.LatLong;
 
-import java.util.List;
-import java.util.stream.Collectors;
+import com.cse110.team7.socialcompass.models.Coordinate;
+import com.cse110.team7.socialcompass.models.LabeledLocation;
 
+
+/**
+ * Determine the relationship the distance of a given location and a given range
+ */
 public class DistanceFilter {
-    public static boolean isFriendInRange(
-            FriendAccount friendAccount,
-            LatLong currentLocation,
+    /**
+     * Determine whether the given location lies within the given range around user location,
+     * the range is [minDistance, maxDistance)
+     *
+     * @param locationCoordinate the given location
+     * @param currentCoordinate user location
+     * @param minDistance minimum distance in range
+     * @param maxDistance maximum distance in range
+     * @return whether the location is in the given range  around user location or not
+     */
+    public static boolean isLabeledLocationInRange(
+            Coordinate locationCoordinate,
+            Coordinate currentCoordinate,
             double minDistance,
             double maxDistance
     ) {
-        double friendDistance = DistanceCalculator.calculateDistance(currentLocation, friendAccount.getLocation());
-        return Double.compare(maxDistance, friendDistance) > 0 && Double.compare(minDistance, friendDistance) <= 0;
-    }
-
-    public static boolean isFriendFurtherThanMaxDistance(
-            FriendAccount friendAccount,
-            LatLong currentLocation,
-            double maxDistance
-    ) {
-        double friendDistance = DistanceCalculator.calculateDistance(currentLocation, friendAccount.getLocation());
-        return Double.compare(maxDistance, friendDistance) <= 0;
+        double friendDistance = DistanceCalculator.calculateDistance(currentCoordinate, locationCoordinate);
+        return Double.compare(maxDistance, friendDistance) > 0
+                && Double.compare(minDistance, friendDistance) <= 0;
     }
 
     /**
-     * Filter friends by distance range, the result friends are within the range [minDistance, maxDistance)
-     * @param friendAccounts all friends to be filtered
-     * @param currentLocation current location of the user
-     * @param minDistance min distance in the range
-     * @param maxDistance max distance in the range
-     * @return filtered friends
+     * Determine whether the given location is farther than maximum distance in
+     *
+     * @param locationCoordinate the given location
+     * @param currentCoordinate user location
+     * @param maxDistance maximum distance in range
+     * @return whether the given location is farther than maximum distance in range
      */
-    public static List<FriendAccount> filterFriends(
-            List<FriendAccount> friendAccounts,
-            LatLong currentLocation,
-            double minDistance,
+    public static boolean isLabeledLocationFartherThanMaxDistance(
+            Coordinate locationCoordinate,
+            Coordinate currentCoordinate,
             double maxDistance
     ) {
-        return friendAccounts.stream().filter(friendAccount -> {
-            double friendDistance = DistanceCalculator.calculateDistance(currentLocation, friendAccount);
-            return Double.compare(maxDistance, friendDistance) > 0 && Double.compare(minDistance, friendDistance) <= 0;
-        }).collect(Collectors.toList());
+        double friendDistance = DistanceCalculator.calculateDistance(currentCoordinate, locationCoordinate);
+        return Double.compare(maxDistance, friendDistance) <= 0;
     }
 }

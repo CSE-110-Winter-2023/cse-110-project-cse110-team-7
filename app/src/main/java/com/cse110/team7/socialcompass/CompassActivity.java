@@ -1,242 +1,266 @@
 package com.cse110.team7.socialcompass;
 
-import android.content.Context;
+import android.Manifest;
 import android.content.Intent;
-import android.content.SharedPreferences;
-import android.content.res.Resources;
-import android.graphics.Color;
-import android.graphics.Typeface;
+import android.content.pm.PackageManager;
 import android.hardware.SensorManager;
 import android.location.LocationManager;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Looper;
 import android.preference.PreferenceManager;
+import android.util.Log;
 import android.view.View;
-import android.widget.ImageView;
-import android.widget.TextView;
+import android.view.WindowManager;
+import android.widget.Button;
 
+import androidx.activity.result.contract.ActivityResultContracts;
+import androidx.annotation.Nullable;
+import androidx.annotation.VisibleForTesting;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.constraintlayout.widget.ConstraintLayout;
+import androidx.core.app.ActivityCompat;
+import androidx.lifecycle.LiveData;
+import androidx.lifecycle.MutableLiveData;
 
-import com.cse110.team7.socialcompass.backend.FriendAccountDao;
-import com.cse110.team7.socialcompass.backend.FriendAccountRepository;
-import com.cse110.team7.socialcompass.backend.FriendDatabase;
-import com.cse110.team7.socialcompass.backend.LocationAPI;
-import com.cse110.team7.socialcompass.models.FriendAccount;
-import com.cse110.team7.socialcompass.models.LatLong;
+import com.cse110.team7.socialcompass.database.SocialCompassDatabase;
+import com.cse110.team7.socialcompass.models.LabeledLocation;
+import com.cse110.team7.socialcompass.server.LabeledLocationRepository;
 import com.cse110.team7.socialcompass.services.LocationService;
 import com.cse110.team7.socialcompass.services.OrientationService;
 import com.cse110.team7.socialcompass.ui.Compass;
-import com.cse110.team7.socialcompass.ui.LabelInformation;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.Executor;
-import java.util.concurrent.Executors;
+import java.util.stream.Collectors;
 
 public class CompassActivity extends AppCompatActivity {
+    private static final int MIN_ZOOM_LEVEL = 2;
+    private static final int MAX_ZOOM_LEVEL = 4;
+    private ConstraintLayout compassConstraintLayout;
+    private FloatingActionButton addFriendFloatingActionButton;
+    private Button zoomInButton;
+    private Button zoomOutButton;
+    private int zoomLevel;
+    private String userPublicCode;
+    private LabeledLocationRepository repo;
+    private MutableLiveData<List<LiveData<LabeledLocation>>> syncedLabeledLocations;
 
-    private Compass compass;
-    private FriendAccount myAccount;
+    List<Compass> allCompasses;
+    //private Compass compass;
+    private LabeledLocation userLabeledLocation;
+    private boolean localUpdateRequired;
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_compass);
 
+        compassConstraintLayout = findViewById(R.id.compassConstraintLayout);
+        addFriendFloatingActionButton = findViewById(R.id.addFriendFloatingActionButton);
 
-        //Sets North Label to always be the correct radius, regardless of size of the screen.
-        ImageView northLabel = findViewById(R.id.labelNorth);
-        ((ConstraintLayout.LayoutParams) northLabel.getLayoutParams()).circleRadius =
-                Math.min((getScreenWidth() * 6) / 14 - 10, (getScreenHeight()  * 5) / 15 - 10);
+        zoomInButton = findViewById(R.id.zoomInButton);
+        zoomOutButton = findViewById(R.id.zoomOutButton);
 
-        //Instantiates the Compass and adds the northLabel to it.
-        compass = new Compass(northLabel);
+        var database = SocialCompassDatabase.getInstance(this);
+        var labeledLocationDao = database.getLabeledLocationDao();
+        repo = new LabeledLocationRepository(labeledLocationDao);
 
+        var preferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+        userPublicCode = preferences.getString("userPublicCode", null);
 
-        //These three lines open up the Room database, giving us access to the values stored from
-        //the main activity, with HouseDao being an instance of the HouseDatabase class.
-        Context context = getApplication().getApplicationContext();
-        FriendDatabase houseDao = FriendDatabase.getInstance(context);
-        final FriendAccountDao db = houseDao.getFriendDao();
+        userLabeledLocation = repo.selectLocalLabeledLocationWithoutLiveData(userPublicCode);
+        var localLabeledLocations = repo.selectLocalLabeledLocations();
 
-        // Accessing data from input screen
-        Intent intent = getIntent();
-        float mockOrientation = intent.getFloatExtra("orientation", -1);
+        localUpdateRequired = true;
+        syncedLabeledLocations = new MutableLiveData<>();
 
-        //We read all of the houses stored in the database, which gives us a live observer variable
-        //And from there, if the location is not null (e.g. was not inputted), it adds it as a label
-        //to the compass.
-        db.selectFriends().observe(this, houses -> {
-            for(FriendAccount i : houses){
-                if(i.getLocation() != null){
-                    compass.add(initFriendDisplay(i));
-                }
+        localLabeledLocations.observe(this, labeledLocations -> {
+            // we only observe once for local locations (the first time data is retrieved)
+            // if we continue to observe, there might be recursive update issues
+            if (!localUpdateRequired) return;
+
+            Log.i(
+                    CompassActivity.class.getName(),
+                    "local labeled location update received, current local labeled locations are " + labeledLocations.stream()
+                            .map(LabeledLocation::getLabel)
+                            .collect(Collectors.joining(", "))
+            );
+
+            syncedLabeledLocations.postValue(
+                    labeledLocations.stream()
+                            .filter(labeledLocation -> !labeledLocation.getPublicCode().equals(userPublicCode))
+                            .map(labeledLocation -> repo.syncedSelectLabeledLocation(labeledLocation.getPublicCode()))
+                            .collect(Collectors.toList())
+            );
+
+            localUpdateRequired = false;
+        });
+
+        // Create Compasses:
+        allCompasses = createCompasses();
+
+        zoomLevel = preferences.getInt("zoomLevel", MIN_ZOOM_LEVEL);
+        zoomInButton.setClickable(zoomLevel != MIN_ZOOM_LEVEL);
+        zoomOutButton.setClickable(zoomLevel != MAX_ZOOM_LEVEL);
+        updateCompassByZoomLevel();
+
+        syncedLabeledLocations.observe(this, labeledLocations -> {
+            Log.i(CompassActivity.class.getName(), "synced labeled location update received");
+
+            for(Compass compass : allCompasses) {
+                labeledLocations.forEach(compass::displayLabeledLocation);
             }
         });
 
+        compassConstraintLayout.post(() -> {
+            int radius = compassConstraintLayout.getWidth() / 2;
+            Log.i(CompassActivity.class.getName(), "radius update received, current radius is " + radius);
 
-        //Maybe refactor this into its own method.
-
-        // Default location from API is Google HQ in San Francisco
-        // You can change the location and the orientation of the emulator in "Extended Controls" (3 dots)
-        // To change orientation go to "Virtual sensors -> Device Pose"
-        // Set "X-Rot" to about -60 and slide "Z-Rot" to change the orientation
-
-        LocationService.getInstance().setLocationManager((LocationManager) getSystemService(Context.LOCATION_SERVICE));
-
-        //SharedPreferences preferences = getPreferences(MODE_PRIVATE);
-        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
-
-        String myPublicID = preferences.getString("myPublicID", "???");
-        String myName = preferences.getString("myName", myPublicID); // default name to id
-        LatLong myLocation = LocationService.getInstance().getUserLocation().getValue();
-        try {
-            myAccount = LocationAPI.provide().getFriendAsync(myPublicID).get();
-            if (myAccount == null) {
-                myAccount = new FriendAccount(myName, myLocation, myPublicID);
-                LocationAPI.provide().putLocationAsync(myAccount);
-            }
-        } catch (Exception exception) {
-            exception.printStackTrace();
-        }
-
-        FriendAccountRepository friendRepo = new FriendAccountRepository(db);
-        
-        // Shijun will fix this, to make it work better.
-        while (true) {
-            try {
-                LocationService.getInstance().registerLocationUpdateListener(this);
-                break;
-            } catch (Exception e) {
-                System.err.println(e.getMessage());
-                try {
-                    wait(1000);
-                } catch (Exception ex) {
-                    System.err.println(ex.getMessage());
-                }
-            }
-        }
-
-        //Maybe Refactor this into it's own method.
-        // Sets up sensors to read values.
-        OrientationService.getInstance().setSensorManager((SensorManager) getSystemService(Context.SENSOR_SERVICE));
-
-        //Updates compass based on changing location values.
-        LocationService.getInstance().getUserLocation().observe(this, (currentLocation) -> {
-            compass.updateBearingForAll(currentLocation);
-            compass.updateRotationForAll();
-            myAccount.setLocation(currentLocation);
-            friendRepo.upsertRemoteFriendAccount(myAccount);
+            allCompasses.forEach(compass -> compass.setRadius(radius));
         });
 
-        OrientationService.getInstance().getAzimuth().observe(this, (currentAzimuth) -> {
-            compass.updateAzimuth(currentAzimuth);
-            compass.updateRotationForAll();
+        LocationService.getInstance().setLocationManager((LocationManager) getSystemService(LOCATION_SERVICE));
+        OrientationService.getInstance().setSensorManager((SensorManager) getSystemService(SENSOR_SERVICE));
+        OrientationService.getInstance().setWindowManager((WindowManager) getSystemService(WINDOW_SERVICE));
+
+        askForPermissionAndRegisterLocationUpdateListener();
+
+        OrientationService.getInstance().registerSensorEventUpdateListener();
+        Log.i(CompassActivity.class.getName(), "orientation update listener registered");
+
+        LocationService.getInstance().getCurrentCoordinate().observe(this, currentCoordinate -> {
+            if (userLabeledLocation != null) {
+                userLabeledLocation.setCoordinate(currentCoordinate);
+                repo.syncedUpsert(userLabeledLocation);
+            }
+
+            allCompasses.forEach(compass -> compass.updateBearingForAll(currentCoordinate));
         });
 
-        // override with mock orientation
-        if (mockOrientation >=  0) {
-            OrientationService.getInstance().setAzimuth(mockOrientation);
-        } else {
-            OrientationService.getInstance().registerSensorEventListener();
-        }
-
+        OrientationService.getInstance().getCurrentOrientation().observe(this, currentOrientation -> {
+            allCompasses.forEach(compass -> compass.updateOrientationForAll(currentOrientation));
+        });
     }
 
-    //Creates a label for each friend contained in the database.
-    public LabelInformation initFriendDisplay(FriendAccount friendAccount) {
-        ImageView dotView = new ImageView(this);
-
-        dotView.setId(View.generateViewId());
-        dotView.setImageResource(R.drawable.blue_circle);
-
-        TextView labelView = new TextView(this);
-
-        labelView.setId(View.generateViewId());
-        labelView.setText(friendAccount.getName());
-        labelView.setTextSize(20); //Change size of text here.
-        labelView.setTypeface(null, Typeface.BOLD);
-        labelView.setTextColor(Color.WHITE);
-        labelView.setShadowLayer(6, 1, 1, Color.BLACK);
-
-        // Pulls Primary Constraint from activity_compass.xml
-        ConstraintLayout layout = findViewById(R.id.compassActivityParentConstraints);
-        layout.addView(dotView, -1);
-        layout.addView(labelView, -1);
-
-        ConstraintLayout.LayoutParams dotViewParameters = (ConstraintLayout.LayoutParams) labelView.getLayoutParams();
-
-        dotViewParameters.circleConstraint = R.id.CompassCenter;
-        //Sets all Friends to always be the correct radius, regardless of size of the screen.
-        dotViewParameters.circleRadius = Math.min((getScreenWidth() * 5) / 14, (getScreenHeight()  * 4) / 15);
-
-        dotViewParameters.circleAngle = 0; //shouldn't this be the actual initial angle
-        dotViewParameters.width = 60;
-        dotViewParameters.height = 60;
-
-        dotView.setLayoutParams(dotViewParameters);
-
-        ConstraintLayout.LayoutParams labelParameters = (ConstraintLayout.LayoutParams) labelView.getLayoutParams();
-
-        labelParameters.topToBottom = dotView.getId();
-        labelParameters.startToStart = dotView.getId();
-        labelParameters.endToEnd = dotView.getId();
-        labelParameters.height = ConstraintLayout.LayoutParams.WRAP_CONTENT;
-        labelParameters.width = ConstraintLayout.LayoutParams.WRAP_CONTENT;
-
-        return new LabelInformation(friendAccount, dotView, labelView);
-    }
-
-    public Compass getCompass() {
-        return compass;
-    }
-
-
-    public static int getScreenWidth() {
-        return Resources.getSystem().getDisplayMetrics().widthPixels;
-    }
-
-    public static int getScreenHeight() {
-        return Resources.getSystem().getDisplayMetrics().heightPixels;
-    }
-
-    // Updates the friend database when the app is exited.
     @Override
-    protected void onStop() {
-        super.onStop();
+    protected void onResume() {
+        super.onResume();
+        localUpdateRequired = true;
+    }
 
-        FriendDatabase friendDao = FriendDatabase.getInstance(getApplicationContext());
-        final FriendAccountDao db = friendDao.getFriendDao();
+    public List<Compass> createCompasses() {
+        return List.of(
+                new Compass(this, compassConstraintLayout, 0, 1),
+                new Compass(this, compassConstraintLayout, 1, 10),
+                new Compass(this, compassConstraintLayout, 10, 500),
+                // 65536 is just some random numbers, it could be any number bigger than 20000 km i think
+                new Compass(this, compassConstraintLayout, 500, 65536)
+        );
+    }
 
-        List<FriendAccount> friendAccounts = new ArrayList<>();
-
-        // Uses all friend labels excluding north label
-        for(LabelInformation label : compass.getElements()) {
-            if(!label.equals(compass.getNorthElementDisplay())) {
-                friendAccounts.add(new FriendAccount(label.getFriend().getName(), label.getFriend().getLocation()));
-            }
-        }
-
-        for(FriendAccount friendAccount : friendAccounts) {
-            db.updateFriend(friendAccount);
+    public void askForPermissionAndRegisterLocationUpdateListener() {
+        if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
+                && ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            registerForActivityResult(new ActivityResultContracts.RequestPermission(), isGranted -> {
+                if (isGranted) {
+                    LocationService.getInstance().registerLocationUpdateListener();
+                    Log.i(CompassActivity.class.getName(), "location update listener registered");
+                }
+            }).launch(Manifest.permission.ACCESS_FINE_LOCATION);
+        } else {
+            LocationService.getInstance().registerLocationUpdateListener();
+            Log.i(CompassActivity.class.getName(), "location update listener registered");
         }
     }
 
-    public void onGoToInput(View view) {
-        LocationService.getInstance().unregisterLocationUpdateListener();
-        OrientationService.getInstance().unregisterSensorEventListener();
+    public void onAddFriendFloatingActionButtonClicked(View view) {
+        Log.i(CompassActivity.class.getName(), "add friend floating action button clicked");
 
-        finish();
-//        super.onBackPressed();
-        Intent intent = new Intent(this, MainActivity.class);
-
-        startActivity(intent);
-    }
-
-    public void onGoToAddFriend(View view) {
         Intent intent = new Intent(this, AddFriendActivity.class);
+        intent.putExtra("userUID", userLabeledLocation.getPublicCode());
+
         startActivity(intent);
+    }
+
+    public void updateCompassByZoomLevel() {
+        Log.i(CompassActivity.class.getName(), "compass at index " + (zoomLevel - 1) + " is outer compass");
+
+        for (int compassIndex = 0; compassIndex < allCompasses.size(); compassIndex++) {
+            var compass = allCompasses.get(compassIndex);
+
+            if (compassIndex < zoomLevel) {
+                compass.setHidden(false);
+                compass.setScale((compassIndex + 1.0) / zoomLevel);
+            } else {
+                compass.setHidden(true);
+            }
+
+            compass.setLastCompass(compassIndex == zoomLevel - 1);
+        }
+    }
+
+    public void saveZoomLevel() {
+        var preferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+        var editor = preferences.edit();
+
+        editor.putInt("zoomLevel", zoomLevel);
+        editor.apply();
+    }
+
+    public void onZoomInButtonClicked(View view) {
+        Log.i(CompassActivity.class.getName(), "zoom in button clicked");
+
+        zoomLevel -= 1;
+        zoomOutButton.setClickable(true);
+
+        if (zoomLevel == MIN_ZOOM_LEVEL) {
+            zoomInButton.setClickable(false);
+        }
+
+        updateCompassByZoomLevel();
+        saveZoomLevel();
+    }
+
+    public void onZoomOutClicked(View view) {
+        Log.i(CompassActivity.class.getName(), "zoom out button clicked");
+
+        zoomLevel += 1;
+        zoomInButton.setClickable(true);
+
+        if (zoomLevel == MAX_ZOOM_LEVEL) {
+            zoomOutButton.setClickable(false);
+        }
+
+        updateCompassByZoomLevel();
+        saveZoomLevel();
+    }
+
+    @VisibleForTesting
+    public ConstraintLayout getCompassConstraintLayout() {
+        return compassConstraintLayout;
+    }
+
+    @VisibleForTesting
+    public FloatingActionButton getAddFriendFloatingActionButton() {
+        return addFriendFloatingActionButton;
+    }
+
+    @VisibleForTesting
+    public List<Compass> getCompasses() {
+        return allCompasses;
+    }
+
+    @VisibleForTesting
+    public LabeledLocation getUserLabeledLocation() {
+        return userLabeledLocation;
+    }
+
+    @VisibleForTesting
+    public Button getZoomInButton() {
+        return zoomInButton;
+    }
+
+    @VisibleForTesting
+    public Button getZoomOutButton() {
+        return zoomOutButton;
     }
 }

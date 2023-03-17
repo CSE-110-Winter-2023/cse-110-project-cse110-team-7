@@ -6,71 +6,93 @@
     android:layout_height="match_parent"
     tools:context=".MainActivity">
 
-    <Button
-        android:id="@+id/goToCompass"
+
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="0dp"
-        android:layout_height="48dp"
-        android:layout_marginStart="16dp"
-        android:layout_marginEnd="16dp"
-        android:layout_marginBottom="24dp"
-        android:onClick="onGoToCompass"
-        android:text="Ok"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="10dp"
+        android:layout_marginTop="10dp"
+        android:layout_marginEnd="10dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <TextView
+            android:id="@+id/nameTagTextView"
+            android:layout_width="0dp"
+            android:layout_height="64dp"
+            android:gravity="center"
+            android:text="@string/input_user_name_prompt"
+            android:textColor="@color/black"
+            android:textSize="20sp"
+            android:layout_marginBottom="16dp"
+            app:layout_constraintBottom_toTopOf="@id/uidTagTextView"
+            app:layout_constraintEnd_toStartOf="@+id/nameEditText"
+            app:layout_constraintHorizontal_weight="1"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintVertical_weight="1"
+            />
+
+        <EditText
+            android:id="@+id/nameEditText"
+            android:layout_width="0dp"
+            android:layout_height="64dp"
+            android:ems="10"
+            android:gravity="center"
+            android:hint="@string/input_user_name_hint"
+            android:inputType="text"
+            android:textColor="@color/black"
+            android:layout_marginBottom="16dp"
+            app:layout_constraintBottom_toTopOf="@id/uidTextView"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_weight="1"
+            app:layout_constraintStart_toEndOf="@+id/nameTagTextView"
+            app:layout_constraintTop_toTopOf="parent"
+            />
+
+        <TextView
+            android:id="@+id/uidTagTextView"
+            android:layout_width="0dp"
+            android:layout_height="64dp"
+            android:gravity="center"
+            android:text="@string/user_uid_prompt"
+            android:textColor="@color/black"
+            android:textSize="20sp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toStartOf="@+id/uidTextView"
+            app:layout_constraintHorizontal_weight="1"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/nameTagTextView"
+            />
+
+        <TextView
+            android:id="@+id/uidTextView"
+            android:layout_width="0dp"
+            android:layout_height="64dp"
+            android:gravity="center"
+            android:text="@string/user_uid_placeholder"
+            android:textColor="@color/black"
+            android:textSize="20sp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_weight="1"
+            app:layout_constraintStart_toEndOf="@+id/uidTagTextView"
+            app:layout_constraintTop_toBottomOf="@+id/nameEditText"
+            />
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <Button
+        android:id="@+id/okButton"
+        android:layout_width="match_parent"
+        android:layout_height="64dp"
+        android:layout_marginStart="10dp"
+        android:layout_marginEnd="10dp"
+        android:layout_marginBottom="10dp"
+        android:onClick="onOkButtonClicked"
+        android:text="@string/button_text_ok"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent" />
-
-    <TextView
-        android:id="@+id/yourName"
-        android:layout_width="108dp"
-        android:layout_height="30dp"
-        android:text="Your Name:"
-        android:textSize="20sp"
-        app:layout_constraintBottom_toTopOf="@+id/goToCompass"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.138"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.184" />
-
-    <TextView
-        android:id="@+id/yourUID"
-        android:layout_width="108dp"
-        android:layout_height="30dp"
-        android:text="Your UID:"
-        android:textSize="20sp"
-        app:layout_constraintBottom_toTopOf="@+id/goToCompass"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.138"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.313" />
-
-    <TextView
-        android:id="@+id/UIDtextView"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:text="N/A"
-        android:textSize="20sp"
-        app:layout_constraintBottom_toTopOf="@+id/goToCompass"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
-        app:layout_constraintStart_toEndOf="@+id/yourUID"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.311" />
-
-    <EditText
-        android:id="@+id/nameTextView"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:ems="10"
-        android:inputType="textPersonName"
-        android:text=""
-        app:layout_constraintBottom_toTopOf="@+id/goToCompass"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.019"
-        app:layout_constraintStart_toEndOf="@+id/yourName"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.175" />
-
 
 </androidx.constraintlayout.widget.ConstraintLayout>

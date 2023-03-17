@@ -1,8 +1,6 @@
 package com.cse110.team7.socialcompass;
 
-import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.util.Log;
@@ -12,233 +10,114 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 
+import androidx.annotation.Nullable;
+import androidx.annotation.VisibleForTesting;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.lifecycle.ViewModelProvider;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
 
-import com.cse110.team7.socialcompass.backend.FriendAccountDao;
-import com.cse110.team7.socialcompass.backend.FriendAccountRepository;
-import com.cse110.team7.socialcompass.backend.FriendDatabase;
-import com.cse110.team7.socialcompass.backend.LocationAPI;
-import com.cse110.team7.socialcompass.models.FriendAccount;
-import com.cse110.team7.socialcompass.models.LatLong;
-import com.cse110.team7.socialcompass.services.LocationService;
+import com.cse110.team7.socialcompass.database.SocialCompassDatabase;
+import com.cse110.team7.socialcompass.models.LabeledLocation;
+import com.cse110.team7.socialcompass.server.LabeledLocationRepository;
+import com.cse110.team7.socialcompass.utils.Alert;
 
-
-/*
- * First page of our application; we should probably move all of this over to another activity.
- */
-import com.cse110.team7.socialcompass.ui.InputDisplayAdapter;
-import com.cse110.team7.socialcompass.ui.InputDisplayViewModel;
-import com.cse110.team7.socialcompass.utils.ShowAlert;
-
-import java.util.ArrayList;
-
-import java.util.List;
-import java.util.Random;
 import java.util.UUID;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import java.util.concurrent.ScheduledFuture;
 
 
 public class MainActivity extends AppCompatActivity  {
-    public RecyclerView recyclerView;
-    EditText nameView;
-    TextView uidView;
-    Button okButton;
-    InputDisplayAdapter adapter;
-    InputDisplayViewModel viewModel;
-
-    LocationAPI serverAPI;
-
+    private EditText nameEditText;
+    private TextView uidTextView;
+    private Button okButton;
+    private LabeledLocation userLabeledLocation;
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        //Tracks interactions between the UI and the database, allowing us to update values as they
-        //get changed.
-        viewModel = new ViewModelProvider(this).get(InputDisplayViewModel.class);
-        nameView = findViewById(R.id.nameTextView);
-        uidView = findViewById(R.id.UIDtextView);
-        okButton = findViewById(R.id.goToCompass);
 
-        nameView.setOnEditorActionListener((view, actionId, event) -> {
+        nameEditText = findViewById(R.id.nameEditText);
+        uidTextView = findViewById(R.id.uidTextView);
+        okButton = findViewById(R.id.okButton);
+
+        var database = SocialCompassDatabase.getInstance(this);
+        var repo = new LabeledLocationRepository(database.getLabeledLocationDao());
+
+        var preferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+        var userPublicCode = preferences.getString("userPublicCode", null);
+
+        if (userPublicCode != null) {
+            Log.i(MainActivity.class.getName(), "user public code exists: " + userPublicCode);
+            userLabeledLocation = repo.selectLocalLabeledLocationWithoutLiveData(userPublicCode);
+
+            if (userLabeledLocation != null) {
+                Log.i(MainActivity.class.getName(), "user labeled location exists");
+                nameEditText.setText(userLabeledLocation.getLabel());
+                uidTextView.setText(userLabeledLocation.getPublicCode());
+            }
+        }
+
+        nameEditText.setOnEditorActionListener((view, actionId, event) -> {
             if (actionId != EditorInfo.IME_ACTION_DONE) {
                 return false;
             }
 
-            String name = nameView.getText().toString();
+            var label = nameEditText.getText().toString();
+            Log.i(MainActivity.class.getName(), "user modified label to " + label);
 
-            if (name.isBlank()) {
-                ShowAlert.alert(this, "name cannot be empty");
+            if (label.isBlank()) {
+                Log.w(MainActivity.class.getName(), "user modified label is blank");
+                Alert.show(this, "name cannot be empty!");
                 return false;
             }
 
-            saveProfile();
+            if (userLabeledLocation == null) {
+                Log.i(MainActivity.class.getName(), "generate new user labeled location");
+                userLabeledLocation = new LabeledLocation.Builder()
+                        .setPublicCode(UUID.randomUUID().toString())
+                        .setPrivateCode(UUID.randomUUID().toString())
+                        .build();
+                uidTextView.setText(userLabeledLocation.getPublicCode());
+            }
+
+            if (!userLabeledLocation.getLabel().equals(label)) {
+                Log.i(MainActivity.class.getName(), "user label is updated");
+                userLabeledLocation.setLabel(label);
+
+                Alert.show(this, "your private code is " + userLabeledLocation.getPrivateCode());
+
+                repo.syncedUpsert(userLabeledLocation);
+            }
+
             return true;
         });
-
-        //Creates new adapter, which does the actual updating of values.
-        adapter = new InputDisplayAdapter();
-        adapter.setHasStableIds(true);
-
-        //Binds methods to adapter
-        adapter.setCoordinatesChanged(viewModel::updateCoordinateText);
-        adapter.setParentLabelChanged(viewModel::updateLabelText);
-
-        viewModel.getFriendItems().observe(this, adapter::setFriendList);
-
-        /*
-         * TODO:: This will need to be adjusted to work with the database and to sync properly
-         * once we add the 'add friend button' and it may need to be moved as necessary.
-         */
-
-        serverAPI =  LocationAPI.provide();
-        List<String> allFriends = getNeededPubIDs();
-        List<FriendAccount> listOfFriendsFromServer = new ArrayList<>();
-
-        var executor = Executors.newSingleThreadExecutor();
-        for(String pubID : allFriends){
-
-            var future = executor.submit(() -> serverAPI.getFriend(pubID));
-            FriendAccount toAdd = null;
-
-            try {
-                toAdd = future.get();
-            } catch (ExecutionException e) {
-                throw new RuntimeException(e);
-            } catch (InterruptedException e) {
-                throw new RuntimeException(e);
-            }
-
-            if(toAdd == null){
-                Log.i("toADD is ", "null");
-            } else {
-                Log.i("toADD is ", "valid?");
-            }
-
-            listOfFriendsFromServer.add(toAdd);
-        }
-
-        //Example way of adding friend to UI, shown below.
-        //TODO: Make sure same friend UIDs are not added to server several times.
-//        for(var i : listOfFriendsFromServer) {
-//            if(i.getPublicID())
-//                viewModel.addFriend(i);
-//
-//        }
-
-        //If no data is already saved, then adds needed friends to the database.
-        viewModel.getFriendItems().observe(this, friends -> {
-            for(FriendAccount i : listOfFriendsFromServer) {
-                if (i != null && friends != null) {
-                    // Adds friend if its not in view.
-                    if (friends.contains(i) == false) {
-                        viewModel.addFriend(i);
-                    }
-
-                }
-            }
-        });
-
-
-//        //If no data is already saved, then adds three friends to the database.
-//        viewModel.getFriendItems().observe(this, friends -> {
-//            if (friends.size() == 0) {
-//                viewModel.addFriend(new FriendAccount("Parents", new LatLong(10, 10)));
-//                viewModel.addFriend(new FriendAccount("Friends", new LatLong(10, 10)));
-//                viewModel.addFriend(new FriendAccount("My Home", new LatLong(10, 10)));
-//            }
-//        });
-
-
-
-        //Sets up the recycler view, so that each empty/stored label gets displayed on the UI, in the
-        //format given by label_input_format.xml
-        /*recyclerView = findViewById(R.id.friendInputItems);
-        recyclerView.setLayoutManager(new LinearLayoutManager(this));
-        recyclerView.setAdapter(adapter);*/
-        loadProfile();
     }
 
-    public void saveProfile(){
-        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
-        SharedPreferences.Editor editor = preferences.edit();
-        uidView.setText(UUID.randomUUID().toString());
-        editor.putString("myName", nameView.getText().toString());
-        editor.putString("myPublicID", uidView.getText().toString());
-        editor.apply();
-    }
-
-    public void loadProfile(){
-        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
-        String n = preferences.getString("myName", "");
-        String s = preferences.getString("myPublicID", "N/A");
-        nameView.setText(n);
-        uidView.setText(s);
-    }
-
-    /**
-     * On button click, only goes to CompassActivity if at least one location has been inputted.
-     */
-    public void onGoToCompass(View view) {
-        //float orientation;
-        if (nameView.getText().toString().isBlank()) {
-            ShowAlert.alert(this, "name cannot be empty");
+    public void onOkButtonClicked(View view) {
+        if (userLabeledLocation == null || userLabeledLocation.getLabel().isBlank()) {
+            Log.i(MainActivity.class.getName(), "user labeled location does not exist or label is blank");
+            Alert.show(this, "you need to input a valid user information!");
             return;
         }
 
-        Intent intent = new Intent(this, CompassActivity.class);
+        var preferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+        var editor = preferences.edit();
+
+        editor.putString("userPublicCode", userLabeledLocation.getPublicCode());
+        editor.apply();
+
+        var intent = new Intent(this, CompassActivity.class);
         startActivity(intent);
-        /*Intent intent = new Intent(this, CompassActivity.class);
-        //intent.putExtra("orientation", orientation);
-
-        for(FriendAccount i : adapter.friendAccountList) {
-            if (i.getLocation() != null) {
-                startActivity(intent);
-                return;
-            }
-        }*/
     }
 
-    /**
-     * Currently only takes in hard coded values. TODO:: When Add Friend Button is Added, Adjust This
-     *
-     * @return all friends which are needed from the server.
-     */
-    public ArrayList<String> getNeededPubIDs(){
-        ArrayList<String> friendArrayList = new ArrayList<String>();
-        FriendDatabase friendDao = FriendDatabase.getInstance(getApplicationContext());
-        final FriendAccountDao db = friendDao.getFriendDao();
-        db.selectFriends().observe(this, houses -> {
-            for(FriendAccount i : houses){
-                if(i.getLocation() != null){
-                    friendArrayList.add(i.getPublicID());
-                }
-            }
-        });
-
-        return friendArrayList;
+    @VisibleForTesting
+    public EditText getNameEditText() {
+        return nameEditText;
     }
 
-    @Override
-    protected void onDestroy() {
-        saveProfile();
-        super.onDestroy();
+    @VisibleForTesting
+    public TextView getUidTextView() {
+        return uidTextView;
     }
 
-    public EditText getNameView() {
-        return nameView;
-    }
-
-    public TextView getUidView() {
-        return uidView;
-    }
-
+    @VisibleForTesting
     public Button getOkButton() {
         return okButton;
     }
