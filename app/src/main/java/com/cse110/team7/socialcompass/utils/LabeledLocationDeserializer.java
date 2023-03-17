@@ -1,7 +1,5 @@
 package com.cse110.team7.socialcompass.utils;
 
-import androidx.annotation.VisibleForTesting;
-
 import com.cse110.team7.socialcompass.models.LabeledLocation;
 import com.google.gson.Gson;
 import com.google.gson.JsonDeserializationContext;

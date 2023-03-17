@@ -35,8 +35,8 @@ public class ServerAPI {
             .create();
     private static final ExecutorService EXECUTOR_SERVICE = Executors.newSingleThreadExecutor();
     private static final MediaType JSON = MediaType.get("application/json; charset=utf-8");
-    private static String SERVER_ENDPOINT_LOCATION = "https://socialcompass.goto.ucsd.edu/location";
-    private static String SERVER_ENDPOINT_LOCATIONS = "https://socialcompass.goto.ucsd.edu/locations";
+    private static final String SERVER_ENDPOINT_LOCATION = "https://socialcompass.goto.ucsd.edu/location";
+    private static final String SERVER_ENDPOINT_LOCATIONS = "https://socialcompass.goto.ucsd.edu/locations";
     private volatile static ServerAPI INSTANCE = null;
     private final OkHttpClient client;
 
@@ -54,10 +54,6 @@ public class ServerAPI {
         return INSTANCE;
     }
 
-    public void changeEndpoint(String endpoint) {
-        SERVER_ENDPOINT_LOCATION = endpoint+"/location";
-        SERVER_ENDPOINT_LOCATIONS = endpoint+"/locations";
-    }
     /**
      * Get all published locations that are listed publicly from the server
      *
