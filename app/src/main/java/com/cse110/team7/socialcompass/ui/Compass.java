@@ -535,5 +535,7 @@ public class Compass {
         return "Compass: [" + minDistance + ", " + maxDistance + ")";
     }
 
-
+    public boolean isHidden() {
+        return isHidden;
+    }
 }

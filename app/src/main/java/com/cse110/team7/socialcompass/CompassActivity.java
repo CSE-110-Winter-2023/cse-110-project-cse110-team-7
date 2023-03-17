@@ -236,6 +236,8 @@ public class CompassActivity extends AppCompatActivity {
     public void onZoomInButtonClicked(View view) {
         Log.i(CompassActivity.class.getName(), "zoom in button clicked");
 
+        if (zoomLevel == MIN_ZOOM_LEVEL) return;
+
         zoomLevel -= 1;
         zoomOutButton.setClickable(true);
 
@@ -249,6 +251,8 @@ public class CompassActivity extends AppCompatActivity {
 
     public void onZoomOutClicked(View view) {
         Log.i(CompassActivity.class.getName(), "zoom out button clicked");
+
+        if (zoomLevel == MAX_ZOOM_LEVEL) return;
 
         zoomLevel += 1;
         zoomInButton.setClickable(true);
@@ -327,5 +331,10 @@ public class CompassActivity extends AppCompatActivity {
     @VisibleForTesting
     public TextView getLastSignalTime() {
         return lastSignalTime;
+    }
+
+    @VisibleForTesting
+    public int getZoomLevel() {
+        return zoomLevel;
     }
 }

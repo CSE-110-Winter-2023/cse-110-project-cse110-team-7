@@ -4,16 +4,13 @@
 package com.cse110.team7.socialcompass;
 
 import static com.cse110.team7.socialcompass.utils.DistanceFilter.isLabeledLocationInRange;
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockserver.integration.ClientAndServer.startClientAndServer;
 import static org.mockserver.model.HttpRequest.request;
 import static org.mockserver.model.HttpResponse.response;
 
 import android.content.Context;
-import android.view.View;
 import android.view.inputmethod.EditorInfo;
 
 import androidx.lifecycle.Lifecycle;
@@ -166,8 +163,8 @@ public class MS2US5StoryTest {
 
 
             //Another in-depth check of first compass.
-             minDistance = 0;
-             maxDistance = 1;
+            minDistance = 0;
+            maxDistance = 1;
             assertFalse(isLabeledLocationInRange(lasVegasCoordinates, warrenCollege.getCoordinate(), minDistance, maxDistance));
             assertFalse(isLabeledLocationInRange(lasVegasCoordinates, sorentoValley.getCoordinate(), minDistance, maxDistance));
             assertTrue(isLabeledLocationInRange(lasVegasCoordinates, lasVegas.getCoordinate(), minDistance, maxDistance));
