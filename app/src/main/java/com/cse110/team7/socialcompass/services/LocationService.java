@@ -5,8 +5,10 @@ import android.location.LocationManager;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.VisibleForTesting;
 import androidx.lifecycle.MutableLiveData;
 
+import com.cse110.team7.socialcompass.database.SocialCompassDatabase;
 import com.cse110.team7.socialcompass.models.Coordinate;
 
 import java.util.Calendar;
@@ -166,4 +168,8 @@ public class LocationService {
         return formattedLastSignalTime;
     }
 
+    @VisibleForTesting
+    public static void clearLocationService() {
+        INSTANCE = null;
+    }
 }
