@@ -1,9 +1,14 @@
 package com.cse110.team7.socialcompass;
 
+import android.content.Context;
+
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.lifecycle.Lifecycle;
+import androidx.room.Room;
 import androidx.test.core.app.ActivityScenario;
+import androidx.test.core.app.ApplicationProvider;
 
+import com.cse110.team7.socialcompass.database.SocialCompassDatabase;
 import com.cse110.team7.socialcompass.models.Coordinate;
 import com.cse110.team7.socialcompass.models.LabeledLocation;
 import com.cse110.team7.socialcompass.services.LocationService;
@@ -11,14 +16,27 @@ import com.cse110.team7.socialcompass.services.OrientationService;
 import com.cse110.team7.socialcompass.ui.LabeledLocationDisplay;
 
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
 
 import java.util.UUID;
+import java.util.concurrent.ExecutionException;
 
 @RunWith(RobolectricTestRunner.class)
 public class MS2US8StoryTest {
+
+    @Before
+    public void init() throws ExecutionException, InterruptedException {
+        Context context = ApplicationProvider.getApplicationContext();
+
+        SocialCompassDatabase.injectTestDatabase(
+                Room.inMemoryDatabaseBuilder(context, SocialCompassDatabase.class)
+                        .allowMainThreadQueries()
+                        .build()
+        );
+    }
 
     @Test
     public void US8StoryTest() {

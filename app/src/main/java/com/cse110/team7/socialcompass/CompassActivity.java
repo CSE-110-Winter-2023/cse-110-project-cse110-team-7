@@ -157,9 +157,9 @@ public class CompassActivity extends AppCompatActivity {
             allCompasses.forEach(compass -> compass.updateBearingForAll(currentCoordinate));
         });
 
-        LocationService.getInstance().getFormattedLastSignalTime().observe(this, GPSString -> {
-            Log.i("GPS STRING", GPSString);
-        });
+//        LocationService.getInstance().getFormattedLastSignalTime().observe(this, GPSString -> {
+//            Log.i("GPS STRING", GPSString);
+//        });
 
         OrientationService.getInstance().getCurrentOrientation().observe(this, currentOrientation -> {
             allCompasses.forEach(compass -> compass.updateOrientationForAll(currentOrientation));
