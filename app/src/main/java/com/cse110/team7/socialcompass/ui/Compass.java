@@ -37,14 +37,16 @@ public class Compass {
     private final ImageView compassImageView;
     private final double minDistance;
     private final double maxDistance;
+
     private final Map<String, CountDownLatch> locationUpdateTimeMap;
     public final Map<String, LabeledLocationDisplay> labeledLocationDisplayMap;
-
-
     private Coordinate currentCoordinate;
     private double currentOrientation;
     //Radius of ...
     private int radius;
+    private double scale;
+    private boolean isHidden;
+    private boolean isLastCompass;
     private int sizeOfCircle;
 
     public double circleType;
@@ -112,6 +114,72 @@ public class Compass {
         layoutParams.bottomToBottom = constraintLayout.getId();
 
         compassImageView.setLayoutParams(layoutParams);
+    }
+
+    /**
+     * Set the scale of current compass image
+     *
+     * @param scale the scale of current compass image
+     */
+    public void setScale(double scale) {
+        Log.i(Compass.class.getName(), getCompassTag() + ": update scale to " + scale);
+        this.scale = scale;
+
+        updateCompassImageView();
+        updateLabeledLocationDisplay();
+    }
+
+    /**
+     * Set whether the current compass is hidden or not
+     *
+     * @param isHidden whether the current compass is hidden or not
+     */
+    public void setHidden(boolean isHidden) {
+        if (this.isHidden == isHidden) return;
+
+        this.isHidden = isHidden;
+
+        // we want to set every view to invisible if compass is hidden
+        // otherwise we want to set every view to visible
+        int visibility = isHidden ? View.INVISIBLE : View.VISIBLE;
+
+        compassImageView.setVisibility(visibility);
+        labeledLocationDisplayMap.values().forEach(labeledLocationDisplay -> {
+            labeledLocationDisplay.getDotView().setVisibility(visibility);
+            labeledLocationDisplay.getLabelView().setVisibility(visibility);
+        });
+    }
+
+    /**
+     * Get whether the current compass is hidden or not
+     *
+     * @return isHidden whether the current compass is hidden or not
+     */
+    public boolean getHidden() {
+        return isHidden;
+    }
+
+
+
+        /**
+         * Set whether the current compass is the last compass
+         *
+         * @param isLastCompass whether the current compass is the last compass
+         */
+    public void setLastCompass(boolean isLastCompass) {
+        this.isLastCompass = isLastCompass;
+
+        // update all views again to display dots for locations outside of current compass range
+        labeledLocationDisplayMap.values().forEach(this::updateLabeledLocationDisplayInRange);
+    }
+
+    /**
+     * Resize the compass image based on the current compass scale
+     */
+    public void updateCompassImageView() {
+        Log.i(Compass.class.getName(), getCompassTag() + ": update compass image with scale " + scale);
+        compassImageView.setScaleX((float) scale);
+        compassImageView.setScaleY((float) scale);
     }
 
     /**

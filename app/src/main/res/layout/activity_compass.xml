@@ -73,4 +73,33 @@
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintVertical_bias="0.135" />
 
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="0dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginBottom="16dp"
+        android:orientation="horizontal"
+        app:layout_constraintBottom_toTopOf="@+id/backButton"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <Button
+            android:id="@+id/zoomInButton"
+            style="@android:style/ButtonBar"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:layout_marginEnd="8dp"
+            android:layout_weight="1"
+            android:onClick="onZoomInButtonClicked"
+            android:text="@string/button_text_zoom_in" />
+
+        <Button
+            android:id="@+id/zoomOutButton"
+            style="@android:style/ButtonBar"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:layout_weight="1"
+            android:onClick="onZoomOutClicked"
+            android:text="@string/button_text_zoom_out" />
+    </LinearLayout>
+
 </androidx.constraintlayout.widget.ConstraintLayout>
