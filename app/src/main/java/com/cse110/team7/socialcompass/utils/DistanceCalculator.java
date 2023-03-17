@@ -12,11 +12,11 @@ public class DistanceCalculator {
     private static final int EARTH_RADIUS = 6371;
 
     /**
-     * Calculate the distance between two coordinates on map
+     * Calculate the distance between two coordinates on map in miles.
      *
      * @param coordinate the first coordinate
      * @param otherCoordinate the second coordinate
-     * @return the distance between the given coordinates on map
+     * @return the distance between the given coordinates on map in miles
      */
     public static double calculateDistance(@NonNull Coordinate coordinate, @NonNull Coordinate otherCoordinate) {
         double latitudeDifference = Math.toRadians(otherCoordinate.latitude - coordinate.latitude);
@@ -27,6 +27,6 @@ public class DistanceCalculator {
                 * Math.sin(longitudeDifference / 2) * Math.sin(longitudeDifference / 2);
         double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 
-        return EARTH_RADIUS * c * 1000;
+        return EARTH_RADIUS * c * .621;
     }
 }

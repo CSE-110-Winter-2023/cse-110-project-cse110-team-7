@@ -3,13 +3,18 @@ package com.cse110.team7.socialcompass;
 import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.Color;
 import android.hardware.SensorManager;
 import android.location.LocationManager;
+import android.media.Image;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.View;
 import android.view.WindowManager;
+import android.widget.ImageView;
+import android.widget.TextView;
 
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.Nullable;
@@ -19,7 +24,6 @@ import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.core.app.ActivityCompat;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
-import androidx.lifecycle.Observer;
 
 import com.cse110.team7.socialcompass.database.SocialCompassDatabase;
 import com.cse110.team7.socialcompass.models.LabeledLocation;
@@ -29,6 +33,7 @@ import com.cse110.team7.socialcompass.services.OrientationService;
 import com.cse110.team7.socialcompass.ui.Compass;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -38,9 +43,14 @@ public class CompassActivity extends AppCompatActivity {
     private String userPublicCode;
     private LabeledLocationRepository repo;
     private MutableLiveData<List<LiveData<LabeledLocation>>> syncedLabeledLocations;
-    private Compass compass;
+
+    List<Compass> allCompasses;
+    //private Compass compass;
     private LabeledLocation userLabeledLocation;
     private boolean localUpdateRequired;
+    private LocationService locationService;
+    private ImageView gpsIndicator;
+    private TextView lastSignalTime;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -85,17 +95,26 @@ public class CompassActivity extends AppCompatActivity {
             localUpdateRequired = false;
         });
 
-        compass = new Compass(this, compassConstraintLayout, 0, 65536_000);
+        //Create Compasses:
+        allCompasses = createFourCompasses();
+
 
         syncedLabeledLocations.observe(this, labeledLocations -> {
             Log.i(CompassActivity.class.getName(), "synced labeled location update received");
-            labeledLocations.forEach(compass::displayLabeledLocation);
+
+            for(Compass compass : allCompasses) {
+                labeledLocations.forEach(compass::displayLabeledLocation);
+            }
         });
 
         compassConstraintLayout.post(() -> {
             int radius = compassConstraintLayout.getWidth() / 2;
             Log.i(CompassActivity.class.getName(), "radius update received, current radius is " + radius);
-            compass.setRadius(radius);
+
+            for(Compass compass : allCompasses) {
+//                compass.setRadius((int) ((compass.getSizeOfCircle() - radius) * .96));
+                compass.setRadius((compass.getSizeOfCircle() / 2) - 10);
+            }
         });
 
         LocationService.getInstance().setLocationManager((LocationManager) getSystemService(LOCATION_SERVICE));
@@ -112,18 +131,62 @@ public class CompassActivity extends AppCompatActivity {
                 userLabeledLocation.setCoordinate(currentCoordinate);
                 repo.syncedUpsert(userLabeledLocation);
             }
-            compass.updateBearingForAll(currentCoordinate);
+
+            for(Compass compass : allCompasses) {
+                compass.updateBearingForAll(currentCoordinate);
+            }
+        });
+
+        LocationService.getInstance().getFormattedLastSignalTime().observe(this, GPSString -> {
+            Log.i("GPS STRING", GPSString);
         });
 
         OrientationService.getInstance().getCurrentOrientation().observe(this, currentOrientation -> {
-            compass.updateOrientationForAll(currentOrientation);
+            for(Compass compass : allCompasses) {
+                compass.updateOrientationForAll(currentOrientation);
+            }
         });
+        updateGPSIcon();
     }
 
     @Override
     protected void onResume() {
         super.onResume();
         localUpdateRequired = true;
+        updateGPSIcon();
+    }
+
+    public List<Compass> createFourCompasses() {
+        List<Compass> allCompasses = new ArrayList<>();
+
+        Compass compass1 = new Compass(this, compassConstraintLayout,
+                0, 1,
+                Compass.FIRST_CIRCLE, screenSize());  //Inner circle: should always be showing.
+        Compass compass2 = new Compass(this, compassConstraintLayout,
+                1, 10,
+                Compass.SECOND_CIRCLE, screenSize());
+        Compass compass3 = new Compass(this, compassConstraintLayout,
+                10, 500,
+                Compass.THIRD_CIRCLE, screenSize());
+        Compass compass4 = new Compass(this, compassConstraintLayout,
+                500, 65536_000,
+                Compass.FOURTH_CIRCLE, screenSize());
+
+        allCompasses.add(compass1);
+        allCompasses.add(compass2);
+        allCompasses.add(compass3);
+        allCompasses.add(compass4);
+
+        return allCompasses;
+    }
+
+    public int screenSize(){
+        DisplayMetrics displayMetrics = new DisplayMetrics();
+        getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
+        int height = (int) (displayMetrics.heightPixels * .9);
+        int width = (int) (displayMetrics.widthPixels * .9);
+
+        return Math.min(height, width);
     }
 
     public void askForPermissionAndRegisterLocationUpdateListener() {
@@ -150,6 +213,33 @@ public class CompassActivity extends AppCompatActivity {
         startActivity(intent);
     }
 
+    public void onCompassBackButtonClicked(View view) {
+        Intent intent = new Intent(this, MainActivity.class);
+        startActivity(intent);
+    }
+
+    public void updateGPSIcon() {
+        locationService = locationService.getInstance();
+        locationService.trackGPSStatus();
+
+        gpsIndicator = findViewById(R.id.gpsIndicator);
+        lastSignalTime = findViewById(R.id.lastSignalTimeTextView);
+        String emptyLastSignalTime = "";
+
+        lastSignalTime.setText(emptyLastSignalTime);
+
+        locationService.getFormattedLastSignalTime().observe(this, formattedLastSignalTime -> {
+            if (formattedLastSignalTime == null || formattedLastSignalTime.isEmpty()) {
+                gpsIndicator.setColorFilter(Color.GREEN);
+                lastSignalTime.setText(emptyLastSignalTime);
+            } else {
+                gpsIndicator.setColorFilter(Color.RED);
+                lastSignalTime.setTextColor(Color.RED);
+                lastSignalTime.setText(formattedLastSignalTime);
+            }
+        });
+    }
+
     @VisibleForTesting
     public ConstraintLayout getCompassConstraintLayout() {
         return compassConstraintLayout;
@@ -161,12 +251,22 @@ public class CompassActivity extends AppCompatActivity {
     }
 
     @VisibleForTesting
-    public Compass getCompass() {
-        return compass;
+    public List<Compass> getCompasses() {
+        return allCompasses;
     }
 
     @VisibleForTesting
     public LabeledLocation getUserLabeledLocation() {
         return userLabeledLocation;
+    }
+
+    @VisibleForTesting
+    public ImageView getGpsIndicator() {
+        return gpsIndicator;
+    }
+
+    @VisibleForTesting
+    public TextView getLastSignalTime() {
+        return lastSignalTime;
     }
 }
