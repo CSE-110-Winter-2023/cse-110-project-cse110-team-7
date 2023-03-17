@@ -306,6 +306,7 @@ public class Compass {
 
     public Map<String, CountDownLatch> getLocationUpdateTimeMap() {
         return locationUpdateTimeMap;
+    }
 
     public int getSizeOfCircle() {
         return sizeOfCircle;
