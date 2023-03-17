@@ -6,6 +6,9 @@ package com.cse110.team7.socialcompass;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+import static org.mockserver.integration.ClientAndServer.startClientAndServer;
+import static org.mockserver.model.HttpRequest.request;
+import static org.mockserver.model.HttpResponse.response;
 
 import android.content.Context;
 import android.view.View;
@@ -30,6 +33,8 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockserver.client.MockServerClient;
+import org.mockserver.integration.ClientAndServer;
 import org.robolectric.RobolectricTestRunner;
 
 import java.util.List;
@@ -66,6 +71,7 @@ public class MS2US5StoryTest {
             .setLongitude(-135)
             .build();
 
+    private ClientAndServer mockServer;
 
     private SocialCompassDatabase socialCompassDatabase;
     private LabeledLocationDao labeledLocationDao;
@@ -83,10 +89,14 @@ public class MS2US5StoryTest {
         socialCompassDatabase = SocialCompassDatabase.getInstance(context);
         labeledLocationDao = socialCompassDatabase.getLabeledLocationDao();
 
-        ServerAPI.getInstance().asyncPutLabeledLocation(warrenCollege).get();
-        ServerAPI.getInstance().asyncPutLabeledLocation(lasVegas).get();
-        ServerAPI.getInstance().asyncPutLabeledLocation(northPole).get();
-        ServerAPI.getInstance().asyncPutLabeledLocation(sorentoValley).get();
+        mockServer = startClientAndServer(1080);
+
+        ServerAPI.getInstance().changeEndpoint("http://localhost:1080");
+        var client = new MockServerClient("localhost", 1080);
+        setupMockPutServer(warrenCollege, client);
+        setupMockPutServer(sorentoValley, client);
+        setupMockPutServer(lasVegas, client);
+        setupMockPutServer(northPole, client);
 
         addFriend(warrenCollege);
         addFriend(sorentoValley);
@@ -98,10 +108,7 @@ public class MS2US5StoryTest {
     public void destroy() throws ExecutionException, InterruptedException {
         socialCompassDatabase.close();
 
-        ServerAPI.getInstance().asyncDeleteLabeledLocation(warrenCollege).get();
-        ServerAPI.getInstance().asyncDeleteLabeledLocation(lasVegas).get();
-        ServerAPI.getInstance().asyncDeleteLabeledLocation(northPole).get();
-        ServerAPI.getInstance().asyncDeleteLabeledLocation(sorentoValley).get();
+        mockServer.close();
     }
 
     //Assumes all 4 circles are showing.
@@ -230,5 +237,26 @@ public class MS2US5StoryTest {
             activity.getFriendUIDEditText().onEditorAction(EditorInfo.IME_ACTION_DONE);
             activity.getAddFriendButton().performClick();
         });
+    }
+
+    public void setupMockPutServer(LabeledLocation testLocation, MockServerClient client) {
+
+        client.when(
+                        request()
+                                .withMethod("GET")
+                                .withPath("/location/" + testLocation.getPublicCode())
+                )
+                .respond(
+                        response()
+                                .withStatusCode(200)
+                                .withBody("{\n" +
+                                        "  \"public_code\": \""+ testLocation.getPublicCode() + "\",\n" +
+                                        "  \"label\": \""+ testLocation.getLabel() + "\",\n" +
+                                        "  \"latitude\": "+ testLocation.getLatitude() + ",\n" +
+                                        "  \"longitude\": "+ testLocation.getLongitude() + ",\n" +
+                                        "  \"created_at\": \"2023-02-18T12:00:00Z\",\n" +
+                                        "  \"updated_at\": \"2023-02-18T18:30:00Z\"\n" +
+                                        "}")
+                );
     }
 }
