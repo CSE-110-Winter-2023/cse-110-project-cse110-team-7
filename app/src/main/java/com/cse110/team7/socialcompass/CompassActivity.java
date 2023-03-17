@@ -324,6 +324,16 @@ public class CompassActivity extends AppCompatActivity {
     }
 
     @VisibleForTesting
+    public ImageView getGpsIndicator() {
+        return gpsIndicator;
+    }
+
+    @VisibleForTesting
+    public TextView getLastSignalTime() {
+        return lastSignalTime;
+    }
+
+    @VisibleForTesting
     public int getZoomLevel() {
         return zoomLevel;
     }
