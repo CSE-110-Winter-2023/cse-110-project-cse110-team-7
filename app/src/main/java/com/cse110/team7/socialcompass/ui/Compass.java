@@ -25,6 +25,7 @@ import com.cse110.team7.socialcompass.utils.DistanceFilter;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.CountDownLatch;
 
 /**
  * Represents a compass on screen
@@ -36,7 +37,10 @@ public class Compass {
     private final ImageView compassImageView;
     private final double minDistance;
     private final double maxDistance;
+    private final Map<String, CountDownLatch> locationUpdateTimeMap;
     public final Map<String, LabeledLocationDisplay> labeledLocationDisplayMap;
+
+
     private Coordinate currentCoordinate;
     private double currentOrientation;
     //Radius of ...
@@ -75,6 +79,7 @@ public class Compass {
         this.minDistance = minDistance;
         this.maxDistance = maxDistance;
         this.labeledLocationDisplayMap = new HashMap<>();
+        this.locationUpdateTimeMap = new HashMap<>();
         this.currentCoordinate = new Coordinate(0, 0);
         this.currentOrientation = 0;
         this.radius = 0;
@@ -183,6 +188,12 @@ public class Compass {
 
             updateBearing(labeledLocationDisplay);
             updateLabeledLocationDisplayInRange(labeledLocationDisplay);
+
+            var countDown = locationUpdateTimeMap.get(labeledLocation.getPublicCode());
+
+            if (countDown != null) {
+                countDown.countDown();
+            }
         });
     }
 
@@ -279,6 +290,10 @@ public class Compass {
         return new LabeledLocationDisplay(dotView, labelView);
     }
 
+    public Map<String, LabeledLocationDisplay> getLabeledLocationDisplayMap() {
+        return labeledLocationDisplayMap;
+    }
+
     /**
      * Helper method to get a special tag for the compass to indicate the range
      *
@@ -287,6 +302,10 @@ public class Compass {
     public String getCompassTag() {
         return Compass.class.getName() + "[" + minDistance + ", " + maxDistance + ")";
     }
+
+
+    public Map<String, CountDownLatch> getLocationUpdateTimeMap() {
+        return locationUpdateTimeMap;
 
     public int getSizeOfCircle() {
         return sizeOfCircle;
