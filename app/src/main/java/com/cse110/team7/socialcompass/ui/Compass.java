@@ -254,27 +254,6 @@ public class Compass {
     }
 
     /**
-     * Resize the compass image based on the current compass scale
-     */
-    public void updateCompassImageView() {
-        Log.i(Compass.class.getName(), getCompassTag() + ": update compass image with scale " + scale);
-        compassImageView.setScaleX((float) scale);
-        compassImageView.setScaleY((float) scale);
-    }
-
-    /**
-     * Update the distance from all location displays to the center of the compass
-     */
-    public void updateLabeledLocationDisplay() {
-        Log.i(Compass.class.getName(), getCompassTag() + ": update labeled location displays with radius " + radius);
-        labeledLocationDisplayMap.values().forEach(labeledLocationDisplay -> {
-            var layoutParams = (ConstraintLayout.LayoutParams) labeledLocationDisplay.getDotView().getLayoutParams();
-            layoutParams.circleRadius = radius;
-            labeledLocationDisplay.getDotView().setLayoutParams(layoutParams);
-        });
-    }
-
-    /**
      * Update the radius of the compass
      *
      * @param radius the radius of the compass
