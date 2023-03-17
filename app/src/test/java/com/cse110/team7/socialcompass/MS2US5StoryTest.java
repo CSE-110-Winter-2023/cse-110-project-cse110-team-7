@@ -11,6 +11,8 @@ import static org.mockserver.model.HttpRequest.request;
 import static org.mockserver.model.HttpResponse.response;
 
 import android.content.Context;
+import android.location.Location;
+import android.view.View;
 import android.view.inputmethod.EditorInfo;
 
 import androidx.lifecycle.Lifecycle;
@@ -39,6 +41,11 @@ import org.robolectric.RobolectricTestRunner;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
+/**
+ * Tests User Story 5: Gauge Friend's Distance; tests that friends appear in the correct circles
+ * depending on varying distances first, and then tests that friends positions on the compass update
+ * correctly when movement occurs.
+ */
 @RunWith(RobolectricTestRunner.class)
 public class MS2US5StoryTest {
 
@@ -77,6 +84,9 @@ public class MS2US5StoryTest {
 
     @Before
     public void init() throws ExecutionException, InterruptedException {
+        LocationService.clearLocationService();
+        OrientationService.clearOrientationService();
+
         Context context = ApplicationProvider.getApplicationContext();
 
         SocialCompassDatabase.injectTestDatabase(

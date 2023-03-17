@@ -16,8 +16,12 @@ import androidx.test.core.app.ActivityScenario;
 import androidx.test.core.app.ApplicationProvider;
 
 import com.cse110.team7.socialcompass.database.SocialCompassDatabase;
-import com.cse110.team7.socialcompass.services.LocationService;
 
+import com.cse110.team7.socialcompass.server.ServerAPI;
+import com.cse110.team7.socialcompass.services.LocationService;
+import com.cse110.team7.socialcompass.services.OrientationService;
+
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -25,11 +29,20 @@ import org.robolectric.RobolectricTestRunner;
 
 import java.util.concurrent.ExecutionException;
 
+/**
+ * Tests User Story 7: Recognize GPS Signal State.
+ */
 @RunWith(RobolectricTestRunner.class)
 public class MS2US7StoryTest {
 
+    LocationService locationService;
+    private SocialCompassDatabase socialCompassDatabase;
+
     @Before
     public void init() throws ExecutionException, InterruptedException {
+        LocationService.clearLocationService();
+        OrientationService.clearOrientationService();
+
         Context context = ApplicationProvider.getApplicationContext();
 
         SocialCompassDatabase.injectTestDatabase(
@@ -37,14 +50,26 @@ public class MS2US7StoryTest {
                         .allowMainThreadQueries()
                         .build()
         );
+        
+
+        socialCompassDatabase = SocialCompassDatabase.getInstance(context);
+//        labeledLocationDao = socialCompassDatabase.getLabeledLocationDao();
+
+        locationService = LocationService.getInstance();
+    }
+
+    @After
+    public void destroy() throws ExecutionException, InterruptedException {
+        socialCompassDatabase.close();
     }
 
     @Test
     public void US7StoryTest() {
         var scenario = ActivityScenario.launch(CompassActivity.class);
 
-        LocationService locationService = LocationService.getInstance();
 
+        LocationService locationService = LocationService.getInstance();
+        
         scenario.moveToState(Lifecycle.State.CREATED);
         scenario.moveToState(Lifecycle.State.STARTED);
 

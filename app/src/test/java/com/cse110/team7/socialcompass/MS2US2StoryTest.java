@@ -29,6 +29,9 @@ import org.robolectric.RobolectricTestRunner;
 
 import java.util.concurrent.ExecutionException;
 
+/**
+ * Tests User Story 2: Seeing Nearby Friends (those within a 10 mile radius).
+ */
 @RunWith(RobolectricTestRunner.class)
 public class MS2US2StoryTest {
     private static final LabeledLocation testLocation1 = new LabeledLocation.Builder()

@@ -1,5 +1,6 @@
 package com.cse110.team7.socialcompass;
 
+
 import android.content.Context;
 
 import androidx.constraintlayout.widget.ConstraintLayout;
@@ -37,7 +38,7 @@ public class MS2US8StoryTest {
                         .build()
         );
     }
-
+    
     @Test
     public void US8StoryTest() {
         LabeledLocation test1 = new LabeledLocation.Builder()

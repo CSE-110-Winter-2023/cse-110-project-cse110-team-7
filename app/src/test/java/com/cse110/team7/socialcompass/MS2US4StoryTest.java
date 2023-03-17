@@ -117,57 +117,6 @@ public class MS2US4StoryTest {
             activity.getFriendUIDEditText().onEditorAction(EditorInfo.IME_ACTION_DONE);
             activity.getAddFriendButton().performClick();
         });
-//
-//        var countDownLatch = new CountDownLatch(1);
-//
-//        var scenario2 = ActivityScenario.launch(CompassActivity.class);
-//        scenario2.moveToState(Lifecycle.State.CREATED);
-//        scenario2.moveToState(Lifecycle.State.STARTED);
-//
-//        Coordinate currentCoordinate = new Coordinate(10, 20);
-//
-//        scenario2.onActivity(activity -> {
-//            LocationService.getInstance().unregisterLocationUpdateListener();
-//            LocationService.getInstance().setCurrentCoordinate(currentCoordinate);
-//            OrientationService.getInstance().unregisterSensorEventUpdateListener();
-//            OrientationService.getInstance().setCurrentOrientation(0);
-//
-//            activity.getCompass().getLocationUpdateTimeMap().put(testLocation1.getPublicCode(), countDownLatch);
-//            activity.getCompass().updateBearingForAll(currentCoordinate);
-//
-//            var temp = activity.getCompass().getLabeledLocationDisplayMap();
-//
-//            Assert.assertEquals(Double.compare(
-//                            AngleCalculator.calculateAngle(currentCoordinate, testLocation1.getCoordinate()),
-//                            Objects.requireNonNull(temp.get(testLocation1.getPublicCode())).getBearing()),
-//                    0);
-//
-//            testLocation1.setLatitude(20);
-//            testLocation1.setLongitude(20);
-//            testLocation1.setUpdatedAt(Instant.now().getEpochSecond() + 10);
-//
-//            try {
-//                setupMockPutServer(testLocation1, client);
-//                Thread.sleep(6000);
-//                labeledLocationRepository.syncedSelectLabeledLocation(testLocation1.getPublicCode());
-//            } catch (ExecutionException | InterruptedException e) {
-//                throw new RuntimeException(e);
-//            }
-//
-//            labeledLocationRepository.syncedSelectLabeledLocation(testLocation1.getPublicCode()).observeForever(labeledLocation -> {
-//            });
-//
-//            ShadowLooper shadowLooper = Shadows.shadowOf(activity.getMainLooper());
-//            shadowLooper.runToEndOfTasks();
-//
-//            try {
-//                Assert.assertTrue(countDownLatch.await(12, TimeUnit.SECONDS));
-//            } catch (InterruptedException e) {
-//                throw new RuntimeException(e);
-//            }
-//
-//            Assert.assertTrue(testLocation1.getCoordinate().equals(Objects.requireNonNull(temp.get(testLocation1.getPublicCode())).getLabeledLocation().getCoordinate()));
-//        });
     }
 
     public void setupMockPutServer(LabeledLocation testLocation, MockServerClient client) {
