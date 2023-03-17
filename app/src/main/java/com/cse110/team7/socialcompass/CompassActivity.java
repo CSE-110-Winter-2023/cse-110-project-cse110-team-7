@@ -164,12 +164,14 @@ public class CompassActivity extends AppCompatActivity {
         OrientationService.getInstance().getCurrentOrientation().observe(this, currentOrientation -> {
             allCompasses.forEach(compass -> compass.updateOrientationForAll(currentOrientation));
         });
+        updateGPSIcon();
     }
 
     @Override
     protected void onResume() {
         super.onResume();
         localUpdateRequired = true;
+        updateGPSIcon();
     }
 
     public List<Compass> createCompasses() {
