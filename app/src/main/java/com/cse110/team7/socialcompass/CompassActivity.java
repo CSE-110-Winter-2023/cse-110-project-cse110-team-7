@@ -318,4 +318,14 @@ public class CompassActivity extends AppCompatActivity {
     public Button getZoomOutButton() {
         return zoomOutButton;
     }
+
+    @VisibleForTesting
+    public ImageView getGpsIndicator() {
+        return gpsIndicator;
+    }
+
+    @VisibleForTesting
+    public TextView getLastSignalTime() {
+        return lastSignalTime;
+    }
 }
